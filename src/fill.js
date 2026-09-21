@@ -1,10 +1,11 @@
-// Hands the upload page a file, as though one had been picked from disk.
+// Hands the upload page a file, as though one had been picked from disk, and
+// presses its own Upload button.
 //
 // The rows are not posted across origins. The upload needs the session, the
 // site's cookie is same-site, and a request made from cardmarket.com would
-// arrive without it and be refused. So the page is left to do its own
-// upload, from its own origin, with its own session. What is done here is
-// putting the file in the picker and pressing the page's own button.
+// arrive without it and be refused. So the page does its own upload, from its
+// own origin, with its own session. What is done here is putting the file in
+// the picker and pressing the page's own button.
 //
 // A file rather than the textarea, because the page's file input carries an
 // onchange that wires the rest of its state: it names the file on screen,
@@ -13,10 +14,12 @@
 // about, and leaves Upload greyed out. An inline handler runs on an event
 // dispatched from here, so pressing the picker's own path is enough.
 //
-// The page's own Upload button is then pressed. It carries an onclick that
-// does the submitting - it clears the hidden mode flags, points the form at
-// this tab and submits it - so the button is clicked rather than the form
-// submitted directly, and the page uploads exactly as it would by hand.
+// This runs at document_start and acts as soon as the form exists, rather
+// than waiting for the page to fall idle. The empty form is not a page
+// anyone meant to look at - it is covered while the rows arrive, and what
+// draws next is the upload's own answer. Waiting for load would also let the
+// page restore a previous textarea out of localStorage, into a form that is
+// about to be submitted.
 
 (function () {
   "use strict";
@@ -25,14 +28,25 @@
   var ROWS = "cm-banner-rows";
   // The only page allowed to hand rows over.
   var SENDER = "https://www.cardmarket.com";
+  // While this is on the document, the page is covered. See fill.css.
+  var COVER = "cm-banner-receiving";
 
   var opener = window.opener;
-  if (!opener) {
-    // Opened by hand rather than by the other half: nothing to wait for.
+  // Opened by hand rather than by the other half, or opened by a tab that has
+  // since gone: nothing is coming, so the page is left exactly as it is.
+  if (!opener || opener.closed) {
     return;
   }
 
+  var root = document.documentElement;
+  root.classList.add(COVER);
+
+  function uncover() {
+    root.classList.remove(COVER);
+  }
+
   function banner(message) {
+    uncover();
     var note = document.getElementById("cm-banner-filled");
     if (!note) {
       note = document.createElement("div");
@@ -66,7 +80,6 @@
       return false;
     }
     input.dispatchEvent(new Event("change", { bubbles: true }));
-    input.scrollIntoView({ block: "center" });
     return true;
   }
 
@@ -98,9 +111,52 @@
     return true;
   }
 
+  function deliver(csv, name) {
+    var rows = csv.trim().split("\n").length - 1;
+    if (asFile(csv, name || "cardmarket.csv")) {
+      if (submit()) {
+        // Left covered: the form is on its way, and the next thing to draw
+        // is the answer rather than the question.
+        return;
+      }
+      banner(rows + " rows from Cardmarket — press Upload when ready");
+      return;
+    }
+    if (asText(csv)) {
+      banner(
+        rows + " rows pasted from Cardmarket — pick the text tab, then Upload"
+      );
+      return;
+    }
+    banner("Could not find anywhere to put the rows on this page");
+  }
+
   // The rows are taken once. A second message, however it arrives, is not a
   // second upload.
   var taken = false;
+  // Held if the rows arrive before the form they go into.
+  var waiting = null;
+
+  function run(csv, name) {
+    if (document.getElementById("submit_default")) {
+      deliver(csv, name);
+      return;
+    }
+    waiting = { csv: csv, name: name };
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    if (waiting) {
+      deliver(waiting.csv, waiting.name);
+      waiting = null;
+      return;
+    }
+    if (!taken) {
+      // The form is up and the other half has said nothing. It answers the
+      // moment it hears, so silence by now means nothing is coming.
+      uncover();
+    }
+  });
 
   window.addEventListener("message", function (event) {
     // Three things have to hold: the right site said it, the window this one
@@ -116,32 +172,11 @@
     ) {
       return;
     }
-
     taken = true;
-    var rows = event.data.csv.trim().split("\n").length - 1;
-    var filename = event.data.name || "cardmarket.csv";
-
-    if (asFile(event.data.csv, filename)) {
-      if (submit()) {
-        banner("Uploading " + rows + " rows from Cardmarket…");
-        return;
-      }
-      // The file is in the picker and the page can see it, but its own
-      // button is not ready; leaving it to be pressed by hand beats
-      // pretending nothing happened.
-      banner(rows + " rows from Cardmarket — press Upload when ready");
-      return;
-    }
-    if (asText(event.data.csv)) {
-      banner(
-        rows +
-          " rows pasted from Cardmarket — pick the text tab, then press Upload"
-      );
-      return;
-    }
-    banner("Could not find anywhere to put the rows on this page");
+    run(event.data.csv, event.data.name);
   });
 
-  // Said last, once this is listening: the other half waits to be told.
+  // Asked as early as there is anything to ask with: the other half answers
+  // the moment it hears, and that is what keeps the empty form off the screen.
   opener.postMessage({ type: READY }, SENDER);
 })();

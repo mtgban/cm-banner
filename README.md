@@ -160,6 +160,12 @@ runs exactly as it would if you had picked the file and pressed it yourself.
 If the button is not ready for any reason, the file is left in the picker and
 the banner says to press it.
 
+The empty upload form is covered while this happens. The tab was opened to
+upload something, not to look at a blank form, so it shows "Uploading from
+Cardmarket…" until the answer draws over it. The cover only goes up on a tab
+opened by the handoff, and comes straight back down if the rows do not
+arrive — opening the upload page yourself is untouched.
+
 ## Permissions
 
 None. There is no background script, no storage, and no `tabs` permission —
