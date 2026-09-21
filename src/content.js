@@ -143,12 +143,13 @@
     });
   }
 
+  function filename(game) {
+    return "mkm-" + (game || "cardmarket") + "-" + today() + ".csv";
+  }
+
   function exportOffers(panel) {
     withCollected(panel, function (done) {
-      download(
-        done.csv,
-        "mkm-" + (gameFromPath(location.pathname) || "cardmarket") + "-" + today() + ".csv"
-      );
+      download(done.csv, filename(gameFromPath(location.pathname)));
       say(panel, done.note + " exported");
     });
   }
@@ -189,7 +190,10 @@
         }
         settled = true;
         window.removeEventListener("message", onMessage);
-        opened.postMessage({ type: ROWS, csv: done.csv }, origin);
+        opened.postMessage(
+          { type: ROWS, csv: done.csv, name: filename(game) },
+          origin
+        );
         say(panel, done.note + " sent to " + new URL(url).hostname);
       }
 

@@ -1,17 +1,20 @@
-// Fills the upload form with the rows the Cardmarket tab just read.
+// Hands the upload page a file, as though one had been picked from disk.
 //
-// This is the half that makes "send to BAN" work without a cross-origin
-// request. The upload needs the session, the site's cookie is same-site, and
-// a request made from cardmarket.com would arrive without it and be refused.
-// Here the person is already signed in, on their own tab, and the rows only
-// have to reach the textarea the form already has.
+// The rows are not posted across origins. The upload needs the session, the
+// site's cookie is same-site, and a request made from cardmarket.com would
+// arrive without it and be refused. So the page is left to do its own
+// upload, from its own origin, with its own session - the only thing done
+// here is putting the file in the picker for it.
 //
-// Nothing is stored and no permission is asked for: the Cardmarket tab opened
-// this one, so the two windows can speak directly.
+// A file rather than the textarea, because the page's file input carries an
+// onchange that wires the rest of its state: it names the file on screen,
+// clears the other sources, and enables the submit buttons, which start
+// disabled. Filling the textarea instead sets a value the page never hears
+// about, and leaves Upload greyed out. An inline handler runs on an event
+// dispatched from here, so pressing the picker's own path is enough.
 //
-// Nothing is submitted either. The rows are put in front of the person with
-// the page's own Upload button left for them to press, because sending a
-// collection off to be valued is their decision and not this script's.
+// Nothing is submitted. The page's Upload button is left for the person to
+// press, because sending a collection off to be valued is their decision.
 
 (function () {
   "use strict";
@@ -40,7 +43,34 @@
     }, 10000);
   }
 
-  function fill(csv) {
+  // asFile puts the rows in the page's own file picker. Assigning to files
+  // also sets the input's value, which is what its handler reads to name the
+  // file on screen.
+  function asFile(csv, filename) {
+    var input =
+      document.querySelector('input[type="file"][name="cardListFile"]') ||
+      document.querySelector('input[type="file"]');
+    if (!input || typeof DataTransfer === "undefined") {
+      return false;
+    }
+    try {
+      var carrier = new DataTransfer();
+      carrier.items.add(new File([csv], filename, { type: "text/csv" }));
+      input.files = carrier.files;
+    } catch (err) {
+      return false;
+    }
+    if (input.files.length === 0) {
+      return false;
+    }
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+    input.scrollIntoView({ block: "center" });
+    return true;
+  }
+
+  // asText is the fallback for a page with no picker. It sets a value the
+  // page may not hear about, so it is second and is said out loud.
+  function asText(csv) {
     var area =
       document.querySelector('textarea[name="textArea"]') ||
       document.querySelector("textarea");
@@ -48,11 +78,9 @@
       return false;
     }
     area.value = csv;
-    // The page may be watching its own field.
     area.dispatchEvent(new Event("input", { bubbles: true }));
     area.dispatchEvent(new Event("change", { bubbles: true }));
     area.scrollIntoView({ block: "center" });
-    area.focus();
     return true;
   }
 
@@ -70,12 +98,21 @@
       return;
     }
 
-    if (!fill(event.data.csv)) {
-      banner("Could not find the upload box on this page");
+    var rows = event.data.csv.trim().split("\n").length - 1;
+    var filename = event.data.name || "cardmarket.csv";
+
+    if (asFile(event.data.csv, filename)) {
+      banner(rows + " rows from Cardmarket — press Upload when ready");
       return;
     }
-    var rows = event.data.csv.trim().split("\n").length - 1;
-    banner(rows + " rows from Cardmarket — press Upload when ready");
+    if (asText(event.data.csv)) {
+      banner(
+        rows +
+          " rows pasted from Cardmarket — pick the text tab, then press Upload"
+      );
+      return;
+    }
+    banner("Could not find anywhere to put the rows on this page");
   });
 
   // Said last, once this is listening: the other half waits to be told.

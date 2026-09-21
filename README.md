@@ -118,13 +118,21 @@ one `lorcana.mtgban.com/upload`, and so on for the seven.
 
 They are **not** posted there. The upload needs your session, and the site's
 cookie is same-site, so a request made from cardmarket.com would arrive without
-it and be refused. Instead the upload page is opened by the click that asked
-for it, which leaves the two windows able to speak: the upload page says when
-it is listening, and the rows are passed to that window and no other.
+it and be refused. So the page does its own upload, from its own origin, with
+its own session — the extension only puts the rows in front of it.
 
-Both ends check who they are talking to — the Cardmarket tab only accepts the
-window it opened at the host it opened, and the upload page only accepts
-`https://www.cardmarket.com` from the window that opened it.
+It does that by handing the page a **file**, as though one had been picked from
+disk: the CSV becomes a `File` on the page's own file input. That is the path
+the page is built around — its input carries a handler that names the file on
+screen, clears the other sources, and enables the submit buttons, which start
+disabled. Filling the textarea instead sets a value the page never hears about
+and leaves Upload greyed out.
+
+The upload page is opened by the click that asks for it, so the two windows can
+speak: the upload page says when it is listening, and the rows are passed to
+that window and no other. Both ends check who they are talking to — the
+Cardmarket tab accepts only the window it opened at the host it opened, and the
+upload page accepts only `https://www.cardmarket.com` from its opener.
 
 Nothing is submitted for you. The page's own Upload button is left for you to
 press, because sending a collection off to be valued is your decision.
