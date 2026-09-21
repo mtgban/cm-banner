@@ -4,14 +4,26 @@ A browser extension that reads the offers listed on a Cardmarket page and
 writes them out as a CSV [mtgban](https://www.mtgban.com)'s `/upload` page can
 read.
 
-The parsing happens in the browser. Nothing is sent anywhere: the extension
-produces a file, you look at it, and you upload it yourself if you want to.
+The parsing happens in the browser. Your cards are not sent anywhere by this
+extension: it fills the upload form on your own tab, or hands you a file, and
+you decide whether to submit it.
 
 ## What it does
 
-On any Cardmarket page that lists offers, a panel appears in the bottom right
-saying how many it can see. Clicking it downloads `mkm-<game>-<date>.csv` and
-reports how many rows were exported and how many were skipped.
+On a seller's offers page — `cardmarket.com/<lang>/<Game>/Users/<seller>/Offers/…`
+— a panel appears in the bottom right saying how many offers it can see. It
+offers two things:
+
+- **Send to BAN** opens that game's own upload page with the rows already in
+  the form, for you to look over and submit.
+- **CSV** downloads `mkm-<game>-<date>.csv` instead.
+
+Either way it reports how many rows it took, how many it skipped, and how many
+it could not price.
+
+It reads singles and sealed alike: Cardmarket files boxes and bundles under
+their own product categories, and the upload tells one from the other by what
+the id resolves to.
 
 It works on all seven games Cardmarket sells: Magic, Pokemon, YuGiOh, Lorcana,
 One Piece, Flesh and Blood and Riftbound.
@@ -19,10 +31,10 @@ One Piece, Flesh and Blood and Riftbound.
 ## The CSV
 
 ```
-mcm_id,card_name,edition,condition,foil,quantity,article_id
-10601,Thornwind Faeries,Urzas Legacy,NM,,3,2058737078
-401749,Tuinvale Treefolk Oaken Boon,Throne of Eldraine Extras,SP,foil,1,2051859187
-,Mirri's Guile,Zendikar,PO,,1,2057222480
+mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id
+10601,Thornwind Faeries,Urzas Legacy,MP,,1,0.06,2058737078
+765432,Bloomburrow Play Booster Box,Bloomburrow,,,1,263.87,2060000001
+,Mirri's Guile,Zendikar,PO,,1,,2057222480
 ```
 
 `mcm_id` is the Cardmarket product id, taken from the product image's own file
@@ -35,11 +47,15 @@ both normalize on the way in.
 `article_id` is the offer's own id on Cardmarket. The site ignores it; it is
 carried so a row can be traced back to the listing it came from.
 
-**There is no price column, deliberately.** The upload compares a price it is
-given against mtgban's own, which are dollars, and every price on Cardmarket is
-euros. A price column here would be read as the currency it is not, and a
-valuation wrong by an exchange rate is worse than one the site works out for
-itself.
+`price_usd` is the seller's asking price, converted. The upload holds a price
+it is given against mtgban's own, and those are dollars, while Cardmarket
+quotes euros or pounds — so the column has to be in the currency it will be
+read as. The rate comes from the same feed go-mtgban reads
+(`mtgban/utils.go`), fetched once per export.
+
+A row whose price could not be converted honestly — no rate, an unfamiliar
+currency, an unreadable number — carries an **empty** price rather than a
+guess, and the panel says how many. The rest of the row still uploads.
 
 ### Conditions
 
@@ -94,12 +110,34 @@ Run the generated project once, then enable the extension in Safari's settings.
 For an unsigned build, Safari's Develop menu has to have *Allow Unsigned
 Extensions* turned on, which Safari resets when it quits.
 
+## Send to BAN
+
+Each game is served by its own deployment, so the rows go to the upload that
+knows the cards: a Magic offers page opens `magic.mtgban.com/upload`, a Lorcana
+one `lorcana.mtgban.com/upload`, and so on for the seven.
+
+They are **not** posted there. The site sends no CORS headers and its session
+cookie is same-site, so a request made from cardmarket.com would arrive
+unauthenticated and be refused — and a cross-origin write endpoint is not a
+thing worth adding for this. Instead the CSV is left in the extension's own
+storage, the upload page is opened, and a second content script puts the rows
+in the form on a tab you are already signed in to.
+
+Nothing is submitted for you. The page's own Upload button is left for you to
+press, because sending a collection off to be valued is your decision.
+
+The handoff is taken once and expires after two minutes, so a reload will not
+refill a form you have since edited or sent.
+
 ## Permissions
 
-None beyond running on Cardmarket's own pages. There is no background script,
-no storage, no network access, and no extension API call anywhere in the code —
-the parse is a DOM read and the download is a blob and an anchor, both plain
-web platform. That is also why one build runs unchanged on all three browsers.
+`storage`, and only to carry one CSV from the Cardmarket tab to the upload
+tab. There is no background script and no `tabs` permission — the upload page
+is opened by the click that asked for it.
+
+The extension runs on two hosts: Cardmarket sellers' offers pages, and
+`*.mtgban.com/upload`. It reaches the network once per export, for the
+exchange-rate feed on jsDelivr, and sends nothing with that request.
 
 ## Limitations
 
@@ -119,9 +157,14 @@ bun test tests/
 ```
 
 The suite runs the real content scripts against a DOM (`happy-dom`) and a
-fixture shaped like a saved Cardmarket page, covering both tooltip spellings,
-the condition fold, the language filter, the skip rules, the id falling back to
-empty, and the CSV's own quoting. It runs in CI on every push and pull request.
+fixture shaped like a saved Cardmarket page: both tooltip spellings, the
+condition fold, the language filter, the skip rules, sealed alongside singles,
+the id falling back to empty, the currency conversion, and the CSV's own
+quoting. It runs in CI on every push and pull request.
+
+The fixture carries the shapes that have actually broken this parser, not just
+the happy ones — a quantity written immediately before a price, which flattening
+the row reads as part of the number.
 
 `demo/index.html` loads that same fixture and the real content script, so the
 panel on it is the one the extension injects. Serve it over HTTP:

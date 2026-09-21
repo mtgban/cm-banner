@@ -12,15 +12,16 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.cardmarket.com/*/Magic/*",
-        "https://www.cardmarket.com/*/Pokemon/*",
-        "https://www.cardmarket.com/*/YuGiOh/*",
-        "https://www.cardmarket.com/*/Lorcana/*",
-        "https://www.cardmarket.com/*/OnePiece/*",
-        "https://www.cardmarket.com/*/FleshAndBlood/*",
-        "https://www.cardmarket.com/*/Riftbound/*"
+        "https://www.cardmarket.com/*/Magic/Users/*/Offers/*",
+        "https://www.cardmarket.com/*/Pokemon/Users/*/Offers/*",
+        "https://www.cardmarket.com/*/YuGiOh/Users/*/Offers/*",
+        "https://www.cardmarket.com/*/Lorcana/Users/*/Offers/*",
+        "https://www.cardmarket.com/*/OnePiece/Users/*/Offers/*",
+        "https://www.cardmarket.com/*/FleshAndBlood/Users/*/Offers/*",
+        "https://www.cardmarket.com/*/Riftbound/Users/*/Offers/*"
       ],
       "js": [
+        "src/rates.js",
         "src/parse.js",
         "src/csv.js",
         "src/content.js"
@@ -29,6 +30,21 @@
         "src/content.css"
       ],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.mtgban.com/upload*"
+      ],
+      "js": [
+        "src/fill.js"
+      ],
+      "css": [
+        "src/fill.css"
+      ],
+      "run_at": "document_idle"
     }
+  ],
+  "permissions": [
+    "storage"
   ]
 }

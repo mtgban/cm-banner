@@ -30,36 +30,52 @@
   display: none;
 }
 
-#cm-banner .cm-banner-button {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+#cm-banner .cm-banner-label {
+  font-weight: 600;
+}
 
+#cm-banner .cm-banner-actions {
+  display: flex;
+  gap: 6px;
+}
+
+#cm-banner .cm-banner-send,
+#cm-banner .cm-banner-save {
   margin: 0;
-  padding: 8px 12px;
+  padding: 7px 12px;
   border: 0;
   border-radius: 6px;
 
-  background: #2d67c4;
   color: inherit;
   font: inherit;
-  text-align: left;
+  font-weight: 600;
   cursor: pointer;
 }
 
-#cm-banner .cm-banner-button:hover {
+#cm-banner .cm-banner-send {
+  flex: 1;
+  background: #2d67c4;
+}
+
+#cm-banner .cm-banner-send:hover {
   background: #3a78d8;
 }
 
-#cm-banner .cm-banner-button:focus-visible,
+/* The quieter of the two: the file is the fallback, not the point. */
+#cm-banner .cm-banner-save {
+  background: #33507d;
+  font-weight: 500;
+}
+
+#cm-banner .cm-banner-save:hover {
+  background: #3f5f92;
+}
+
+#cm-banner .cm-banner-send:focus-visible,
+#cm-banner .cm-banner-save:focus-visible,
 #cm-banner .cm-banner-english:focus-visible {
   outline: 2px solid #8ab4f8;
   outline-offset: 2px;
-}
-
-#cm-banner .cm-banner-label {
-  font-weight: 600;
 }
 
 #cm-banner .cm-banner-note:empty {
@@ -67,6 +83,7 @@
 }
 
 #cm-banner .cm-banner-note {
+  max-width: 15rem;
   opacity: 0.85;
   font-size: 12px;
 }
@@ -87,7 +104,8 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  #cm-banner .cm-banner-button {
+  #cm-banner .cm-banner-send,
+  #cm-banner .cm-banner-save {
     transition: background 120ms ease;
   }
 }

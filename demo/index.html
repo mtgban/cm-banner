@@ -43,7 +43,7 @@
         .then(function (r) { return r.text(); })
         .then(function (html) {
           document.getElementById("rows").innerHTML = html;
-          ["../src/parse.js", "../src/csv.js", "../src/content.js"].reduce(
+          ["../src/rates.js", "../src/parse.js", "../src/csv.js", "../src/content.js"].reduce(
             function (chain, src) {
               return chain.then(function () {
                 return new Promise(function (resolve, reject) {
