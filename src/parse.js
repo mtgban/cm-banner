@@ -33,12 +33,14 @@ globalThis.MKM = globalThis.MKM || {};
   var SKIPPED = ["Altered", "Signed", "Inked"];
 
   var ARTICLE_RE = /stockRow(\d+)/;
-  // Cardmarket files an offer under the category it sells it in:
-  // Singles for cards, Sealed-Products, Boosters, Booster-Boxes and
-  // Sets-Lots-Collections for the rest. The category is not read - the
-  // upload tells a sealed product from a card by what the id resolves
-  // to - but it has to be allowed through for sealed to arrive at all.
-  var PRODUCT_RE = /\/Products\/[^/?"<& ]+\/([^/?"<& ]+)\/([^/?"<& ]+)/;
+  // Cardmarket files an offer under the category it sells it in, and the
+  // category decides how much path follows: a single is filed under its set
+  // ("/Products/Singles/Urzas-Legacy/Thornwind-Faeries"), while a sealed
+  // product is filed directly under its category and carries its set in its
+  // own name ("/Products/Boosters/Adventures-in-the-Forgotten-Realms-Set-
+  // Booster"). So the tail is taken whole and split afterwards, rather than
+  // a fixed number of segments being demanded of every category.
+  var PRODUCT_RE = /\/Products\/([^/?"<& ]+)\/([^?"<& ]+)/;
   var LANGUAGE_RE = /[?&]language=(\d+)/;
   var QTY_RE = /^\s*(\d+)/;
   // Cardmarket writes a decimal comma, and the symbol says which currency
@@ -144,6 +146,12 @@ globalThis.MKM = globalThis.MKM || {};
       return null;
     }
 
+    // Two segments name a set and a card; one names a product whose set is
+    // part of what it is called.
+    var tail = product[2].split("/");
+    var nameSlug = tail.length > 1 ? tail[1] : tail[0];
+    var editionSlug = tail.length > 1 ? tail[0] : "";
+
     if (languageFilter) {
       var language = LANGUAGE_RE.exec(href);
       if (language && language[1] !== languageFilter) {
@@ -178,8 +186,8 @@ globalThis.MKM = globalThis.MKM || {};
 
     return {
       mcmID: firstMatch(row.outerHTML, [IMG_RE, IMG_LEGACY_RE]),
-      cardName: slugToName(product[2]),
-      edition: product[1].replace(/-/g, " "),
+      cardName: slugToName(nameSlug),
+      edition: editionSlug.replace(/-/g, " "),
       condition: condition,
       foil: titles.indexOf("Foil") !== -1 ? "foil" : "",
       quantity: quantity,

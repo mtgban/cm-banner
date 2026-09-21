@@ -106,21 +106,23 @@ describe("what is not a single", () => {
     // Cardmarket files sealed under its own category rather than Singles,
     // and the upload tells it from a card by what the id resolves to, so
     // the parse only has to let it through.
-    const box = byArticle["2060000001"];
-    expect(box.mcmID).toBe("765432");
-    expect(box.cardName).toBe("Bloomburrow Play Booster Box");
-    expect(box.edition).toBe("Bloomburrow");
+    const box = byArticle["2036785656"];
+    expect(box.mcmID).toBe("565902");
+    expect(box.cardName).toBe("Adventures in the Forgotten Realms Set Booster");
+    // Filed under its category with no set segment: the set is part of what
+    // the product is called, so there is no separate edition to give.
+    expect(box.edition).toBe("");
   });
 
   test("a box has no grade, and none is invented for it", () => {
-    expect(byArticle["2060000001"].condition).toBe("");
+    expect(byArticle["2036785656"].condition).toBe("");
   });
 });
 
 describe("the price as the page wrote it", () => {
   test("a decimal comma is read as a decimal point", () => {
-    expect(byArticle["2060000001"].price).toBe("229.90");
-    expect(byArticle["2060000001"].currency).toBe("eur");
+    expect(byArticle["2036785656"].price).toBe("10.00");
+    expect(byArticle["2036785656"].currency).toBe("eur");
   });
 
   test("a grouped thousand is not read as a decimal", () => {
