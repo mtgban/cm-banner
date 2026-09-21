@@ -128,8 +128,10 @@ Extensions* turned on, which Safari resets when it quits.
 ## Send to BAN
 
 Each game is served by its own deployment, so the rows go to the upload that
-knows the cards: a Magic offers page opens `magic.mtgban.com/upload`, a Lorcana
-one `lorcana.mtgban.com/upload`, and so on for the seven.
+knows the cards: a Lorcana offers page opens `lorcana.mtgban.com/upload`, a
+Pokemon one `pokemon.mtgban.com/upload`, and so on. Magic is the exception —
+it is the default deployment and answers at `mtgban.com/upload`, with
+`magic.mtgban.com` redirecting there.
 
 They are **not** posted there. The upload needs your session, and the site's
 cookie is same-site, so a request made from cardmarket.com would arrive without

@@ -1,5 +1,6 @@
 import { test, expect, describe } from "bun:test";
 import { load, parse, MKM } from "./helpers.js";
+import { readFileSync } from "fs";
 
 describe("the columns", () => {
   // Every name here is one the upload's header matcher reads, and reads the
@@ -68,5 +69,30 @@ describe("end to end", () => {
     expect(lines[1]).toBe(
       "10601,Thornwind Faeries,Urzas Legacy,NM,,3,,2058737078"
     );
+  });
+});
+
+describe("where the extension runs", () => {
+  const manifest = JSON.parse(
+    readFileSync(new URL("../manifest.json", import.meta.url), "utf8")
+  );
+  const upload = manifest.content_scripts.find((cs) =>
+    cs.matches.some((m) => m.includes("mtgban"))
+  );
+
+  test("the upload half covers the bare domain as well as a subdomain", () => {
+    // Magic is the default deployment and answers at mtgban.com;
+    // magic.mtgban.com redirects there. Matching only "*.mtgban.com" leans on
+    // a reading of the pattern spec, and the bare domain is the one game most
+    // people will try first.
+    expect(upload.matches).toContain("https://mtgban.com/upload*");
+    expect(upload.matches).toContain("https://*.mtgban.com/upload*");
+  });
+
+  test("the Cardmarket half stays on sellers' offers pages", () => {
+    const offers = manifest.content_scripts.find((cs) =>
+      cs.matches.some((m) => m.includes("cardmarket"))
+    );
+    expect(offers.matches.every((m) => m.includes("/Users/*/Offers/"))).toBe(true);
   });
 });

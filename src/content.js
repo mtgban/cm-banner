@@ -18,17 +18,37 @@
   var READY = "cm-banner-ready";
   var ROWS = "cm-banner-rows";
 
-  // Each game is served by its own deployment, so the rows go to the upload
-  // that knows the cards.
+  // Each game is served by its own deployment. Magic is the default one and
+  // answers at the bare domain: magic.mtgban.com redirects there, which
+  // changes the origin on the way, so it is named as it ends up.
   var HOSTS = {
-    magic: "magic",
-    pokemon: "pokemon",
-    yugioh: "yugioh",
-    lorcana: "lorcana",
-    onepiece: "onepiece",
-    fleshandblood: "fleshandblood",
-    riftbound: "riftbound",
+    magic: "mtgban.com",
+    pokemon: "pokemon.mtgban.com",
+    yugioh: "yugioh.mtgban.com",
+    lorcana: "lorcana.mtgban.com",
+    onepiece: "onepiece.mtgban.com",
+    fleshandblood: "fleshandblood.mtgban.com",
+    riftbound: "riftbound.mtgban.com",
   };
+
+  // isBanHost says whether an origin is one of ours. The window that answers
+  // is not always the one that was opened - a deployment may redirect, and
+  // that lands on a different origin - so the origin is checked for being
+  // ours rather than for being the exact one asked for. What pins the
+  // conversation to the right window is the source check beside it.
+  function isBanHost(origin) {
+    var parsed;
+    try {
+      parsed = new URL(origin);
+    } catch (err) {
+      return false;
+    }
+    return (
+      parsed.protocol === "https:" &&
+      (parsed.hostname === "mtgban.com" ||
+        parsed.hostname.slice(-11) === ".mtgban.com")
+    );
+  }
 
   // The page path names the game: /<language>/<Game>/Users/...
   function gameFromPath(pathname) {
@@ -38,7 +58,7 @@
 
   function uploadURL(game) {
     var host = HOSTS[game];
-    return host ? "https://" + host + ".mtgban.com/upload" : "";
+    return host ? "https://" + host + "/upload" : "";
   }
 
   function today() {
@@ -160,8 +180,6 @@
       say(panel, "No BAN site for " + (game || "this page"));
       return;
     }
-    var origin = new URL(url).origin;
-
     withCollected(panel, function (done) {
       var opened = window.open(url, "_blank");
       if (!opened) {
@@ -171,19 +189,21 @@
 
       function onMessage(event) {
         if (
-          event.origin !== origin ||
           event.source !== opened ||
+          !isBanHost(event.origin) ||
           !event.data ||
           event.data.type !== READY
         ) {
           return;
         }
         window.removeEventListener("message", onMessage);
+        // Answered to the origin that spoke, which is where the page
+        // actually ended up rather than where it was sent.
         opened.postMessage(
           { type: ROWS, csv: done.csv, name: filename(game) },
-          origin
+          event.origin
         );
-        say(panel, done.note + " sent to " + new URL(url).hostname);
+        say(panel, done.note + " sent to " + new URL(event.origin).hostname);
       }
 
       // No deadline. The upload page answers when it has loaded, and how

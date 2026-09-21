@@ -39,6 +39,7 @@
     },
     {
       "matches": [
+        "https://mtgban.com/upload*",
         "https://*.mtgban.com/upload*"
       ],
       "js": [
