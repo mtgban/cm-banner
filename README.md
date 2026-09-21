@@ -159,12 +159,13 @@ those means the markup moved.
 
 ## The icon
 
-`icons/` is the BAN logo from the website (`img/logo/ban-round.png`), at the
-sizes the browsers ask for. `icon-241.png` is that original, kept so the rest
-can be made again:
+`icons/` is the BAN logo from the website — `img/logo/ban-stroop.png`, the one
+the site's own home page shows. It is 128px square, which is the largest size
+the browsers ask for, so `icon-128.png` is that file unchanged and the smaller
+three are made from it:
 
 ```
-for s in 16 32 48 128; do sips -Z $s icons/icon-241.png --out icons/icon-$s.png; done
+for s in 16 32 48; do sips -Z $s icons/icon-128.png --out icons/icon-$s.png; done
 ```
 
 ## Development
