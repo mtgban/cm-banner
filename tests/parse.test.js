@@ -2,7 +2,7 @@ import { test, expect, describe } from "bun:test";
 import { load, parse } from "./helpers.js";
 
 const doc = load("offers.html");
-const offers = parse(doc, "");
+const offers = parse(doc);
 const byArticle = Object.fromEntries(offers.map((o) => [o.articleID, o]));
 
 describe("what the page holds", () => {
@@ -105,21 +105,25 @@ describe("the condition fold", () => {
   });
 });
 
-describe("the language filter", () => {
-  test("English alone leaves the Japanese listing behind", () => {
-    const english = parse(doc, "1");
-    expect(english.some((o) => o.articleID === "2058744495")).toBe(false);
+describe("the language a listing is in", () => {
+  test("it is reported, not filtered on", () => {
+    // The CSV has no language column and the upload has nothing to read one
+    // into, so a foreign printing is valued as the English one. Dropping
+    // those quietly would hide cards the person owns; the count is said
+    // instead, and the row is theirs to keep or discard.
+    expect(byArticle["2058744495"].language).toBe("7");
+    expect(byArticle["2058737078"].language).toBe("1");
   });
 
-  test("a row naming no language is not guessed at", () => {
-    // The Mirri's Guile row carries no language query, so a filter has
-    // nothing to hold it against and it stays.
-    const english = parse(doc, "1");
-    expect(english.some((o) => o.articleID === "2057222480")).toBe(true);
+  test("a listing naming no language reports none", () => {
+    expect(byArticle["2057222480"].language).toBe("");
   });
 
-  test("no filter keeps every language", () => {
-    expect(offers.some((o) => o.articleID === "2058744495")).toBe(true);
+  test("foreignCount counts what the upload would misread", () => {
+    // The Japanese one. A listing naming no language is not counted: there
+    // is nothing to say it is not English.
+    expect(globalThis.MKM.foreignCount(offers)).toBe(1);
+    expect(globalThis.MKM.foreignCount([])).toBe(0);
   });
 });
 

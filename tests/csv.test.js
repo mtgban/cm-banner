@@ -60,7 +60,7 @@ describe("the writing", () => {
 
 describe("end to end", () => {
   test("the fixture writes the rows it parsed", () => {
-    const offers = parse(load("offers.html"), "");
+    const offers = parse(load("offers.html"));
     const lines = MKM.toCSV(offers).trimEnd().split("\r\n");
     expect(lines.length).toBe(offers.length + 1);
     // No rates were fetched here, so the price stays empty - the row is

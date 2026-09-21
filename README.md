@@ -87,14 +87,21 @@ printing the catalog knows, and no id names them.
 
 ### Language
 
-The panel exports English listings by default, because the CSV has no language
-column and the upload matches what it is given as English — a German printing
-exported unmarked would be priced as the English one. Unticking *English only*
-exports every language on the page; the panel says how many rows the filter
-cost either way.
+Every listing on the page is exported, whatever language it is in, and the
+panel says how many are not English — `20 rows, 3 non-English`.
 
-A listing whose link names no language is kept under either setting, since
-there is nothing to hold it against.
+It is reported rather than filtered on because neither answer is good. The CSV
+has no language column and the upload has nothing to read one into, so a German
+printing is valued as the English one, at a price asked for a different card.
+Dropping those quietly would hide cards you own from your own valuation, so
+they are exported and counted instead, and what to do about them is yours to
+decide.
+
+A listing whose link names no language is not counted: there is nothing saying
+it is not English.
+
+Making this properly correct means a language column on the upload side,
+mapping Cardmarket's language ids onto the matcher's own `Language` field.
 
 ## Installing it
 
@@ -138,7 +145,8 @@ and leaves Upload greyed out.
 
 The upload page is opened by the click that asks for it, so the two windows can
 speak: the upload page says when it is listening, and the rows are passed to
-that window and no other. Both ends check who they are talking to — the
+that window and no other. There is no deadline on that — how long the page
+takes to load is the network's business. Both ends check who they are talking to — the
 Cardmarket tab accepts only the window it opened at the host it opened, and the
 upload page accepts only `https://www.cardmarket.com` from its opener.
 

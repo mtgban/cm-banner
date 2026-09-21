@@ -25,8 +25,8 @@ export function load(name) {
   return window.document;
 }
 
-export function parse(doc, language) {
-  return globalThis.MKM.parseOffers(doc, language);
+export function parse(doc) {
+  return globalThis.MKM.parseOffers(doc);
 }
 
 export const MKM = globalThis.MKM;

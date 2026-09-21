@@ -14,13 +14,9 @@
   "use strict";
 
   var PANEL_ID = "cm-banner";
-  // Cardmarket's own id for English, as its product links spell it.
-  var ENGLISH = "1";
   // What the two halves of the handoff say to each other.
   var READY = "cm-banner-ready";
   var ROWS = "cm-banner-rows";
-  // How long the upload page is given to say it is listening.
-  var HANDSHAKE_MS = 20000;
 
   // Each game is served by its own deployment, so the rows go to the upload
   // that knows the cards.
@@ -74,22 +70,10 @@
     }
   }
 
-  // languageWanted is the filter the parser is handed: English alone, or
-  // every language the page lists.
-  //
-  // It defaults to English because the CSV has no language column and the
-  // upload matches what it is given as English: a German printing exported
-  // unmarked is priced as the English one. Turning it off is the deliberate
-  // act, and the panel says how many rows it cost.
-  function languageWanted(panel) {
-    var box = panel.querySelector(".cm-banner-english");
-    return box && box.checked ? ENGLISH : "";
-  }
-
   // collect reads the page and converts what it found, answering with the
   // CSV and what to say about it.
   function collect(panel) {
-    var offers = MKM.parseOffers(document, languageWanted(panel));
+    var offers = MKM.parseOffers(document);
     var total = MKM.countRows(document);
 
     if (offers.length === 0) {
@@ -117,6 +101,13 @@
       var skipped = total - offers.length;
       if (skipped > 0) {
         note += ", " + skipped + " skipped";
+      }
+      var foreign = MKM.foreignCount(offers);
+      if (foreign > 0) {
+        // Worth saying: the CSV has no language column and the upload has
+        // nothing to read one into, so these are valued as the English
+        // printing, at a price asked for a different card.
+        note += ", " + foreign + " non-English";
       }
       if (unpriced > 0) {
         // Said out loud: a blank price is a row the upload values off its
@@ -178,7 +169,6 @@
         return;
       }
 
-      var settled = false;
       function onMessage(event) {
         if (
           event.origin !== origin ||
@@ -188,7 +178,6 @@
         ) {
           return;
         }
-        settled = true;
         window.removeEventListener("message", onMessage);
         opened.postMessage(
           { type: ROWS, csv: done.csv, name: filename(game) },
@@ -197,16 +186,9 @@
         say(panel, done.note + " sent to " + new URL(url).hostname);
       }
 
+      // No deadline. The upload page answers when it has loaded, and how
+      // long that takes is the network's business, not a number chosen here.
       window.addEventListener("message", onMessage);
-      setTimeout(function () {
-        if (settled) {
-          return;
-        }
-        window.removeEventListener("message", onMessage);
-        // Said rather than left silent: the tab is open and empty, and the
-        // reason is usually that the extension is not running on it.
-        say(panel, "The upload page never answered; use the CSV");
-      }, HANDSHAKE_MS);
     });
   }
 
@@ -234,10 +216,6 @@
       '<button type="button" class="cm-banner-send">Send to BAN</button>' +
       '<button type="button" class="cm-banner-save">CSV</button>' +
       "</div>" +
-      '<label class="cm-banner-lang">' +
-      '<input type="checkbox" class="cm-banner-english" checked>' +
-      "<span>English only</span>" +
-      "</label>" +
       '<div class="cm-banner-note"></div>';
 
     panel.querySelector(".cm-banner-send").addEventListener("click", function () {
@@ -246,13 +224,6 @@
     panel.querySelector(".cm-banner-save").addEventListener("click", function () {
       exportOffers(panel);
     });
-    // Changing the filter does not re-export, and what the last export said
-    // was said about the other filter.
-    panel
-      .querySelector(".cm-banner-english")
-      .addEventListener("change", function () {
-        say(panel, "");
-      });
     return panel;
   }
 

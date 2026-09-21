@@ -72,8 +72,7 @@
 }
 
 #cm-banner .cm-banner-send:focus-visible,
-#cm-banner .cm-banner-save:focus-visible,
-#cm-banner .cm-banner-english:focus-visible {
+#cm-banner .cm-banner-save:focus-visible {
   outline: 2px solid #8ab4f8;
   outline-offset: 2px;
 }
@@ -86,21 +85,6 @@
   max-width: 15rem;
   opacity: 0.85;
   font-size: 12px;
-}
-
-#cm-banner .cm-banner-lang {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-
-  opacity: 0.85;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-#cm-banner .cm-banner-english {
-  margin: 0;
-  cursor: pointer;
 }
 
 @media (prefers-reduced-motion: no-preference) {

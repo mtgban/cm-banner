@@ -135,7 +135,7 @@ globalThis.MKM = globalThis.MKM || {};
 
   // parseRow reads one offer, or returns null for a row naming no product and
   // for one the catalog cannot be asked about.
-  function parseRow(row, languageFilter) {
+  function parseRow(row) {
     var article = ARTICLE_RE.exec(row.id || "");
     if (!article) {
       return null;
@@ -156,13 +156,6 @@ globalThis.MKM = globalThis.MKM || {};
     var tail = product[2].split("/");
     var nameSlug = tail.length > 1 ? tail[1] : tail[0];
     var editionSlug = tail.length > 1 ? tail[0] : "";
-
-    if (languageFilter) {
-      var language = LANGUAGE_RE.exec(href);
-      if (language && language[1] !== languageFilter) {
-        return null;
-      }
-    }
 
     var titles = titlesOf(row);
     for (var i = 0; i < SKIPPED.length; i++) {
@@ -203,6 +196,11 @@ globalThis.MKM = globalThis.MKM || {};
       articleID: article[1],
       // Kept as the page wrote them; the conversion needs a rate the parse
       // has no business fetching.
+      // Cardmarket's own id for the language the listing is in, or "" where
+      // the link names none. Reported rather than filtered on: the CSV has
+      // no language column and the upload has nothing to read one into, so
+      // the caller is told what it is taking rather than quietly given less.
+      language: (LANGUAGE_RE.exec(href) || ["", ""])[1],
       price: priced ? normalizeAmount(priced[1]) : "",
       currency: priced ? MKM.currencyOf(priced[2]) : "",
     };
@@ -210,12 +208,12 @@ globalThis.MKM = globalThis.MKM || {};
 
   // parseOffers reads every offer on the page, once each. A row repeated
   // under the same article id is the same offer drawn twice.
-  MKM.parseOffers = function (root, languageFilter) {
+  MKM.parseOffers = function (root) {
     var rows = root.querySelectorAll('[id^="stockRow"]');
     var seen = Object.create(null);
     var offers = [];
     for (var i = 0; i < rows.length; i++) {
-      var offer = parseRow(rows[i], languageFilter);
+      var offer = parseRow(rows[i]);
       if (!offer || seen[offer.articleID]) {
         continue;
       }
@@ -227,6 +225,21 @@ globalThis.MKM = globalThis.MKM || {};
 
   // countRows says how many offers the page holds at all, so the caller can
   // tell "no offers here" from "every offer was skipped".
+  // ENGLISH is Cardmarket's own id for it, as its product links spell it.
+  MKM.ENGLISH = "1";
+
+  // foreignCount says how many of these the upload would read as English
+  // without being told otherwise.
+  MKM.foreignCount = function (offers) {
+    var foreign = 0;
+    for (var i = 0; i < offers.length; i++) {
+      if (offers[i].language && offers[i].language !== MKM.ENGLISH) {
+        foreign++;
+      }
+    }
+    return foreign;
+  };
+
   MKM.countRows = function (root) {
     return root.querySelectorAll('[id^="stockRow"]').length;
   };
