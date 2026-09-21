@@ -76,23 +76,20 @@ describe("where the extension runs", () => {
   const manifest = JSON.parse(
     readFileSync(new URL("../manifest.json", import.meta.url), "utf8")
   );
-  const upload = manifest.content_scripts.find((cs) =>
-    cs.matches.some((m) => m.includes("mtgban"))
-  );
 
-  test("the upload half covers the bare domain as well as a subdomain", () => {
-    // Magic is the default deployment and answers at mtgban.com;
-    // magic.mtgban.com redirects there. Matching only "*.mtgban.com" leans on
-    // a reading of the pattern spec, and the bare domain is the one game most
-    // people will try first.
-    expect(upload.matches).toContain("https://mtgban.com/upload*");
-    expect(upload.matches).toContain("https://*.mtgban.com/upload*");
+  test("only on a seller's offers pages, and nowhere else", () => {
+    // The site receives its own rows now, on a page it owns, so this runs on
+    // Cardmarket and has no business anywhere else. A host creeping back in
+    // is a permission creeping back in.
+    expect(manifest.content_scripts.length).toBe(1);
+    const hosts = manifest.content_scripts[0].matches;
+    expect(hosts.every((m) => m.startsWith("https://www.cardmarket.com/"))).toBe(true);
+    expect(hosts.every((m) => m.includes("/Users/*/Offers/"))).toBe(true);
   });
 
-  test("the Cardmarket half stays on sellers' offers pages", () => {
-    const offers = manifest.content_scripts.find((cs) =>
-      cs.matches.some((m) => m.includes("cardmarket"))
-    );
-    expect(offers.matches.every((m) => m.includes("/Users/*/Offers/"))).toBe(true);
+  test("and asks for no permissions at all", () => {
+    expect(manifest.permissions).toBeUndefined();
+    expect(manifest.host_permissions).toBeUndefined();
+    expect(manifest.background).toBeUndefined();
   });
 });

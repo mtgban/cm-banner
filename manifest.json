@@ -36,19 +36,6 @@
         "src/content.css"
       ],
       "run_at": "document_idle"
-    },
-    {
-      "matches": [
-        "https://mtgban.com/upload*",
-        "https://*.mtgban.com/upload*"
-      ],
-      "js": [
-        "src/fill.js"
-      ],
-      "css": [
-        "src/fill.css"
-      ],
-      "run_at": "document_start"
     }
   ]
 }

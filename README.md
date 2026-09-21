@@ -128,53 +128,33 @@ Extensions* turned on, which Safari resets when it quits.
 ## Send to BAN
 
 Each game is served by its own deployment, so the rows go to the upload that
-knows the cards: a Lorcana offers page opens `lorcana.mtgban.com/upload`, a
-Pokemon one `pokemon.mtgban.com/upload`, and so on. Magic is the exception —
-it is the default deployment and answers at `mtgban.com/upload`, with
-`magic.mtgban.com` redirecting there.
+knows the cards: a Lorcana offers page opens `lorcana.mtgban.com`, a Pokemon
+one `pokemon.mtgban.com`, and so on. Magic is the exception — it is the default
+deployment and answers at `mtgban.com`, with `magic.mtgban.com` redirecting
+there.
 
 They are **not** posted there. The upload needs your session, and the site's
 cookie is same-site, so a request made from cardmarket.com would arrive without
-it and be refused. So the page does its own upload, from its own origin, with
-its own session — the extension only puts the rows in front of it.
+it and be refused.
 
-It does that by handing the page a **file**, as though one had been picked from
-disk: the CSV becomes a `File` on the page's own file input. That is the path
-the page is built around — its input carries a handler that names the file on
-screen, clears the other sources, and enables the submit buttons, which start
-disabled. Filling the textarea instead sets a value the page never hears about
-and leaves Upload greyed out.
+Instead the site has a page for being handed a list: `/upload/handoff`. Opening
+it is an ordinary navigation, so it carries your session, and it does its own
+uploading. This extension opens that page and passes it the rows — it reaches
+into no form of the site's own, so a redesign there is not a break here.
 
-The upload page is opened by the click that asks for it, so the two windows can
-speak: the upload page says when it is listening, and the rows are passed to
-that window and no other. There is no deadline on that — how long the page
-takes to load is the network's business. Both ends check who they are talking to — the
-Cardmarket tab accepts only the window it opened at the host it opened, and the
-upload page accepts only `https://www.cardmarket.com` from its opener.
-
-The page's own Upload button is then pressed, so the rows are valued without
-another click. That button carries the page's submitting logic on an onclick,
-so it is clicked rather than the form being submitted directly — the upload
-runs exactly as it would if you had picked the file and pressed it yourself.
-
-If the button is not ready for any reason, the file is left in the picker and
-the banner says to press it.
-
-The upload page is visible while this happens, and deliberately so. An upload
-of a whole collection takes as long as the matching takes, and a page covered
-over for those seconds cannot be told from one that has broken. The handoff
-runs as early as the form exists, so the form itself is on screen for about as
-long as it takes to load.
+Both ends check who they are talking to. This end accepts only the window it
+opened, at an mtgban host; the site's page accepts only the origins it lists,
+from the window that opened it.
 
 ## Permissions
 
-None. There is no background script, no storage, and no `tabs` permission —
-the upload page is opened by your own click, and the rows travel between the
-two windows directly.
+None, and only one host. There is no background script, no storage, and no
+`tabs` permission — the handoff page is opened by your own click, and the rows
+travel between the two windows directly.
 
-The extension runs on two hosts: Cardmarket sellers' offers pages, and
-`*.mtgban.com/upload`. It reaches the network once per export, for the
-exchange-rate feed on jsDelivr, and sends nothing with that request.
+The extension runs on Cardmarket sellers' offers pages and nowhere else. It
+reaches the network once per export, for the exchange-rate feed on jsDelivr,
+and sends nothing with that request.
 
 ## Limitations
 

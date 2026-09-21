@@ -2,21 +2,24 @@
 //
 // No extension API is used and no permission is asked for. The parse is a
 // DOM read, the download is a blob and an anchor, and the rows reach the
-// upload page through postMessage to the window this one opened - all plain
-// web platform.
+// site through postMessage to the window this one opened - all plain web
+// platform.
 //
 // They are not posted across origins. The upload needs the session, the
 // site's cookie is same-site, and a request made from here would arrive
-// without it. Handing the rows to a tab the person is already signed in to
-// needs no cookie of ours, no CORS, and nothing stored anywhere.
+// without it. The site has a page for being handed a list instead:
+// /upload/handoff opens as an ordinary navigation, so it carries the
+// session, and it does its own uploading. Nothing here reaches into a form
+// that belongs to somebody else.
 
 (function (MKM) {
   "use strict";
 
   var PANEL_ID = "cm-banner";
   // What the two halves of the handoff say to each other.
-  var READY = "cm-banner-ready";
-  var ROWS = "cm-banner-rows";
+  // The protocol the site's handoff page speaks.
+  var READY = "mtgban-handoff-ready";
+  var ROWS = "mtgban-handoff-rows";
 
   // Each game is served by its own deployment. Magic is the default one and
   // answers at the bare domain: magic.mtgban.com redirects there, which
@@ -58,7 +61,7 @@
 
   function uploadURL(game) {
     var host = HOSTS[game];
-    return host ? "https://" + host + "/upload" : "";
+    return host ? "https://" + host + "/upload/handoff" : "";
   }
 
   function today() {
@@ -134,7 +137,7 @@
         // own prices rather than the seller's, which is a different answer.
         note += ", " + unpriced + " unpriced";
       }
-      return { csv: MKM.toCSV(offers), note: note };
+      return { csv: MKM.toCSV(offers), note: note, count: offers.length };
     });
   }
 
@@ -165,14 +168,12 @@
     });
   }
 
-  // sendToBan hands the rows to the upload page directly, window to window.
+  // sendToBan hands the rows to the site's handoff page, window to window.
   //
-  // Nothing is stored and nothing is posted across origins. The upload page
-  // is opened from the click that asked for it, so it keeps a handle on this
-  // one; its own script says when it is listening, and the rows are passed to
-  // that window and no other. A cross-origin POST would have to carry the
-  // session, and the site's cookie is same-site, so it would arrive
-  // unauthenticated.
+  // That page is the site's own and does its own uploading, so nothing here
+  // has to know the shape of a form that is not ours. It is opened from the
+  // click that asked for it, so it keeps a handle on this window; it says
+  // when it is listening, and the rows go to that window and no other.
   function sendToBan(panel) {
     var game = gameFromPath(location.pathname);
     var url = uploadURL(game);
@@ -199,8 +200,10 @@
         window.removeEventListener("message", onMessage);
         // Answered to the origin that spoke, which is where the page
         // actually ended up rather than where it was sent.
+        // The count goes with them: the page receives text, and text does
+        // not say whether its first line is a header or a card.
         opened.postMessage(
-          { type: ROWS, csv: done.csv, name: filename(game) },
+          { type: ROWS, csv: done.csv, rows: done.count },
           event.origin
         );
         say(panel, done.note + " sent to " + new URL(event.origin).hostname);
