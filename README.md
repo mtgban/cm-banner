@@ -152,8 +152,13 @@ takes to load is the network's business. Both ends check who they are talking to
 Cardmarket tab accepts only the window it opened at the host it opened, and the
 upload page accepts only `https://www.cardmarket.com` from its opener.
 
-Nothing is submitted for you. The page's own Upload button is left for you to
-press, because sending a collection off to be valued is your decision.
+The page's own Upload button is then pressed, so the rows are valued without
+another click. That button carries the page's submitting logic on an onclick,
+so it is clicked rather than the form being submitted directly — the upload
+runs exactly as it would if you had picked the file and pressed it yourself.
+
+If the button is not ready for any reason, the file is left in the picker and
+the banner says to press it.
 
 ## Permissions
 
