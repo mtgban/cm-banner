@@ -13,7 +13,7 @@
     <img src="https://product-images.s3.cardmarket.com/1/ULG/10601/10601.jpg" alt="">
     <span class="badge" data-bs-original-title="Near Mint">NM</span>
     <span class="item-count small text-end">3</span>
-    <span>0,45 €</span>
+    <span class="color-primary">0,45 €</span>
   </div>
 
   <!-- Foil, and a tooltip Bootstrap has not swapped yet so the grade is
@@ -68,6 +68,37 @@
     <a href="https://www.cardmarket.com/en/Magic/Products/Singles/Urzas-Legacy/Thornwind-Faeries?language=1">Thornwind Faeries</a>
     <span class="badge" data-bs-original-title="Near Mint">NM</span>
     <span class="item-count small text-end">3</span>
+  </div>
+
+  <!-- The shape that broke reading the price off the row's own text: the
+       quantity is written immediately before the price, so flattening the
+       row reads "1" + "0,05 EUR" as ten euros and five cents. -->
+  <div id="stockRow2060000003" class="row g-0 article-row">
+    <a href="https://www.cardmarket.com/en/Magic/Products/Singles/Urzas-Legacy/Fog-Elemental?language=1">Fog Elemental</a>
+    <img src="https://product-images.s3.cardmarket.com/1/ULG/10555/10555.jpg" alt="">
+    <span class="badge" data-bs-original-title="Good">GD</span>
+    <span class="item-count small text-end">1</span>
+    <span class="color-primary small fw-bold">0,05 €</span>
+    <span class="color-primary small fw-bold">0,05 €</span>
+  </div>
+
+  <!-- Sealed. Cardmarket files it under its own category, not Singles, and
+       a box has no condition to grade. It is still an offer, and the upload
+       tells sealed from a card by what the id resolves to. -->
+  <div id="stockRow2060000001" class="row g-0 article-row">
+    <a href="https://www.cardmarket.com/en/Magic/Products/Booster-Boxes/Bloomburrow/Bloomburrow-Play-Booster-Box?language=1">Bloomburrow Play Booster Box</a>
+    <img src="https://product-images.s3.cardmarket.com/1/BLB/765432/765432.jpg" alt="">
+    <span class="item-count small text-end">1</span>
+    <span class="price">229,90 &euro;</span>
+  </div>
+
+  <!-- A British shelf quotes pounds, and the thousands are grouped with the
+       full stop the decimal comma leaves free. -->
+  <div id="stockRow2060000002" class="row g-0 article-row">
+    <a href="https://www.cardmarket.com/en/Magic/Products/Sealed-Products/Alpha/Alpha-Starter-Box?language=1">Alpha Starter Box</a>
+    <img src="https://product-images.s3.cardmarket.com/1/LEA/999001/999001.jpg" alt="">
+    <span class="item-count small text-end">1</span>
+    <span class="price">1.250,00 &pound;</span>
   </div>
 
   <!-- No product link: nothing to name, so nothing is claimed. -->

@@ -7,10 +7,11 @@
 // meant to - it is carried so a row can be traced back to the offer it came
 // from, and the matcher ignores it.
 //
-// There is no price column. The upload compares a price it is given against
-// BAN's own, which are dollars, and every price on Cardmarket is euros: a
-// column here would be read as the currency it is not, and a valuation that
-// is wrong by an exchange rate is worse than one the site works out itself.
+// price_usd is the asking price converted. The upload holds a price it is
+// given against BAN's own, and those are dollars, while Cardmarket quotes
+// euros or pounds: the column has to name the currency it is read as, or a
+// valuation comes out wrong by an exchange rate. A row whose price could not
+// be converted honestly carries an empty one rather than a guess.
 
 globalThis.MKM = globalThis.MKM || {};
 
@@ -24,6 +25,7 @@ globalThis.MKM = globalThis.MKM || {};
     ["condition", "condition"],
     ["foil", "foil"],
     ["quantity", "quantity"],
+    ["price_usd", "priceUSD"],
     ["article_id", "articleID"],
   ];
 

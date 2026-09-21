@@ -8,19 +8,18 @@ describe("the columns", () => {
   // article_id reaches nothing, which is why it is safe to carry.
   test("the header is the contract", () => {
     expect(MKM.csvColumns().join(",")).toBe(
-      "mcm_id,card_name,edition,condition,foil,quantity,article_id"
+      "mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id"
     );
   });
 
-  test("no column would be read as a price", () => {
-    // The upload compares a price it is given against mtgban's own, which
-    // are dollars, and every price on Cardmarket is euros. A column the
-    // matcher reads as a price would be read as the wrong currency, so
-    // there is not one.
-    for (const name of MKM.csvColumns()) {
-      expect(name.includes("price")).toBe(false);
-      expect(name.includes("low")).toBe(false);
-    }
+  test("exactly one column is read as a price, and it names its currency", () => {
+    // The upload reads a price column as dollars. Exactly one column may
+    // reach it, and its name has to say which currency it holds, because
+    // Cardmarket quotes euros and pounds.
+    const priced = MKM.csvColumns().filter(
+      (name) => name.includes("price") || name.includes("low")
+    );
+    expect(priced).toEqual(["price_usd"]);
   });
 });
 
@@ -34,12 +33,20 @@ describe("the writing", () => {
         condition: "NM",
         foil: "",
         quantity: "2",
+        priceUSD: "1.50",
         articleID: "9",
       },
     ]);
     expect(csv.split("\r\n")[1]).toBe(
-      '1,"Bob, the ""Builder""","Set\nTwo",NM,,2,9'
+      '1,"Bob, the ""Builder""","Set\nTwo",NM,,2,1.50,9'
     );
+  });
+
+  test("a row whose price could not be converted carries an empty one", () => {
+    const csv = MKM.toCSV([
+      { mcmID: "1", cardName: "X", quantity: "1", articleID: "9" },
+    ]);
+    expect(csv.split("\r\n")[1]).toBe("1,X,,,,1,,9");
   });
 
   test("the last row ends like every other one", () => {
@@ -56,6 +63,10 @@ describe("end to end", () => {
     const offers = parse(load("offers.html"), "");
     const lines = MKM.toCSV(offers).trimEnd().split("\r\n");
     expect(lines.length).toBe(offers.length + 1);
-    expect(lines[1]).toBe("10601,Thornwind Faeries,Urzas Legacy,NM,,3,2058737078");
+    // No rates were fetched here, so the price stays empty - the row is
+    // still worth uploading without the seller's asking price.
+    expect(lines[1]).toBe(
+      "10601,Thornwind Faeries,Urzas Legacy,NM,,3,,2058737078"
+    );
   });
 });

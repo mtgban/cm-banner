@@ -33,9 +33,20 @@ globalThis.MKM = globalThis.MKM || {};
   var SKIPPED = ["Altered", "Signed", "Inked"];
 
   var ARTICLE_RE = /stockRow(\d+)/;
-  var PRODUCT_RE = /\/Products\/Singles\/([^/?"<& ]+)\/([^/?"<& ]+)/;
+  // Cardmarket files an offer under the category it sells it in:
+  // Singles for cards, Sealed-Products, Boosters, Booster-Boxes and
+  // Sets-Lots-Collections for the rest. The category is not read - the
+  // upload tells a sealed product from a card by what the id resolves
+  // to - but it has to be allowed through for sealed to arrive at all.
+  var PRODUCT_RE = /\/Products\/[^/?"<& ]+\/([^/?"<& ]+)\/([^/?"<& ]+)/;
   var LANGUAGE_RE = /[?&]language=(\d+)/;
   var QTY_RE = /^\s*(\d+)/;
+  // Cardmarket writes a decimal comma, and the symbol says which currency
+  // the shelf quotes in. The price has to be the whole of what its element
+  // says: read off the row's flattened text instead, a quantity sitting
+  // beside the price is glued to the front of it, and "1" before "0,05 EUR"
+  // reads as ten euros and five cents.
+  var PRICE_RE = /^(\d[\d.,]*)\s*(\u20ac|\u00a3|\$)$/;
   // The product id is the image's own file name:
   // ".../1/ULG/10601/10601.jpg" is product 10601. Reading the last path
   // element rather than a fixed position in the path keeps it working
@@ -73,6 +84,38 @@ globalThis.MKM = globalThis.MKM || {};
     return "";
   }
 
+  // ownText is what an element says itself, without what its children say.
+  function ownText(element) {
+    var text = "";
+    var children = element.childNodes;
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].nodeType === 3) {
+        text += children[i].textContent;
+      }
+    }
+    return text.trim();
+  }
+
+  // priceOf finds the element whose whole text is a price. The row shows the
+  // unit price before any line total, so the first one found is the asking
+  // price.
+  function priceOf(row) {
+    var elements = row.querySelectorAll("*");
+    for (var i = 0; i < elements.length; i++) {
+      var found = PRICE_RE.exec(ownText(elements[i]));
+      if (found) {
+        return found;
+      }
+    }
+    return null;
+  }
+
+  // normalizeAmount reads the number Cardmarket writes: a decimal comma,
+  // and a full stop grouping the thousands above it.
+  function normalizeAmount(written) {
+    return written.replace(/\./g, "").replace(",", ".");
+  }
+
   // slugToName turns a product slug back into the card's name, the way
   // mkmhtml2csv does: the version suffix goes, "-s-" is the apostrophe it
   // stands for, and the rest of the dashes were spaces.
@@ -91,7 +134,7 @@ globalThis.MKM = globalThis.MKM || {};
       return null;
     }
 
-    var link = row.querySelector('a[href*="/Products/Singles/"]');
+    var link = row.querySelector('a[href*="/Products/"]');
     if (!link) {
       return null;
     }
@@ -123,6 +166,7 @@ globalThis.MKM = globalThis.MKM || {};
       }
     }
 
+    var priced = priceOf(row);
     var count = row.querySelector(".item-count");
     var quantity = "1";
     if (count) {
@@ -140,6 +184,10 @@ globalThis.MKM = globalThis.MKM || {};
       foil: titles.indexOf("Foil") !== -1 ? "foil" : "",
       quantity: quantity,
       articleID: article[1],
+      // Kept as the page wrote them; the conversion needs a rate the parse
+      // has no business fetching.
+      price: priced ? normalizeAmount(priced[1]) : "",
+      currency: priced ? MKM.currencyOf(priced[2]) : "",
     };
   }
 

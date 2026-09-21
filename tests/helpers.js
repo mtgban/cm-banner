@@ -10,7 +10,7 @@ function source(name) {
 
 // The scripts attach to globalThis.MKM, so they are run once, here.
 globalThis.MKM = globalThis.MKM || {};
-for (const name of ["parse.js", "csv.js"]) {
+for (const name of ["rates.js", "parse.js", "csv.js"]) {
   new Function("globalThis", source(name))(globalThis);
 }
 

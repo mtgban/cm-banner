@@ -7,12 +7,12 @@ const byArticle = Object.fromEntries(offers.map((o) => [o.articleID, o]));
 
 describe("what the page holds", () => {
   test("every stockRow is counted, repeats included", () => {
-    expect(globalThis.MKM.countRows(doc)).toBe(9);
+    expect(globalThis.MKM.countRows(doc)).toBe(12);
   });
 
   test("a row is kept once, and only when it names a product", () => {
-    // 9 rows, less the signed one, the repeat and the one with no link.
-    expect(offers.length).toBe(6);
+    // 12 rows, less the signed one, the repeat and the one with no link.
+    expect(offers.length).toBe(9);
   });
 
   test("a signed listing is refused", () => {
@@ -98,5 +98,44 @@ describe("the language filter", () => {
 
   test("no filter keeps every language", () => {
     expect(offers.some((o) => o.articleID === "2058744495")).toBe(true);
+  });
+});
+
+describe("what is not a single", () => {
+  test("a sealed product is an offer like any other", () => {
+    // Cardmarket files sealed under its own category rather than Singles,
+    // and the upload tells it from a card by what the id resolves to, so
+    // the parse only has to let it through.
+    const box = byArticle["2060000001"];
+    expect(box.mcmID).toBe("765432");
+    expect(box.cardName).toBe("Bloomburrow Play Booster Box");
+    expect(box.edition).toBe("Bloomburrow");
+  });
+
+  test("a box has no grade, and none is invented for it", () => {
+    expect(byArticle["2060000001"].condition).toBe("");
+  });
+});
+
+describe("the price as the page wrote it", () => {
+  test("a decimal comma is read as a decimal point", () => {
+    expect(byArticle["2060000001"].price).toBe("229.90");
+    expect(byArticle["2060000001"].currency).toBe("eur");
+  });
+
+  test("a grouped thousand is not read as a decimal", () => {
+    expect(byArticle["2060000002"].price).toBe("1250.00");
+    expect(byArticle["2060000002"].currency).toBe("gbp");
+  });
+
+  test("a quantity beside the price is not part of it", () => {
+    // The row reads "1" then "0,05 EUR"; flattened that is "10,05 EUR".
+    expect(byArticle["2060000003"].price).toBe("0.05");
+    expect(byArticle["2060000003"].currency).toBe("eur");
+  });
+
+  test("a row showing no price carries none", () => {
+    expect(byArticle["2058743685"].price).toBe("");
+    expect(byArticle["2058743685"].currency).toBe("");
   });
 });
