@@ -157,6 +157,16 @@ failure is visible rather than silent: the panel reports either "No offers on
 this page" or "None of the N offers here could be read", and the second of
 those means the markup moved.
 
+## The icon
+
+`icons/` is the BAN logo from the website (`img/logo/ban-round.png`), at the
+sizes the browsers ask for. `icon-241.png` is that original, kept so the rest
+can be made again:
+
+```
+for s in 16 32 48 128; do sips -Z $s icons/icon-241.png --out icons/icon-$s.png; done
+```
+
 ## Development
 
 ```
