@@ -118,9 +118,14 @@ globalThis.MKM = globalThis.MKM || {};
     return written.replace(/\./g, "").replace(",", ".");
   }
 
-  // slugToName turns a product slug back into the card's name, the way
-  // mkmhtml2csv does: the version suffix goes, "-s-" is the apostrophe it
-  // stands for, and the rest of the dashes were spaces.
+  // slugToName turns a product slug back into the card's name. It is the
+  // fallback, not the first answer: a slug is lossy, and the link's own text
+  // is the name Cardmarket displays. "Adewale Breaker of Chains" is the slug
+  // for "Adéwalé, Breaker of Chains", and "Aether Tide" is slugged "-ther-
+  // Tide" - the ligature dropped outright, leaving a dash the name never had.
+  //
+  // The version suffix goes, "-s-" is the apostrophe it stands for, and the
+  // rest of the dashes were spaces.
   function slugToName(slug) {
     return slug
       .replace(/-V\d+$/, "")
@@ -174,6 +179,10 @@ globalThis.MKM = globalThis.MKM || {};
       }
     }
 
+    // The link says the card's name in full, punctuation and all; the slug
+    // it points at is what survived being made URL-safe.
+    var linked = (link.textContent || "").replace(/\s+/g, " ").trim();
+
     var priced = priceOf(row);
     var count = row.querySelector(".item-count");
     var quantity = "1";
@@ -186,7 +195,7 @@ globalThis.MKM = globalThis.MKM || {};
 
     return {
       mcmID: firstMatch(row.outerHTML, [IMG_RE, IMG_LEGACY_RE]),
-      cardName: slugToName(nameSlug),
+      cardName: linked || slugToName(nameSlug),
       edition: editionSlug.replace(/-/g, " "),
       condition: condition,
       foil: titles.indexOf("Foil") !== -1 ? "foil" : "",

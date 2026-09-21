@@ -38,11 +38,19 @@ mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id
 ```
 
 `mcm_id` is the Cardmarket product id, taken from the product image's own file
-name, which the site resolves straight to a card. When a row carries none — as
-the third one above does — the upload falls back to matching on `card_name` and
-`edition`, so the row still lands. That fallback is why the slugs losing their
-punctuation does not matter: `Urzas Legacy` and `Tolsimir Friend to Wolves`
-both normalize on the way in.
+name, which the site resolves straight to a card. A row whose thumbnail has not
+loaded carries none — it happens — and the upload falls back to matching on
+`card_name` and `edition`, so the row still lands.
+
+`card_name` is the name the listing's own link displays, not the slug it points
+at. A slug is what survived being made URL-safe: Cardmarket writes
+`Adéwalé, Breaker of Chains` as `Adewale-Breaker-of-Chains`, and drops the
+ligature from `Æther Tide` outright, leaving `-ther-Tide` — a name that begins
+with the space that dash becomes. The link's text keeps the accents, the
+commas and the colons.
+
+`edition` still comes from the slug, which loses punctuation the same way
+(`Urzas Legacy`); that one is harmless, because the matcher normalizes it.
 
 `article_id` is the offer's own id on Cardmarket. The site ignores it; it is
 carried so a row can be traced back to the listing it came from.

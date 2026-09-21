@@ -7,12 +7,12 @@ const byArticle = Object.fromEntries(offers.map((o) => [o.articleID, o]));
 
 describe("what the page holds", () => {
   test("every stockRow is counted, repeats included", () => {
-    expect(globalThis.MKM.countRows(doc)).toBe(12);
+    expect(globalThis.MKM.countRows(doc)).toBe(14);
   });
 
   test("a row is kept once, and only when it names a product", () => {
-    // 12 rows, less the signed one, the repeat and the one with no link.
-    expect(offers.length).toBe(9);
+    // 14 rows, less the signed one, the repeat and the one with no link.
+    expect(offers.length).toBe(11);
   });
 
   test("a signed listing is refused", () => {
@@ -37,8 +37,30 @@ describe("the fields a row gives up", () => {
     expect(byArticle["2057222480"].cardName).toBe("Mirri's Guile");
   });
 
-  test("a version suffix is not part of the name", () => {
-    expect(byArticle["2051859187"].cardName).toBe("Tuinvale Treefolk Oaken Boon");
+  test("the name is the link's own text, not the slug", () => {
+    // The slug is what survived being made URL-safe; the link says the name.
+    expect(byArticle["2051859187"].cardName).toBe(
+      "Tuinvale Treefolk // Oaken Boon (V.2)"
+    );
+  });
+
+  test("a ligature the slug dropped is still in the name", () => {
+    // Cardmarket slugs this one "-ther-Tide": read from there it would begin
+    // with the space that dash became.
+    expect(byArticle["2058750013"].cardName).toBe("Aether Tide");
+  });
+
+  test("accents and commas survive", () => {
+    expect(byArticle["2052873049"].cardName).toBe(
+      "Ad\u00e9wal\u00e9, Breaker of Chains (V.1)"
+    );
+  });
+
+  test("the slug is still the fallback when a link says nothing", () => {
+    expect(globalThis.MKM.slugToName("Mirri-s-Guile")).toBe("Mirri's Guile");
+    expect(globalThis.MKM.slugToName("Sorcerous-Spyglass-V2")).toBe(
+      "Sorcerous Spyglass"
+    );
   });
 
   test("the edition is the slug with its dashes opened up", () => {
