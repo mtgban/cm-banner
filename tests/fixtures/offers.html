@@ -1,0 +1,86 @@
+<!-- Stands in for a Cardmarket offers page, in the shape a real saved one
+     has: the row is a div whose id is stockRow<articleId>, the product link
+     carries the language and a condition floor, the grade is a tooltip, and
+     the product id is the image's own file name.
+
+     Each row is here for something the parser has to get right. The checks
+     in parse.test.js name which. -->
+
+<div class="table-body">
+  <!-- Plain offer. The id is the image file name, not a fixed path depth. -->
+  <div id="stockRow2058737078" class="row g-0 article-row">
+    <a href="https://www.cardmarket.com/en/Magic/Products/Singles/Urzas-Legacy/Thornwind-Faeries?language=1&amp;minCondition=4">Thornwind Faeries</a>
+    <img src="https://product-images.s3.cardmarket.com/1/ULG/10601/10601.jpg" alt="">
+    <span class="badge" data-bs-original-title="Near Mint">NM</span>
+    <span class="item-count small text-end">3</span>
+    <span>0,45 €</span>
+  </div>
+
+  <!-- Foil, and a tooltip Bootstrap has not swapped yet so the grade is
+       still in title. Its name carries a version suffix. -->
+  <div id="stockRow2051859187" class="row g-0 article-row">
+    <a href="https://www.cardmarket.com/en/Magic/Products/Singles/Throne-of-Eldraine-Extras/Tuinvale-Treefolk-Oaken-Boon-V2?language=1">Tuinvale Treefolk</a>
+    <img src="https://product-images.s3.cardmarket.com/1/ELD/401749/401749.jpg" alt="">
+    <span class="badge" title="Excellent">EX</span>
+    <span title="Foil">Foil</span>
+    <span class="item-count small text-end">1</span>
+  </div>
+
+  <!-- Light Played. Cardmarket's LP folds to HP, not MP: go-mtgban's own
+       scraper folds seven grades onto five and both played grades land on
+       HP. Calling this MP would hand the upload a better card than the
+       seller listed. -->
+  <div id="stockRow2058725535" class="row g-0 article-row">
+    <a href="https://www.cardmarket.com/en/Magic/Products/Singles/Urzas-Saga/Tolarian-Winds?language=1">Tolarian Winds</a>
+    <img src="https://product-images.s3.cardmarket.com/1/USG/10311/10311.jpg" alt="">
+    <span class="badge" data-bs-original-title="Light Played">LP</span>
+    <span class="item-count small text-end">2</span>
+  </div>
+
+  <!-- Good, which is the one grade that really is MP. -->
+  <div id="stockRow2058743685" class="row g-0 article-row">
+    <a href="https://www.cardmarket.com/en/Magic/Products/Singles/Ravnica-City-of-Guilds/Tunnel-Vision?language=1">Tunnel Vision</a>
+    <img src="https://product-images.s3.cardmarket.com/1/RAV/13573/13573.jpg" alt="">
+    <span class="badge" data-bs-original-title="Good">GD</span>
+    <span class="item-count small text-end">1</span>
+  </div>
+
+  <!-- Japanese. The parser can be asked for one language. -->
+  <div id="stockRow2058744495" class="row g-0 article-row">
+    <a href="https://www.cardmarket.com/en/Magic/Products/Singles/Streets-of-New-Capenna/Undercover-Operative?language=7">Undercover Operative</a>
+    <img src="https://product-images.s3.cardmarket.com/1/SNC/652171/652171.jpg" alt="">
+    <span class="badge" data-bs-original-title="Near Mint">NM</span>
+    <span class="item-count small text-end">1</span>
+  </div>
+
+  <!-- Signed: not the printing the catalog knows, so no id names it. -->
+  <div id="stockRow2058745758" class="row g-0 article-row">
+    <a href="https://www.cardmarket.com/en/Magic/Products/Singles/Modern-Horizons-2/Upheaval?language=1">Upheaval</a>
+    <img src="https://product-images.s3.cardmarket.com/1/MH2/566430/566430.jpg" alt="">
+    <span class="badge" data-bs-original-title="Near Mint">NM</span>
+    <span class="badge" data-bs-original-title="Signed">Signed</span>
+    <span class="item-count small text-end">1</span>
+  </div>
+
+  <!-- The same offer drawn twice, as the page does for its own form
+       targets: counted once. -->
+  <div id="stockRow2058737078" class="row g-0 article-row">
+    <a href="https://www.cardmarket.com/en/Magic/Products/Singles/Urzas-Legacy/Thornwind-Faeries?language=1">Thornwind Faeries</a>
+    <span class="badge" data-bs-original-title="Near Mint">NM</span>
+    <span class="item-count small text-end">3</span>
+  </div>
+
+  <!-- No product link: nothing to name, so nothing is claimed. -->
+  <div id="stockRow2058699166" class="row g-0 article-row">
+    <span class="badge" data-bs-original-title="Near Mint">NM</span>
+    <span class="item-count small text-end">1</span>
+  </div>
+
+  <!-- No quantity shown and no image: quantity falls back to 1, the id is
+       absent, and the row still carries its name for the upload to match
+       on. The apostrophe the slug spells with "-s-" comes back. -->
+  <div id="stockRow2057222480" class="row g-0 article-row">
+    <a href="https://www.cardmarket.com/en/Magic/Products/Singles/Zendikar/Mirri-s-Guile">Mirri's Guile</a>
+    <span class="badge" data-bs-original-title="Poor">PO</span>
+  </div>
+</div>

@@ -1,0 +1,12 @@
+{
+  "name": "cm-banner",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Export a Cardmarket offers page as a CSV for upload to BAN",
+  "scripts": {
+    "test": "bun test tests/"
+  },
+  "devDependencies": {
+    "happy-dom": "^15.11.7"
+  }
+}
