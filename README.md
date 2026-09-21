@@ -116,24 +116,24 @@ Each game is served by its own deployment, so the rows go to the upload that
 knows the cards: a Magic offers page opens `magic.mtgban.com/upload`, a Lorcana
 one `lorcana.mtgban.com/upload`, and so on for the seven.
 
-They are **not** posted there. The site sends no CORS headers and its session
-cookie is same-site, so a request made from cardmarket.com would arrive
-unauthenticated and be refused — and a cross-origin write endpoint is not a
-thing worth adding for this. Instead the CSV is left in the extension's own
-storage, the upload page is opened, and a second content script puts the rows
-in the form on a tab you are already signed in to.
+They are **not** posted there. The upload needs your session, and the site's
+cookie is same-site, so a request made from cardmarket.com would arrive without
+it and be refused. Instead the upload page is opened by the click that asked
+for it, which leaves the two windows able to speak: the upload page says when
+it is listening, and the rows are passed to that window and no other.
+
+Both ends check who they are talking to — the Cardmarket tab only accepts the
+window it opened at the host it opened, and the upload page only accepts
+`https://www.cardmarket.com` from the window that opened it.
 
 Nothing is submitted for you. The page's own Upload button is left for you to
 press, because sending a collection off to be valued is your decision.
 
-The handoff is taken once and expires after two minutes, so a reload will not
-refill a form you have since edited or sent.
-
 ## Permissions
 
-`storage`, and only to carry one CSV from the Cardmarket tab to the upload
-tab. There is no background script and no `tabs` permission — the upload page
-is opened by the click that asked for it.
+None. There is no background script, no storage, and no `tabs` permission —
+the upload page is opened by your own click, and the rows travel between the
+two windows directly.
 
 The extension runs on two hosts: Cardmarket sellers' offers pages, and
 `*.mtgban.com/upload`. It reaches the network once per export, for the

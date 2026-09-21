@@ -1,12 +1,14 @@
 // Puts an export control on a Cardmarket offers page.
 //
-// The parse is a DOM read and the download is a blob and an anchor, both
-// plain web platform. The one extension API used is storage, and only to
-// hand a finished CSV to the upload page in the other tab: a direct POST
-// cannot work, because the site sends no CORS headers and its session cookie
-// is same-site, so a cross-origin request from here arrives unauthenticated.
-// Filling the form on a tab the person is already signed in to asks for
-// nothing and sends nothing anywhere.
+// No extension API is used and no permission is asked for. The parse is a
+// DOM read, the download is a blob and an anchor, and the rows reach the
+// upload page through postMessage to the window this one opened - all plain
+// web platform.
+//
+// They are not posted across origins. The upload needs the session, the
+// site's cookie is same-site, and a request made from here would arrive
+// without it. Handing the rows to a tab the person is already signed in to
+// needs no cookie of ours, no CORS, and nothing stored anywhere.
 
 (function (MKM) {
   "use strict";
@@ -14,14 +16,14 @@
   var PANEL_ID = "cm-banner";
   // Cardmarket's own id for English, as its product links spell it.
   var ENGLISH = "1";
-  // Where the finished CSV waits for the upload page to pick it up.
-  var HANDOFF = "cm-banner-handoff";
+  // What the two halves of the handoff say to each other.
+  var READY = "cm-banner-ready";
+  var ROWS = "cm-banner-rows";
+  // How long the upload page is given to say it is listening.
+  var HANDSHAKE_MS = 20000;
 
-  // Firefox and Safari expose browser; Chrome exposes chrome.
-  var api = globalThis.browser || globalThis.chrome;
-
-  // Each game is served by its own deployment, so the upload that knows a
-  // card is the one on that game's own host.
+  // Each game is served by its own deployment, so the rows go to the upload
+  // that knows the cards.
   var HOSTS = {
     magic: "magic",
     pokemon: "pokemon",
@@ -151,9 +153,14 @@
     });
   }
 
-  // sendToBan leaves the CSV where the upload page's own script will find it
-  // and opens that page. The window is opened from the click that asked for
-  // it, so no popup is blocked and no tabs permission is needed.
+  // sendToBan hands the rows to the upload page directly, window to window.
+  //
+  // Nothing is stored and nothing is posted across origins. The upload page
+  // is opened from the click that asked for it, so it keeps a handle on this
+  // one; its own script says when it is listening, and the rows are passed to
+  // that window and no other. A cross-origin POST would have to carry the
+  // session, and the site's cookie is same-site, so it would arrive
+  // unauthenticated.
   function sendToBan(panel) {
     var game = gameFromPath(location.pathname);
     var url = uploadURL(game);
@@ -161,18 +168,41 @@
       say(panel, "No BAN site for " + (game || "this page"));
       return;
     }
-    if (!api || !api.storage || !api.storage.local) {
-      say(panel, "Storage unavailable; use the CSV");
-      return;
-    }
+    var origin = new URL(url).origin;
 
     withCollected(panel, function (done) {
-      var payload = {};
-      payload[HANDOFF] = { csv: done.csv, at: Date.now(), game: game };
-      api.storage.local.set(payload, function () {
-        window.open(url, "_blank", "noopener");
-        say(panel, done.note + " sent to " + game + ".mtgban.com");
-      });
+      var opened = window.open(url, "_blank");
+      if (!opened) {
+        say(panel, "The upload page was blocked; use the CSV");
+        return;
+      }
+
+      var settled = false;
+      function onMessage(event) {
+        if (
+          event.origin !== origin ||
+          event.source !== opened ||
+          !event.data ||
+          event.data.type !== READY
+        ) {
+          return;
+        }
+        settled = true;
+        window.removeEventListener("message", onMessage);
+        opened.postMessage({ type: ROWS, csv: done.csv }, origin);
+        say(panel, done.note + " sent to " + new URL(url).hostname);
+      }
+
+      window.addEventListener("message", onMessage);
+      setTimeout(function () {
+        if (settled) {
+          return;
+        }
+        window.removeEventListener("message", onMessage);
+        // Said rather than left silent: the tab is open and empty, and the
+        // reason is usually that the extension is not running on it.
+        say(panel, "The upload page never answered; use the CSV");
+      }, HANDSHAKE_MS);
     });
   }
 
