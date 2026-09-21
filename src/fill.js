@@ -3,8 +3,8 @@
 // The rows are not posted across origins. The upload needs the session, the
 // site's cookie is same-site, and a request made from cardmarket.com would
 // arrive without it and be refused. So the page is left to do its own
-// upload, from its own origin, with its own session - the only thing done
-// here is putting the file in the picker for it.
+// upload, from its own origin, with its own session. What is done here is
+// putting the file in the picker and pressing the page's own button.
 //
 // A file rather than the textarea, because the page's file input carries an
 // onchange that wires the rest of its state: it names the file on screen,
@@ -13,8 +13,10 @@
 // about, and leaves Upload greyed out. An inline handler runs on an event
 // dispatched from here, so pressing the picker's own path is enough.
 //
-// Nothing is submitted. The page's Upload button is left for the person to
-// press, because sending a collection off to be valued is their decision.
+// The page's own Upload button is then pressed. It carries an onclick that
+// does the submitting - it clears the hidden mode flags, points the form at
+// this tab and submits it - so the button is clicked rather than the form
+// submitted directly, and the page uploads exactly as it would by hand.
 
 (function () {
   "use strict";
@@ -84,11 +86,28 @@
     return true;
   }
 
+  // submit presses the page's own Upload button. It starts disabled and is
+  // enabled by the file input's own handler, so a button still disabled here
+  // means the rows did not land where the page could see them.
+  function submit() {
+    var button = document.getElementById("submit_default");
+    if (!button || button.disabled) {
+      return false;
+    }
+    button.click();
+    return true;
+  }
+
+  // The rows are taken once. A second message, however it arrives, is not a
+  // second upload.
+  var taken = false;
+
   window.addEventListener("message", function (event) {
     // Three things have to hold: the right site said it, the window this one
     // was opened by said it, and it is the message this is waiting for.
     // Anything else on the page's message channel is not ours.
     if (
+      taken ||
       event.origin !== SENDER ||
       event.source !== opener ||
       !event.data ||
@@ -98,10 +117,18 @@
       return;
     }
 
+    taken = true;
     var rows = event.data.csv.trim().split("\n").length - 1;
     var filename = event.data.name || "cardmarket.csv";
 
     if (asFile(event.data.csv, filename)) {
+      if (submit()) {
+        banner("Uploading " + rows + " rows from Cardmarket…");
+        return;
+      }
+      // The file is in the picker and the page can see it, but its own
+      // button is not ready; leaving it to be pressed by hand beats
+      // pretending nothing happened.
       banner(rows + " rows from Cardmarket — press Upload when ready");
       return;
     }
