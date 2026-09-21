@@ -15,11 +15,14 @@
 // dispatched from here, so pressing the picker's own path is enough.
 //
 // This runs at document_start and acts as soon as the form exists, rather
-// than waiting for the page to fall idle. The empty form is not a page
-// anyone meant to look at - it is covered while the rows arrive, and what
-// draws next is the upload's own answer. Waiting for load would also let the
-// page restore a previous textarea out of localStorage, into a form that is
-// about to be submitted.
+// than waiting for the page to fall idle, so the form is on screen for as
+// little as there is to wait for. It is not hidden while that happens: an
+// upload of a whole collection takes as long as the matching takes, and a
+// page covered over for those seconds cannot be told from a page that has
+// broken.
+//
+// Running early also gets in before the page's own load handler restores a
+// previous textarea out of localStorage, into a form about to be submitted.
 
 (function () {
   "use strict";
@@ -28,8 +31,6 @@
   var ROWS = "cm-banner-rows";
   // The only page allowed to hand rows over.
   var SENDER = "https://www.cardmarket.com";
-  // While this is on the document, the page is covered. See fill.css.
-  var COVER = "cm-banner-receiving";
 
   var opener = window.opener;
   // Opened by hand rather than by the other half, or opened by a tab that has
@@ -38,15 +39,7 @@
     return;
   }
 
-  var root = document.documentElement;
-  root.classList.add(COVER);
-
-  function uncover() {
-    root.classList.remove(COVER);
-  }
-
   function banner(message) {
-    uncover();
     var note = document.getElementById("cm-banner-filled");
     if (!note) {
       note = document.createElement("div");
@@ -115,8 +108,7 @@
     var rows = csv.trim().split("\n").length - 1;
     if (asFile(csv, name || "cardmarket.csv")) {
       if (submit()) {
-        // Left covered: the form is on its way, and the next thing to draw
-        // is the answer rather than the question.
+        // The page takes it from here; what draws next is its own answer.
         return;
       }
       banner(rows + " rows from Cardmarket — press Upload when ready");
@@ -149,12 +141,6 @@
     if (waiting) {
       deliver(waiting.csv, waiting.name);
       waiting = null;
-      return;
-    }
-    if (!taken) {
-      // The form is up and the other half has said nothing. It answers the
-      // moment it hears, so silence by now means nothing is coming.
-      uncover();
     }
   });
 
@@ -177,6 +163,6 @@
   });
 
   // Asked as early as there is anything to ask with: the other half answers
-  // the moment it hears, and that is what keeps the empty form off the screen.
+  // the moment it hears, so the form is on screen for as little as possible.
   opener.postMessage({ type: READY }, SENDER);
 })();
