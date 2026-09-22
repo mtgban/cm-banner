@@ -474,8 +474,8 @@ site until they stopped answering.
 
 ### 6.4 The scope is the visitor's to choose
 
-The panel's heading is the control. It reads **BANNER - *all*** and
-clicking it reads **BANNER - *page***, the emphasised word being both the
+The panel's heading is the control. It reads **CM BANNER - *all offers*** and
+clicking it reads **CM BANNER - *this page only***, the emphasised word being both the
 thing that changes and the thing worth reading twice. Naming the
 wrong scope is how a twentieth of a collection gets uploaded as all of it,
 so the scope is never anywhere but in the sentence that describes what the

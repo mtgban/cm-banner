@@ -159,8 +159,8 @@
   // The label is the control. A checkbox beside it said the same thing
   // twice, in two places that could disagree.
   var SCOPES = [
-    { here: false, says: "all" },
-    { here: true, says: "page" },
+    { here: false, says: "all offers" },
+    { here: true, says: "this page only" },
   ];
 
   var scope = 0;
@@ -298,6 +298,15 @@
       partial: !!(walked.stopped || walked.capped),
     };
   }
+
+  // generation counts the reads, and bumping it is how one is abandoned.
+  //
+  // A fetch in flight cannot be recalled, so the read is not stopped so
+  // much as disowned: the walk asks between pages whether anyone still
+  // wants it, and everything that comes back late finds it is no longer
+  // the current read and says nothing. That is also what keeps a stopped
+  // read from turning the spinner off underneath the one after it.
+  var generation = 0;
 
   // read answers with the rows, or with null having already said why there
   // are none - or silently, if it was abandoned while it ran. It returns
@@ -554,7 +563,7 @@
     panel.id = PANEL_ID;
     panel.innerHTML =
       '<button type="button" class="cm-banner-label">' +
-      'BANNER - <b class="cm-banner-scope"></b>' +
+      'CM BANNER - <b class="cm-banner-scope"></b>' +
       "</button>" +
       '<div class="cm-banner-actions">' +
       '<button type="button" class="cm-banner-send">' + SEND + "</button>" +

@@ -1,0 +1,90 @@
+import { test, expect, describe } from "bun:test";
+import { mount, OFFERS } from "./panel.js";
+
+describe("the panel", () => {
+  test("it appears on a game BAN prices", () => {
+    expect(mount().panel).not.toBeNull();
+  });
+
+  test("and not on one it cannot send anywhere", () => {
+    // A panel whose main button can only apologise is worse than none.
+    const dead = mount({
+      url: "https://www.cardmarket.com/en/Digimon/Users/Seller/Offers/Singles",
+    });
+    expect(dead.panel).toBeNull();
+  });
+
+  test("the heading names the scope, and clicking it changes it", () => {
+    const it = mount();
+    expect(it.heading()).toBe("CM BANNER - all offers");
+    expect(it.scope()).toBe("all offers");
+    it.toggleScope();
+    expect(it.heading()).toBe("CM BANNER - this page only");
+    it.toggleScope();
+    expect(it.scope()).toBe("all offers");
+  });
+});
+
+describe("clicking send", () => {
+  test("one page opens the tab on the click itself", async () => {
+    // Nothing slow stands between the click and the window, because
+    // window.open needs that click.
+    const it = mount();
+    it.toggleScope();
+    it.send().click();
+    expect(it.opened[0]).toBe("https://mtgban.com/upload/handoff");
+  });
+
+  test("the whole list reads first and opens nothing yet", async () => {
+    const it = mount();
+    it.send().click();
+    expect(it.busy()).toBe(true);
+    expect(it.send().disabled).toBe(true);
+    await it.settle();
+    expect(it.opened).toEqual([]);
+    // The button becomes the second click.
+    expect(it.send().textContent).toBe("Send 11 rows");
+    expect(it.busy()).toBe(false);
+    expect(it.send().disabled).toBe(false);
+  });
+
+  test("and the second click hands them over", async () => {
+    const it = mount();
+    it.send().click();
+    await it.settle();
+    it.send().click();
+    expect(it.opened[0]).toBe("https://mtgban.com/upload/handoff");
+  });
+
+  test("rows in hand are dropped when the scope changes", async () => {
+    const it = mount();
+    it.send().click();
+    await it.settle();
+    expect(it.send().textContent).toBe("Send 11 rows");
+    it.toggleScope();
+    expect(it.send().textContent).toBe("Send to BAN");
+  });
+});
+
+describe("Escape", () => {
+  test("it stops a read and puts the panel back", async () => {
+    const it = mount({ pager: "pager-next.html", total: 1093 });
+    it.send().click();
+    expect(it.busy()).toBe(true);
+    it.escape();
+    expect(it.busy()).toBe(false);
+    expect(it.send().disabled).toBe(false);
+    expect(it.note()).toBe("");
+    await it.settle();
+    // The read that was abandoned comes back later and says nothing.
+    expect(it.send().textContent).toBe("Send to BAN");
+    expect(it.busy()).toBe(false);
+  });
+
+  test("it is inert when there is nothing of ours to stop", () => {
+    const it = mount();
+    it.escape();
+    expect(it.busy()).toBe(false);
+    expect(it.heading()).toBe("CM BANNER - all offers");
+  });
+});

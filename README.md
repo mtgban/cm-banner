@@ -39,8 +39,8 @@ It offers two things:
   lets it price them.
 - **CSV** downloads `mkm-<game>-<date>.csv` instead.
 
-Both take whatever the panel's heading says. It reads **BANNER - *all***; click
-it and it reads **BANNER - *page***, which restricts both buttons to the twenty
+Both take whatever the panel's heading says. It reads **CM BANNER - *all offers***; click
+it and it reads **CM BANNER - *this page only***, which restricts both buttons to the twenty
 rows in front of you — instant, and what you want when the page in front of you
 is what you meant. Hovering it says how many offers are listed.
 
@@ -169,7 +169,7 @@ it is an ordinary navigation, so it carries your session, and it does its own
 uploading. This extension opens that page and passes it the rows — it reaches
 into no form of the site's own, so a redesign there is not a break here.
 
-**BANNER - page** sends in one click. **BANNER - all** takes two: the first
+**CM BANNER - this page only** sends in one click. **CM BANNER - all offers** takes two: the first
 reads the pages, with the count ticking along in the panel, and the button then
 reads *Send 251 rows* — the second click opens the tab and hands them over.
 

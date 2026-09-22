@@ -40,6 +40,7 @@ src/pages.js     one page → every page, at Cloudflare's pace; see §6
 src/csv.js       offers → CSV. The contract with mtgban; see §4
 src/content.js   the panel, the download, the handoff
 icons/           the stroopwafel, 128 is the original and the rest are made
+tests/panel.js   stands the content script up in a window; clicks are real
 tests/           bun + happy-dom, no browser
 ```
 
@@ -69,6 +70,21 @@ not work when it is simply not loaded. A query string on the HTML does not
 help — the `<script src>` is what is cached. Serve from a **fresh port** to
 get a clean origin. This produced two rounds of "the fix didn't work" on a
 fix that was already correct.
+
+**A source-reading test says the code still reads right, not that it runs.**
+A rewrite that sliced `content.js` between two comment markers swallowed
+`var generation = 0;` along with the lines it meant to replace. `node --check`
+passed, because a missing declaration is a runtime `ReferenceError` and not a
+syntax error. The whole suite passed too, because the function body still
+*mentioned* `generation`. The panel's main button silently did nothing, and it
+took a user to notice.
+
+`tests/panel.js` exists because of that: it evaluates the content scripts in a
+happy-dom window, so a click is a click and the button's own text is the
+assertion. Put anything the panel *does* there. Keep `content.test.js` for
+orderings that have no visible result — opening a window before a read rather
+than after it looks identical afterwards, and only a browser can tell you which
+one it was.
 
 **Reloading the extension is not enough.** A content script already injected
 into an open tab keeps running the old code, so the Cardmarket tab needs

@@ -1,10 +1,14 @@
 import { test, expect, describe } from "bun:test";
 import { readFileSync } from "fs";
 
-// content.js is the one file the suite cannot load: it installs a panel into
-// a live Cardmarket page on sight. What it can do is hold the orderings that
-// the handoff depends on, all of which are invisible until they break and
-// none of which a reader would think to preserve.
+// Orderings that are cheaper to assert in the source than to provoke: the
+// difference between opening a window before a read and after it is not
+// visible in the result, only in whether a browser allowed it.
+//
+// Anything the panel actually does belongs in panel.test.js, which runs
+// this file rather than reading it. These tests cannot tell whether the
+// code works - one of them went on passing while the button did nothing
+// at all - only whether it still says what it should.
 const content = readFileSync(
   new URL("../src/content.js", import.meta.url),
   "utf8"
