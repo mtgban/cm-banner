@@ -29,6 +29,7 @@
       "js": [
         "src/rates.js",
         "src/parse.js",
+        "src/pages.js",
         "src/csv.js",
         "src/content.js"
       ],
