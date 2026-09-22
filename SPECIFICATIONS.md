@@ -541,6 +541,14 @@ That takes three things, and each is a way the panel used to change size:
   border, or it is taller than the text beside it and grows the heading at
   the moment a read starts.
 
+The heading also carries the BAN stroopwafel at 14px, which the line has
+room for: of the 240px available, the longest heading uses 186px (`CM
+BANNER - 2000 / 2000`, while reading a capped seller). It is base64 in the
+stylesheet rather than a relative `url()`, because that url resolves to
+the extension's own origin and serving it to somebody else's page wants a
+`web_accessible_resources` entry — which is a file exposed to every page
+this runs on, for the sake of three kilobytes.
+
 The line under the buttons is therefore only ever for what is left to say,
 and it is not there when there is nothing: most reads report nothing, the
 button carries the count, and the heading carried the progress. When a read

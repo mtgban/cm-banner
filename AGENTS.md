@@ -113,8 +113,11 @@ every line of it was a copy of mtgban's markup living in a repository that
 does not own it. `/upload/handoff` exists so this does not have to happen
 again; see SPECIFICATIONS.md §5.
 
-**Do not add a permission.** The extension asks for none and runs on one
-host. `storage` was added once to carry a CSV between two tabs and removed
+**Do not add a permission, or declare a file web-accessible.** The extension
+asks for none, runs on one host, and hands the pages it runs on nothing of its
+own — the panel's stroopwafel is base64 in the stylesheet rather than a
+relative `url()`, because that url resolves to the extension's origin and
+serving it wants a manifest entry. `storage` was added once to carry a CSV between two tabs and removed
 again when `postMessage` turned out to do it — the two windows can already
 speak, because one opened the other. If something seems to need a
 permission, check whether the web platform already offers it.

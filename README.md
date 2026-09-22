@@ -235,6 +235,11 @@ those means the markup moved.
 
 ## The icon
 
+The panel wears a small one too, before its name, inlined into the stylesheet
+as base64. A relative `url()` in an injected stylesheet resolves against the
+extension's own origin, and handing that file to somebody else's page needs a
+manifest declaration — three kilobytes of base64 is the cheaper of the two.
+
 `icons/` is the BAN logo from the website — `img/logo/ban-stroop.png`, the one
 the site's own home page shows. It is 128px square, which is the largest size
 the browsers ask for, so `icon-128.png` is that file unchanged and the smaller

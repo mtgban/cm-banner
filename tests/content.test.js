@@ -184,3 +184,18 @@ describe("the panel does not move", () => {
     expect(spin).toContain("box-sizing: border-box");
   });
 });
+
+describe("the mark", () => {
+  test("it is inlined rather than referenced", () => {
+    // A relative url() in an injected stylesheet resolves against the
+    // extension's own origin, and serving that file to somebody else's
+    // page is something browsers want declared in the manifest. Three
+    // kilobytes of base64 costs less than a declaration exposing a file
+    // to every page this runs on.
+    const at = css.indexOf("#cm-banner .cm-banner-label::before {");
+    expect(at).toBeGreaterThan(-1);
+    expect(css.slice(at, css.indexOf("}", at))).toContain(
+      'url("data:image/png;base64,'
+    );
+  });
+});

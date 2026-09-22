@@ -112,5 +112,8 @@ describe("where the extension runs", () => {
     expect(manifest.permissions).toBeUndefined();
     expect(manifest.host_permissions).toBeUndefined();
     expect(manifest.background).toBeUndefined();
+    // Nor does it hand any of its own files to the pages it runs on. The
+    // panel's mark is inlined in the stylesheet for exactly this reason.
+    expect(manifest.web_accessible_resources).toBeUndefined();
   });
 });
