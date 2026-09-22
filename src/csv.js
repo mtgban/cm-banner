@@ -3,9 +3,10 @@
 // Every column here is one the upload's header matcher already names, and the
 // names are chosen so it names them the way it should: "card_name" reaches
 // cardName rather than edition, "foil" reaches the printing column, and
-// "mcm_id" reaches the Cardmarket id. "article_id" reaches nothing and is
-// meant to - it is carried so a row can be traced back to the offer it came
-// from, and the matcher ignores it.
+// "mcm_id" reaches the Cardmarket id. "article_id" and "mkm_url" reach
+// nothing and are meant to - the first is carried so a row can be traced back
+// to the offer it came from, the second is the way back to it, and the
+// matcher ignores both.
 //
 // price_usd is the asking price converted. The upload holds a price it is
 // given against BAN's own, and those are dollars, while Cardmarket quotes
@@ -27,6 +28,7 @@ globalThis.MKM = globalThis.MKM || {};
     ["quantity", "quantity"],
     ["price_usd", "priceUSD"],
     ["article_id", "articleID"],
+    ["mkm_url", "url"],
   ];
 
   // field quotes what has to be quoted and nothing else.

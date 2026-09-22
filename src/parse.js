@@ -176,6 +176,21 @@ globalThis.MKM = globalThis.MKM || {};
     // it points at is what survived being made URL-safe.
     var linked = (link.textContent || "").replace(/\s+/g, " ").trim();
 
+    // The expansion as the page writes it, taken from the row's own link to
+    // it rather than from whichever tooltip happens to come first. It is
+    // kept beside the edition column and not instead of it: this is the
+    // display name, which is what the filter list is keyed by, while the
+    // column keeps the slug the matcher already reads.
+    var expansion = row.querySelector('a[href*="/Expansions/"]');
+    var expansionName = expansion
+      ? (
+          expansion.getAttribute("data-bs-original-title") ||
+          expansion.getAttribute("aria-label") ||
+          expansion.getAttribute("title") ||
+          ""
+        ).trim()
+      : "";
+
     var priced = priceOf(row);
     var count = row.querySelector(".item-count");
     var quantity = "1";
@@ -190,6 +205,7 @@ globalThis.MKM = globalThis.MKM || {};
       mcmID: firstMatch(row.outerHTML, [IMG_RE, IMG_LEGACY_RE]),
       cardName: linked || slugToName(nameSlug),
       edition: editionSlug.replace(/-/g, " "),
+      expansionName: expansionName,
       condition: condition,
       foil: titles.indexOf("Foil") !== -1 ? "foil" : "",
       quantity: quantity,
@@ -242,6 +258,99 @@ globalThis.MKM = globalThis.MKM || {};
 
   MKM.countRows = function (root) {
     return root.querySelectorAll('[id^="stockRow"]').length;
+  };
+
+  // expansionIDs reads the page's own expansion filter into the names it
+  // is keyed by.
+  //
+  // A row carries no numeric expansion id - it links to /Expansions/<slug>
+  // and names the set in a tooltip - but the filter beside the table lists
+  // every one of the seller's expansions with the id the offers page
+  // filters on. So the name the row shows is looked up in the list the
+  // page would have used itself.
+  //
+  // Some options carry the seller's count for that expansion and some do
+  // not ("The List (60)" beside "Fourth Edition"), so only a trailing one
+  // is taken off - a set whose name ends in a bracketed number keeps it.
+  var COUNT_RE = /\s*\(\d+\)\s*$/;
+
+  MKM.expansionIDs = function (root) {
+    var ids = Object.create(null);
+    var select = root.querySelector('select[name="idExpansions[]"]');
+    if (!select) {
+      return ids;
+    }
+
+    var options = select.querySelectorAll("option");
+    for (var i = 0; i < options.length; i++) {
+      var value = options[i].getAttribute("value");
+      var name = (options[i].textContent || "").trim().replace(COUNT_RE, "");
+      // First wins: the list names an expansion twice, once with the
+      // seller's count and once without, and both carry the same id.
+      if (value && name && !ids[name]) {
+        ids[name] = value;
+      }
+    }
+    return ids;
+  };
+
+  // TRACKING is the attribution MTGBAN puts on the card links it sends
+  // out. It says where the visit came from and changes nothing about which
+  // offer the link lands on, so it goes on the end, after the filters that
+  // decide that.
+  var TRACKING = [
+    ["utm_source", "MTGBAN"],
+    ["utm_medium", "text"],
+    ["utm_campaign", "card_prices"],
+  ];
+
+  // offerURL is the way back: the seller's own list, narrowed by its own
+  // filters to the one offer.
+  //
+  // Everything in it is read off the row and off the page's own filters,
+  // so a link is the seller's list narrowed to the one offer. Verified
+  // against the live site: asked for a plain name, for one carrying
+  // accents, a comma and a version suffix ("Ad\u00e9wal\u00e9, Breaker of
+  // Chains (V.1)"), and for a name and an expansion together, it answered
+  // with exactly one row each time.
+  //
+  // base is the offers page's own path, so a link goes back to the list it
+  // came from - the same seller, the same category, singles or sealed.
+  //
+  // Each part is added only when it is known. A filter that is left off
+  // widens the list by one step; one that is guessed at hides the row the
+  // link exists to reach.
+  MKM.offerURL = function (base, offer, expansions) {
+    if (!base || !offer || !offer.cardName) {
+      return "";
+    }
+
+    var query = ["name=" + encodeURIComponent(offer.cardName)];
+
+    var expansionID = expansions && offer.expansionName
+      ? expansions[offer.expansionName]
+      : "";
+    if (expansionID) {
+      query.push("idExpansions=" + expansionID);
+    }
+    // The language is in the product link on a page that has been filtered
+    // by one and absent on a page that has not.
+    if (offer.language) {
+      query.push("idLanguages=" + offer.language);
+    }
+
+    query.push("isFoil=" + (offer.foil ? "Y" : "N"));
+    // Never exported, so saying so narrows the list without any chance of
+    // hiding the row being linked to.
+    query.push("isSigned=N");
+    query.push("isAltered=N");
+    query.push("sortBy=name_asc");
+
+    for (var i = 0; i < TRACKING.length; i++) {
+      query.push(TRACKING[i][0] + "=" + TRACKING[i][1]);
+    }
+
+    return base + "?" + query.join("&");
   };
 
   MKM.slugToName = slugToName;

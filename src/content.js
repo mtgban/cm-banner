@@ -276,9 +276,18 @@
   // altogether.
   function priced(walked, rates) {
     var offers = walked.offers;
+    // The page every row came from, which every row also links back to.
+    // Read here and not in the parse, because a page fetched during a walk
+    // knows its own address and not the seller's list it belongs to.
+    var base = location.origin + location.pathname;
+    // Read once, off the page being looked at rather than off each page the
+    // walk fetched: the filter beside the table lists the whole seller's
+    // expansions whichever of their pages is open.
+    var expansions = MKM.expansionIDs(document);
     var unpriced = 0;
     offers.forEach(function (offer) {
       offer.priceUSD = MKM.priceUSD(offer.price, offer.currency, rates);
+      offer.url = MKM.offerURL(base, offer, expansions);
       if (!offer.priceUSD) {
         unpriced++;
       }

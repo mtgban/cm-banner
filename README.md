@@ -62,10 +62,10 @@ One Piece, Flesh and Blood and Riftbound.
 ## The CSV
 
 ```
-mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id
-10601,Thornwind Faeries,Urzas Legacy,MP,,1,0.06,2058737078
-765432,Bloomburrow Play Booster Box,Bloomburrow,,,1,263.87,2060000001
-,Mirri's Guile,Zendikar,PO,,1,,2057222480
+mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id,mkm_url
+10601,Thornwind Faeries,Urzas Legacy,MP,,1,0.06,2058737078,https://...
+765432,Bloomburrow Play Booster Box,Bloomburrow,,,1,263.87,2060000001,https://...
+,Mirri's Guile,Zendikar,PO,,1,,2057222480,https://...
 ```
 
 `mcm_id` is the Cardmarket product id, taken from the product image's own file
@@ -85,6 +85,13 @@ commas and the colons.
 
 `article_id` is the offer's own id on Cardmarket. The site ignores it; it is
 carried so a row can be traced back to the listing it came from.
+
+`mkm_url` is the way back to it: the seller's own list, narrowed by the offers
+page's own filters to that one card — by name, by expansion, by foil. The
+expansion id is read off the filter dropdown beside the table, since the row
+itself only names the set in words. Each filter is added only when it is known,
+because one left off widens the list by a step while one guessed at hides the
+offer the link exists to reach.
 
 `price_usd` is the seller's asking price, converted. The upload holds a price
 it is given against mtgban's own, and those are dollars, while Cardmarket

@@ -194,7 +194,7 @@ mapping Cardmarket's ids onto `mtgmatcher.InputCard.Language`.
 ## 4. The CSV
 
 ```
-mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id
+mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id,mkm_url
 10601,Thornwind Faeries,Urzas Legacy,MP,,1,0.06,2058737078
 565902,Adventures in the Forgotten Realms Set Booster,,,,8,11.48,2036785656
 ,Mirri's Guile,Zendikar,PO,,1,,2057222480
@@ -219,7 +219,48 @@ alone would not be: the site's own export writes `Original Id` and
 `Instance Id`, which is why the Cardmarket case needs both halves of the
 name.
 
-### 4.1 Conditions fold seven grades onto five
+### 4.1 The way back to the offer
+
+`mkm_url` is the seller's own list, narrowed by the offers page's own
+filters to the one offer:
+
+```
+/en/Magic/Users/Lemhast/Offers/Singles
+  ?name=A%20Tale%20for%20the%20Ages
+  &idExpansions=5359
+  &isFoil=N&isSigned=N&isAltered=N&sortBy=name_asc
+  &utm_source=MTGBAN&utm_medium=text&utm_campaign=card_prices
+```
+
+Every part is read off the page. The **name** is the link's own text, so
+it keeps accents, commas and a version suffix — asked for
+`Adéwalé, Breaker of Chains (V.1)` the live site answered with one row.
+**isSigned** and **isAltered** are always `N` because those rows are never
+exported (§4.4), so saying so narrows without any chance of hiding the row
+being linked to. The **attribution** goes last, behind everything that
+decides which offer is there to visit.
+
+**The expansion id comes from the page's own filter.** A row carries no
+number — it links to `/Expansions/<slug>` and names the set in a tooltip —
+but the `select[name="idExpansions[]"]` beside the table lists every one
+of the seller's expansions with the id the offers page filters on. The
+name the row shows is looked up there, taken from the row's own expansion
+link rather than from whichever tooltip comes first.
+
+Two shapes in that list are worth knowing: some options carry the seller's
+count and some do not (`The List (60)` beside `Fourth Edition`), and the
+same expansion appears both ways with the same id. Only a **trailing**
+`(N)` is stripped, so a set whose name ends in a bracketed number keeps
+it.
+
+**Each filter is added only when it is known.** One left off widens the
+list by a step; one guessed at hides the row the link exists to reach. The
+language is the case in point — see §4.5.
+
+`base` is the offers page's own path, so a link returns to the list it
+came from: the same seller, the same category, singles or sealed.
+
+### 4.2 Conditions fold seven grades onto five
 
 The mapping is go-mtgban's own, in `cardmarket/market.go`'s `mkmCondition`:
 
@@ -236,7 +277,7 @@ The mapping is go-mtgban's own, in `cardmarket/market.go`'s `mkmCondition`:
 seller listed, and the upload trusts what it is given. `cmd/mkmhtml2csv` in
 go-mtgban carries the same table and had this wrong.
 
-### 4.2 The price is converted
+### 4.3 The price is converted
 
 The upload holds a given price against mtgban's own, and those are dollars,
 while Cardmarket quotes euros or pounds. The rate comes from the same feed
@@ -256,11 +297,38 @@ A row that cannot be converted honestly — no rate, an unfamiliar currency,
 an unreadable number — carries an **empty** price, and the panel says how
 many.
 
-### 4.3 What the CSV deliberately does not carry
+### 4.4 What the CSV deliberately does not carry
 
 - **No language column.** The upload has nothing to read one into. See 3.7.
 - **No uuid.** Resolving an id to a card is the site's job and needs its
   datastore.
+
+### 4.5 The language is only sometimes known — and this is a bug
+
+`language` is read from the product link's `?language=N`, and **that
+parameter is only there on a page that has already been filtered by
+language**. On an unfiltered page — which is the normal case — every row
+parses with an empty language.
+
+Measured on a live seller: the tooltips said `Italian` on most rows and
+the parse reported `""` on all of them, so the panel's `N non-English`
+count reads **zero** when it should not. The seller's own language filter
+put it at 828 Italian against 251 English.
+
+Nothing in the CSV is wrong — there is no language column — but the count
+the panel shows is, and `idLanguages` is left off links that could carry
+it.
+
+The fix is the same trick §4.1 uses for the expansion: the row names its
+language in a tooltip, and `select[name="idLanguages[]"]` beside the table
+lists `1 = English`, `5 = Italian`, so the name the row shows can be
+looked up in the list the page itself would filter by. That also settles
+which tooltip is the language, which is the part worth being careful
+about — it is the one whose text the language filter names, not the one
+in a particular position.
+
+Not done here, because it changes what a number on the panel says and
+deserves its own measurement.
 
 ## 5. Sending to BAN
 

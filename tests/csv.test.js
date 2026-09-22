@@ -5,11 +5,11 @@ import { readFileSync } from "fs";
 describe("the columns", () => {
   // Every name here is one the upload's header matcher reads, and reads the
   // way it should: card_name reaches the name rather than the edition, foil
-  // reaches the printing column, mcm_id reaches the Cardmarket id, and
-  // article_id reaches nothing, which is why it is safe to carry.
+  // reaches the printing column, mcm_id reaches the Cardmarket id. article_id
+  // and mkm_url reach nothing, which is why they are safe to carry.
   test("the header is the contract", () => {
     expect(MKM.csvColumns().join(",")).toBe(
-      "mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id"
+      "mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id,mkm_url"
     );
   });
 
@@ -36,10 +36,12 @@ describe("the writing", () => {
         quantity: "2",
         priceUSD: "1.50",
         articleID: "9",
+        url: "https://www.cardmarket.com/en/Magic/Users/S/Offers/Singles?name=Bob",
       },
     ]);
     expect(csv.split("\r\n")[1]).toBe(
-      '1,"Bob, the ""Builder""","Set\nTwo",NM,,2,1.50,9'
+      '1,"Bob, the ""Builder""","Set\nTwo",NM,,2,1.50,9,' +
+        "https://www.cardmarket.com/en/Magic/Users/S/Offers/Singles?name=Bob"
     );
   });
 
@@ -47,7 +49,7 @@ describe("the writing", () => {
     const csv = MKM.toCSV([
       { mcmID: "1", cardName: "X", quantity: "1", articleID: "9" },
     ]);
-    expect(csv.split("\r\n")[1]).toBe("1,X,,,,1,,9");
+    expect(csv.split("\r\n")[1]).toBe("1,X,,,,1,,9,");
   });
 
   test("the last row ends like every other one", () => {
@@ -66,8 +68,10 @@ describe("end to end", () => {
     expect(lines.length).toBe(offers.length + 1);
     // No rates were fetched here, so the price stays empty - the row is
     // still worth uploading without the seller's asking price.
+    // No base was given to offerURL here, so the way back is empty - the
+    // same shape a row takes when the page cannot be named.
     expect(lines[1]).toBe(
-      "10601,Thornwind Faeries,Urzas Legacy,NM,,3,,2058737078"
+      "10601,Thornwind Faeries,Urzas Legacy,NM,,3,,2058737078,"
     );
   });
 });

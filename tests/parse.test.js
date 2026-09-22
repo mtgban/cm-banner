@@ -1,5 +1,6 @@
 import { test, expect, describe } from "bun:test";
-import { load, parse } from "./helpers.js";
+import { load, parse, text, MKM } from "./helpers.js";
+import { Window } from "happy-dom";
 
 const doc = load("offers.html");
 const offers = parse(doc);
@@ -165,5 +166,96 @@ describe("the price as the page wrote it", () => {
   test("a row showing no price carries none", () => {
     expect(byArticle["2058743685"].price).toBe("");
     expect(byArticle["2058743685"].currency).toBe("");
+  });
+});
+
+describe("the way back to the offer", () => {
+  const BASE = "https://www.cardmarket.com/en/Magic/Users/Seller/Offers/Singles";
+
+  function filter() {
+    const window = new Window();
+    window.document.body.innerHTML = text("expansion-filter.html");
+    return MKM.expansionIDs(window.document);
+  }
+
+  test("the page's own filter says what an expansion's id is", () => {
+    // The row carries no number: it links to /Expansions/<slug> and names
+    // the set in a tooltip. The filter beside the table is where the id
+    // the offers page would use lives.
+    const ids = filter();
+    expect(ids["Wilds of Eldraine"]).toBe("5359");
+    expect(ids["The List"]).toBe("3494");
+  });
+
+  test("a count belongs to the seller, not to the name", () => {
+    // "The List (60)" is sixty of the seller's cards, not an expansion
+    // called that.
+    const ids = filter();
+    expect(ids["The List (60)"]).toBeUndefined();
+    // Listed twice, with the count and without, and the same id both ways.
+    expect(ids["Wilds of Eldraine"]).toBe("5359");
+    // And one that never carried a count reads the same way.
+    expect(ids["Fourth Edition"]).toBe("10");
+  });
+
+  test("names keep their own punctuation", () => {
+    expect(filter()["Universes Beyond: Assassin's Creed"]).toBe("5655");
+    expect(filter()["The Lord of the Rings: Tales of Middle-earth"]).toBe("5285");
+  });
+
+  test("a page with no filter on it says nothing rather than guessing", () => {
+    const window = new Window();
+    window.document.body.innerHTML = "<p>no filters here</p>";
+    expect(MKM.expansionIDs(window.document)).toEqual({});
+  });
+
+  test("a link is the seller's list narrowed to the one offer", () => {
+    // Every part of this was asked of the live site and came back with
+    // exactly one row.
+    const url = MKM.offerURL(
+      BASE,
+      { cardName: "A Tale for the Ages", expansionName: "Wilds of Eldraine", foil: "" },
+      filter()
+    );
+    expect(url).toBe(
+      BASE +
+        "?name=A%20Tale%20for%20the%20Ages&idExpansions=5359" +
+        "&isFoil=N&isSigned=N&isAltered=N&sortBy=name_asc" +
+        "&utm_source=MTGBAN&utm_medium=text&utm_campaign=card_prices"
+    );
+  });
+
+  test("the attribution goes last, behind everything that picks the offer", () => {
+    // It says where the visit came from. A filter decides which row is
+    // there to be visited, and those come first for that reason.
+    const url = MKM.offerURL(BASE, { cardName: "X" }, {});
+    expect(url.indexOf("utm_source")).toBeGreaterThan(url.indexOf("sortBy"));
+    expect(url.endsWith("&utm_source=MTGBAN&utm_medium=text&utm_campaign=card_prices")).toBe(true);
+  });
+
+  test("accents, commas and a version suffix survive the trip", () => {
+    const url = MKM.offerURL(BASE, { cardName: "Adéwalé, Breaker of Chains (V.1)" }, {});
+    expect(url).toContain("name=Ad%C3%A9wal%C3%A9%2C%20Breaker%20of%20Chains%20(V.1)");
+  });
+
+  test("a foil says so, and a language says so when the row knew one", () => {
+    const foil = MKM.offerURL(BASE, { cardName: "X", foil: "foil", language: "5" }, {});
+    expect(foil).toContain("isFoil=Y");
+    expect(foil).toContain("idLanguages=5");
+    const plain = MKM.offerURL(BASE, { cardName: "X" }, {});
+    expect(plain).toContain("isFoil=N");
+    expect(plain).not.toContain("idLanguages");
+  });
+
+  test("an expansion the filter does not name is left out, not guessed", () => {
+    // A filter left off widens the list by a step. One guessed at hides
+    // the row the link exists to reach.
+    const url = MKM.offerURL(BASE, { cardName: "X", expansionName: "Nowhere" }, filter());
+    expect(url).not.toContain("idExpansions");
+  });
+
+  test("a row with no name has no way back", () => {
+    expect(MKM.offerURL(BASE, { cardName: "" }, {})).toBe("");
+    expect(MKM.offerURL("", { cardName: "X" }, {})).toBe("");
   });
 });
