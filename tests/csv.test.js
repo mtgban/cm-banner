@@ -87,6 +87,27 @@ describe("where the extension runs", () => {
     expect(hosts.every((m) => m.includes("/Users/*/Offers/"))).toBe(true);
   });
 
+  test("the games it runs on are exactly the ones it can send to", () => {
+    // The panel refuses to appear where it has nowhere to send, so the two
+    // lists have to agree: a game in the manifest with no deployment behind
+    // it is a page the extension loads on and then does nothing on, and a
+    // deployment with no match never sees a card.
+    const content = readFileSync(
+      new URL("../src/content.js", import.meta.url),
+      "utf8"
+    );
+    const hosts = content
+      .slice(content.indexOf("var HOSTS = {"), content.indexOf("};", content.indexOf("var HOSTS = {")))
+      .match(/^\s{4}([a-z]+):/gm)
+      .map((line) => line.trim().replace(":", ""));
+
+    const matched = manifest.content_scripts[0].matches.map(
+      (m) => m.split("/")[4].toLowerCase()
+    );
+
+    expect(matched.slice().sort()).toEqual(hosts.slice().sort());
+  });
+
   test("and asks for no permissions at all", () => {
     expect(manifest.permissions).toBeUndefined();
     expect(manifest.host_permissions).toBeUndefined();

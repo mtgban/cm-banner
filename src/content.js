@@ -175,12 +175,7 @@
   // click that asked for it, so it keeps a handle on this window; it says
   // when it is listening, and the rows go to that window and no other.
   function sendToBan(panel) {
-    var game = gameFromPath(location.pathname);
-    var url = uploadURL(game);
-    if (!url) {
-      say(panel, "No BAN site for " + (game || "this page"));
-      return;
-    }
+    var url = uploadURL(gameFromPath(location.pathname));
     withCollected(panel, function (done) {
       var opened = window.open(url, "_blank");
       if (!opened) {
@@ -206,7 +201,9 @@
           { type: ROWS, csv: done.csv, rows: done.count },
           event.origin
         );
-        say(panel, done.note + " sent to " + new URL(event.origin).hostname);
+        // Nothing is said. The tab that just opened is the answer, and it
+        // says more than this could.
+        say(panel, "");
       }
 
       // No deadline. The upload page answers when it has loaded, and how
@@ -252,6 +249,13 @@
 
   function install() {
     if (document.getElementById(PANEL_ID)) {
+      return;
+    }
+    // A game this cannot send anywhere gets no panel at all. The matches in
+    // the manifest name the seven Cardmarket sells that BAN prices, but a
+    // path is not a promise: anything that reaches here naming a game with
+    // no deployment behind it is a page to stay off.
+    if (!uploadURL(gameFromPath(location.pathname))) {
       return;
     }
 

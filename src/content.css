@@ -7,6 +7,12 @@
   bottom: 16px;
   z-index: 2147483647;
 
+  /* One size, whatever it is saying. The count, the note and the button all
+     change length as the page is used, and a panel that resized under the
+     cursor would move the thing being aimed at. */
+  box-sizing: border-box;
+  width: 16rem;
+
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -77,14 +83,17 @@
   outline-offset: 2px;
 }
 
-#cm-banner .cm-banner-note:empty {
-  display: none;
-}
-
+/* Held open whether or not there is anything in it: hiding an empty note
+   would take its height with it. Three lines is what the longest of them
+   needs at this width, and anything longer is clipped rather than allowed
+   to push the panel taller. */
 #cm-banner .cm-banner-note {
-  max-width: 15rem;
+  height: 3.6em;
+  overflow: hidden;
+
   opacity: 0.85;
   font-size: 12px;
+  line-height: 1.2;
 }
 
 @media (prefers-reduced-motion: no-preference) {

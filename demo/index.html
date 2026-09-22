@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>cm-banner demo</title>
-    <link rel="stylesheet" href="../src/content.css" />
+    <link rel="stylesheet" href="/src/content.css" />
     <style>
       body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 44rem; }
       .article-row { border-bottom: 1px solid #ddd; padding: .5rem 0; }
@@ -39,11 +39,18 @@
 
       // The content script reads the document as it finds it, so the fixture
       // goes in before the script does.
-      fetch("../tests/fixtures/offers.html")
+      fetch("/tests/fixtures/offers.html")
         .then(function (r) { return r.text(); })
         .then(function (html) {
           document.getElementById("rows").innerHTML = html;
-          ["../src/rates.js", "../src/parse.js", "../src/csv.js", "../src/content.js"].reduce(
+
+          // The panel stays off a page whose path names no game it can send
+          // to, which is the whole of this one. Wearing a real offers path
+          // puts the demo on the same side of that gate as the real thing,
+          // rather than the script being told to make an exception.
+          history.replaceState(null, "", "/en/Magic/Users/demo/Offers/Singles");
+
+          return ["/src/rates.js", "/src/parse.js", "/src/csv.js", "/src/content.js"].reduce(
             function (chain, src) {
               return chain.then(function () {
                 return new Promise(function (resolve, reject) {

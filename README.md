@@ -12,14 +12,18 @@ you decide whether to submit it.
 
 On a seller's offers page — `cardmarket.com/<lang>/<Game>/Users/<seller>/Offers/…`
 — a panel appears in the bottom right saying how many offers it can see. It
-offers two things:
+appears only for a game BAN prices; on any other there is nowhere to send the
+rows, so there is no panel either.
 
-- **Send to BAN** opens that game's own upload page with the rows already in
-  the form, for you to look over and submit.
+It offers two things:
+
+- **Send to BAN** opens that game's own upload page, hands it the rows, and
+  lets it price them.
 - **CSV** downloads `mkm-<game>-<date>.csv` instead.
 
-Either way it reports how many rows it took, how many it skipped, and how many
-it could not price.
+It reports how many rows it took, how many it skipped, and how many it could
+not price. The panel is one fixed size whatever it is saying — a box that
+resized under the cursor would move the button being aimed at.
 
 It reads singles and sealed alike: Cardmarket files boxes and bundles under
 their own product categories, and the upload tells one from the other by what
