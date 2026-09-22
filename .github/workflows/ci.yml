@@ -20,8 +20,6 @@ jobs:
         run: bun test tests/
 
       # The manifest is what the browsers read; a typo in it is a broken
-      # install rather than a failing test, so it is parsed here.
-      # The manifest is what the browsers read; a typo in it is a broken
       # install rather than a failing test, so it is checked here - both that
       # it parses and that every file it names is actually present.
       - name: manifest names only files that exist

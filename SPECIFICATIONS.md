@@ -195,9 +195,9 @@ mapping Cardmarket's ids onto `mtgmatcher.InputCard.Language`.
 
 ```
 mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id,mkm_notes
-10601,Thornwind Faeries,Urzas Legacy,MP,,1,0.06,2058737078
-565902,Adventures in the Forgotten Realms Set Booster,,,,8,11.48,2036785656
-,Mirri's Guile,Zendikar,PO,,1,,2057222480
+10601,Thornwind Faeries,Urzas Legacy,MP,,1,0.06,2058737078,https://www.cardmarket.com/...
+565902,Adventures in the Forgotten Realms Set Booster,,,,8,11.48,2036785656,https://www.cardmarket.com/...
+,Mirri's Guile,Zendikar,PO,,1,,2057222480,https://www.cardmarket.com/...
 ```
 
 Every column name is chosen for how mtgban's `docparse.ParseHeader` reads
@@ -455,6 +455,10 @@ Two orderings inside the handover, both invisible until they break:
 A read that produced nothing closes the tab again, rather than leaving it
 waiting for a list that is not coming.
 
+Only one handoff listens at a time: the page it opens has no deadline on
+purpose, so a tab that never answers would otherwise leave its listener
+behind for the life of the page. A second handoff retires the first.
+
 `tests/content.test.js` holds all of this. It reads the source rather than
 running it — content.js installs a panel into a live Cardmarket page on
 sight — which is weak, but an ordering nobody would think to preserve is
@@ -578,6 +582,10 @@ extension can send answers it. So:
 - The walk **paces itself**, one page at a time with a wait between them
   (`PACE`, 1200ms). The wait goes before each fetch rather than after, so
   a one-page seller pays nothing for it.
+- Every request carries a **deadline** (`TIMEOUT`, 30s). A connection
+  accepted and then left quiet is the one failure with no symptom - the
+  walk waits, the spinner turns, and nothing arrives to stop it - so it
+  is treated as a refusal, which at least keeps what came before it.
 - A challenge is **told apart from an ordinary refusal** by the
   `cf-mitigated` header, and **stops the walk immediately** rather than
   retrying into a door being held shut.

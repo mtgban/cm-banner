@@ -199,3 +199,17 @@ describe("the mark", () => {
     );
   });
 });
+
+describe("the handoff listener", () => {
+  test("a second handoff retires the first one's listener", () => {
+    // The page it opens has no deadline on purpose. A tab that never
+    // answers at all would otherwise leave its listener behind for the
+    // life of the page.
+    const handOff = body("handOff");
+    expect(handOff).toContain("removeEventListener");
+    expect(handOff.indexOf("removeEventListener")).toBeLessThan(
+      handOff.indexOf("window.open(")
+    );
+    expect(handOff).toContain("awaiting = onMessage");
+  });
+});

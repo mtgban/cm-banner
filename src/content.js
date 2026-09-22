@@ -430,7 +430,21 @@
   // here has to know the shape of a form that is not ours. It says it is
   // listening once, as it loads, which cannot happen before this function
   // has returned - so the listener is always in place in time.
+  // awaiting is the handoff listener still hoping to hear from a tab.
+  //
+  // The page it opens has no deadline on purpose - it answers when it has
+  // loaded, and how long that takes is the network's business. But a tab
+  // that never answers at all, or is closed before it does, would leave
+  // its listener behind for the life of this page. One at a time is
+  // enough to bound that: a second handoff retires the first.
+  var awaiting = null;
+
   function handOff(panel, rows) {
+    if (awaiting) {
+      window.removeEventListener("message", awaiting);
+      awaiting = null;
+    }
+
     var opened = window.open(uploadURL(gameFromPath(location.pathname)), "_blank");
     if (!opened) {
       // Rows in hand stay in hand, so this is worth another click rather
@@ -488,10 +502,12 @@
         return;
       }
       window.removeEventListener("message", onMessage);
+      awaiting = null;
       listening = event.origin;
       give();
     }
 
+    awaiting = onMessage;
     window.addEventListener("message", onMessage);
 
     rows.then(function (done) {
@@ -500,6 +516,7 @@
         // promise of a list, so it goes again rather than sitting on
         // "Waiting for the card list..." for good.
         window.removeEventListener("message", onMessage);
+        awaiting = null;
         opened.close();
         return;
       }
@@ -588,9 +605,22 @@
     label(panel);
   }
 
-  // shown is the row count the panel last named, so a change in the page can
-  // be told from the page merely being touched.
-  var shown = -1;
+  // shown is what the table looked like when the panel last read it, so a
+  // change in the page can be told from the page merely being touched.
+  //
+  // Not the row count alone: filtering to a different twenty offers, or
+  // sorting the same twenty, leaves the count where it was while making
+  // every row in hand describe something else. The first and last article
+  // ids move whenever the rows do, and cost nothing to read.
+  var shown = "";
+
+  function tableState() {
+    var rows = document.querySelectorAll('[id^="stockRow"]');
+    if (rows.length === 0) {
+      return "0";
+    }
+    return rows.length + ":" + rows[0].id + ":" + rows[rows.length - 1].id;
+  }
 
   function label(panel) {
     var count = MKM.countRows(document);
@@ -612,7 +642,7 @@
         : listed + " offers listed \u2014 click for this page";
     }
     panel.hidden = count === 0;
-    shown = count;
+    shown = tableState();
     return count;
   }
 
@@ -713,7 +743,7 @@
         if (panel.classList.contains("cm-banner-busy")) {
           return;
         }
-        if (MKM.countRows(document) === shown) {
+        if (tableState() === shown) {
           return;
         }
         // The table itself moved, so rows read from it no longer describe

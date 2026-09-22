@@ -369,3 +369,39 @@ describe("being told to stop", () => {
     expect(walked.pages).toBe(3);
   });
 });
+
+describe("a request that goes nowhere", () => {
+  test("a read that timed out says so in words", async () => {
+    // The browser's own wording is "signal timed out", which names the
+    // mechanism rather than what happened.
+    const saved = globalThis.fetch;
+    globalThis.fetch = () => {
+      const err = new Error("signal timed out");
+      err.name = "TimeoutError";
+      return Promise.reject(err);
+    };
+    try {
+      expect(MKM.fetchPage(BASE)).rejects.toThrow("Cardmarket did not answer in time");
+    } finally {
+      globalThis.fetch = saved;
+    }
+  });
+
+  test("every page is asked for with a deadline on it", async () => {
+    // Without one, a connection accepted and then left quiet is the one
+    // failure with no symptom: the walk waits and the spinner turns.
+    const saved = globalThis.fetch;
+    let asked = null;
+    globalThis.fetch = (url, options) => {
+      asked = options;
+      return Promise.reject(new Error("done looking"));
+    };
+    try {
+      await MKM.fetchPage(BASE).catch(() => {});
+      expect(asked).not.toBeNull();
+      expect("signal" in asked).toBe(true);
+    } finally {
+      globalThis.fetch = saved;
+    }
+  });
+});

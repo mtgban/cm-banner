@@ -54,7 +54,7 @@ globalThis.MKM = globalThis.MKM || {};
   // read. Null is a price column left empty, not a run refused: the cards
   // are still worth uploading when only their asking price is missing.
   MKM.fetchRates = function () {
-    return fetch(FEED)
+    return fetch(FEED, { signal: MKM.deadline ? MKM.deadline() : undefined })
       .then(function (response) {
         if (!response.ok) {
           throw new Error("rates: HTTP " + response.status);

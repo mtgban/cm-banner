@@ -35,6 +35,23 @@ globalThis.MKM = globalThis.MKM || {};
   // export.
   var PACE = 1200;
 
+  // TIMEOUT bounds one request. A connection that is accepted and then
+  // goes quiet is the one failure with no symptom: the walk waits, the
+  // spinner turns, and nothing arrives to stop it - so a read that has
+  // gone nowhere for half a minute is treated as a read that failed,
+  // which at least keeps whatever came before it.
+  var TIMEOUT = 30000;
+
+  // deadline is the signal for that, where the browser has one. All three
+  // this runs on do; the guard is for the test harness and for whatever
+  // ships next.
+  function deadline() {
+    if (typeof AbortSignal === "undefined" || !AbortSignal.timeout) {
+      return undefined;
+    }
+    return AbortSignal.timeout(TIMEOUT);
+  }
+
   // CHALLENGE is what the panel says when Cloudflare wants the visitor
   // rather than us. Phrased as something to do, because there is something
   // to do and it is not "try again immediately".
@@ -157,6 +174,7 @@ globalThis.MKM = globalThis.MKM || {};
   function fetchPage(url) {
     return fetch(url, {
       credentials: "same-origin",
+      signal: deadline(),
       // Asked for the way a page load asks for it. A request for an HTML
       // page that says it will take anything is one of the things that
       // makes a fetch look unlike somebody reading.
@@ -173,6 +191,14 @@ globalThis.MKM = globalThis.MKM || {};
       })
       .then(function (text) {
         return new DOMParser().parseFromString(text, "text/html");
+      })
+      .catch(function (err) {
+        // The browser's own wording for this is "signal timed out", which
+        // names the mechanism rather than what happened.
+        if (err && err.name === "TimeoutError") {
+          throw new Error("Cardmarket did not answer in time");
+        }
+        throw err;
       });
   }
 
@@ -309,6 +335,7 @@ globalThis.MKM = globalThis.MKM || {};
   };
 
   MKM.PACE = PACE;
+  MKM.deadline = deadline;
   MKM.nextPageURL = nextPageURL;
   MKM.firstPageURL = firstPageURL;
   MKM.totalCount = totalCount;

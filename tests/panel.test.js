@@ -140,6 +140,23 @@ describe("clicking send", () => {
     expect(handed.data.rows).toBe(11);
   });
 
+  test("rows in hand are dropped when the same-sized table changes under them", async () => {
+    // Filtering to a different twenty offers, or sorting the same twenty,
+    // leaves the count where it was and every row in hand describing
+    // something else.
+    const it = mount();
+    it.send().click();
+    await it.settle();
+    expect(it.send().textContent).toBe("READY");
+
+    const rows = [...it.window.document.querySelectorAll('[id^="stockRow"]')];
+    const first = rows[0];
+    first.parentNode.insertBefore(rows[rows.length - 1], first);
+
+    await it.settle(400);
+    expect(it.send().textContent).toBe("Send to BAN");
+  });
+
   test("rows in hand are dropped when the scope changes", async () => {
     const it = mount();
     it.send().click();

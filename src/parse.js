@@ -385,12 +385,12 @@ globalThis.MKM = globalThis.MKM || {};
       ? expansions[offer.expansionName]
       : "";
     if (expansionID) {
-      query.push("idExpansions=" + expansionID);
+      query.push("idExpansions=" + encodeURIComponent(expansionID));
     }
     // The language is in the product link on a page that has been filtered
     // by one and absent on a page that has not.
     if (offer.language) {
-      query.push("idLanguages=" + offer.language);
+      query.push("idLanguages=" + encodeURIComponent(offer.language));
     }
 
     query.push("isFoil=" + (offer.foil ? "Y" : "N"));
