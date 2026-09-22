@@ -5,8 +5,9 @@ import { readFileSync } from "fs";
 describe("the columns", () => {
   // Every name here is one the upload's header matcher reads, and reads the
   // way it should: card_name reaches the name rather than the edition, foil
-  // reaches the printing column, mcm_id reaches the Cardmarket id. article_id
-  // and mkm_url reach nothing, which is why they are safe to carry.
+  // reaches the printing column, mcm_id reaches the Cardmarket id, and
+  // mkm_notes reaches the notes field the results render the loaded price's
+  // link from. article_id reaches nothing, which is why it is safe to carry.
   test("the header is the contract", () => {
     expect(MKM.csvColumns().join(",")).toBe(
       "mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id,mkm_notes"
