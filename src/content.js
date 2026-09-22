@@ -694,7 +694,7 @@
     panel.id = PANEL_ID;
     panel.innerHTML =
       '<button type="button" class="cm-banner-label">' +
-      "CM BANNER - " +
+      'CM BAN<i class="cm-banner-ner">ner</i> - ' +
       '<span class="cm-banner-spin" aria-hidden="true"></span>' +
       '<b class="cm-banner-scope"></b>' +
       "</button>" +

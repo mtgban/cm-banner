@@ -58,10 +58,10 @@ describe("the panel", () => {
 
   test("the heading names the scope, and clicking it changes it", () => {
     const it = mount();
-    expect(it.heading()).toBe("CM BANNER - all offers");
+    expect(it.heading()).toBe("CM BANner - all offers");
     expect(it.scope()).toBe("all offers");
     it.toggleScope();
-    expect(it.heading()).toBe("CM BANNER - this page only");
+    expect(it.heading()).toBe("CM BANner - this page only");
     it.toggleScope();
     expect(it.scope()).toBe("all offers");
   });
@@ -230,6 +230,6 @@ describe("Escape", () => {
     const it = mount();
     it.escape();
     expect(it.busy()).toBe(false);
-    expect(it.heading()).toBe("CM BANNER - all offers");
+    expect(it.heading()).toBe("CM BANner - all offers");
   });
 });

@@ -54,6 +54,13 @@
   cursor: pointer;
 }
 
+/* Said with its own style rather than with <i> alone: a page that uses <i>
+   for icons - and Cardmarket's does - is a page whose stylesheet may have
+   told every one of them to stand up straight. */
+#cm-banner .cm-banner-ner {
+  font-style: italic;
+}
+
 /* The word that changes carries the weight, because it is the word that
    is worth reading twice. */
 #cm-banner .cm-banner-label .cm-banner-scope {

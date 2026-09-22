@@ -457,7 +457,7 @@ second click gives both halves a click of their own.
 
 So the panel is the state. Before a read the heading names the scope and
 the button says **Send to BAN**; after one the heading holds the count —
-`CM BANNER - 251 rows` — and the button says **READY**. The count goes in
+`CM BANner - 251 rows` — and the button says **READY**. The count goes in
 the heading because the heading is otherwise repeating a scope that was
 chosen before the read and has not changed since, and because that leaves
 the line beneath the buttons for the things a count cannot say.
