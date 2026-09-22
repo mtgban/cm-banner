@@ -267,11 +267,14 @@
     };
   }
 
-  function withCollected(panel, andThen) {
+  function withCollected(panel, andThen, orElse) {
     collect(panel).then(
       function (done) {
         if (!done.csv) {
           say(panel, done.note);
+          if (orElse) {
+            orElse();
+          }
           return;
         }
         andThen(done);
@@ -281,6 +284,9 @@
         // and a refused rate leaves the column empty. So this is a bug,
         // and a panel that says which one beats a panel that went quiet.
         say(panel, "Export failed: " + (err && err.message ? err.message : err));
+        if (orElse) {
+          orElse();
+        }
       }
     );
   }
@@ -300,48 +306,90 @@
 
   // sendToBan hands the rows to the site's handoff page, window to window.
   //
-  // That page is the site's own and does its own uploading, so nothing here
-  // has to know the shape of a form that is not ours. It is opened from the
-  // click that asked for it, so it keeps a handle on this window; it says
-  // when it is listening, and the rows go to that window and no other.
+  // The tab is opened by the click and not by the rows arriving. Reading a
+  // seller's pages takes seconds and a hundred of them takes minutes, and
+  // by then the click that asked for it has expired: window.open is a
+  // pop-up at that point, which Firefox blocks and puts a bar at the top
+  // of the page about. So the tab opens straight away and waits - the page
+  // it opens says it is waiting, and waits for as long as it takes.
+  //
+  // That page is the site's own and does its own uploading, so nothing
+  // here has to know the shape of a form that is not ours. It says it is
+  // listening once, as it loads, so this is listening before it can.
   function sendToBan(panel) {
-    var url = uploadURL(gameFromPath(location.pathname));
-    withCollected(panel, function (done) {
-      var opened = window.open(url, "_blank");
-      if (!opened) {
-        say(panel, "The upload page was blocked; use the CSV");
+    if (MKM.countRows(document) === 0) {
+      // Checked before a tab is opened for a list that is not there.
+      say(panel, "No offers on this page");
+      return;
+    }
+
+    var opened = window.open(uploadURL(gameFromPath(location.pathname)), "_blank");
+    if (!opened) {
+      say(panel, "The upload page was blocked; use the CSV");
+      return;
+    }
+
+    // Which of the two lands first depends on how many pages there were,
+    // so both are kept and whichever is second does the handing over.
+    var listening = "";
+    var collected = null;
+
+    function handOver() {
+      if (!listening || !collected) {
         return;
       }
-
-      function onMessage(event) {
-        if (
-          event.source !== opened ||
-          !isBanHost(event.origin) ||
-          !event.data ||
-          event.data.type !== READY
-        ) {
-          return;
-        }
-        window.removeEventListener("message", onMessage);
-        // Answered to the origin that spoke, which is where the page
-        // actually ended up rather than where it was sent.
-        // The count goes with them: the page receives text, and text does
-        // not say whether its first line is a header or a card.
-        opened.postMessage(
-          { type: ROWS, csv: done.csv, rows: done.count },
-          event.origin
-        );
-        // Nothing is said of a whole list: the tab that just opened is
-        // the answer and says more than this could. A short one keeps its
-        // warning on screen, because the tab receiving it cannot tell
-        // that it is short and neither could anyone reading it there.
-        say(panel, done.partial ? done.note : "");
+      if (opened.closed) {
+        say(panel, "The upload page was closed; use the CSV");
+        return;
       }
+      // Answered to the origin that spoke, which is where the page
+      // actually ended up rather than where it was sent.
+      // The count goes with them: the page receives text, and text does
+      // not say whether its first line is a header or a card.
+      opened.postMessage(
+        { type: ROWS, csv: collected.csv, rows: collected.count },
+        listening
+      );
+      // Nothing is said of a whole list: the tab that just took it is the
+      // answer and says more than this could. A short one keeps its
+      // warning on screen, because that tab cannot tell that it is short
+      // and neither could anyone reading it there.
+      say(panel, collected.partial ? collected.note : "");
+    }
 
-      // No deadline. The upload page answers when it has loaded, and how
-      // long that takes is the network's business, not a number chosen here.
-      window.addEventListener("message", onMessage);
-    });
+    function onMessage(event) {
+      if (
+        event.source !== opened ||
+        !isBanHost(event.origin) ||
+        !event.data ||
+        event.data.type !== READY
+      ) {
+        return;
+      }
+      window.removeEventListener("message", onMessage);
+      listening = event.origin;
+      handOver();
+    }
+
+    // Attached before the tab can have loaded. The page announces itself
+    // once and does not repeat it, so a listener added when the rows were
+    // finally ready would have missed it.
+    window.addEventListener("message", onMessage);
+
+    withCollected(
+      panel,
+      function (done) {
+        collected = done;
+        handOver();
+      },
+      function () {
+        // Nothing to hand over after all. The tab was opened on the
+        // promise of a list, so it goes again rather than sitting on
+        // "Waiting for the card list..." for good.
+        window.removeEventListener("message", onMessage);
+        opened.close();
+      }
+    );
   }
 
   // shown is the row count the panel last named, so a change in the page can

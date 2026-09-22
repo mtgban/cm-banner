@@ -302,6 +302,27 @@ source check beside it, which a redirect does not disturb.
 `rows` is passed because the page receives text, and text does not say
 whether its first line is a header or a card.
 
+**The tab is opened by the click, not by the rows arriving.** This is the
+ordering the walk of §6 broke and it is not optional. `window.open` needs
+the click's transient activation, which Firefox gives for about five
+seconds; reading thirteen pages takes longer than that and a hundred takes
+minutes, so opening at the end made it a pop-up — blocked, with a bar
+across the top of the page saying so.
+
+So the tab opens first and waits. Two things follow from that:
+
+- **The listener is attached before the tab can have loaded.** The handoff
+  page announces itself once, as it loads, and never repeats it. Whichever
+  of "the page is listening" and "the rows are ready" lands second does
+  the handing over.
+- **A read that produced nothing closes the tab again.** It was opened on
+  the promise of a list; left alone it sits on *Waiting for the card
+  list…* for good. The page has no timeout, which is what makes opening it
+  early safe and closing it afterwards necessary.
+
+`tests/content.test.js` holds both orderings, because they are invisible
+until they break.
+
 ### 5.3 Hosts, and the Magic exception
 
 | game | host |

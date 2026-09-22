@@ -157,6 +157,11 @@ it is an ordinary navigation, so it carries your session, and it does its own
 uploading. This extension opens that page and passes it the rows — it reaches
 into no form of the site's own, so a redesign there is not a break here.
 
+The tab opens **when you click**, and waits there while the pages are read,
+rather than appearing at the end. A browser only lets a click open a window for
+a few seconds afterwards; an export that takes a minute would arrive as a
+blocked pop-up. If there turns out to be nothing to send, the tab closes again.
+
 Both ends check who they are talking to. This end accepts only the window it
 opened, at an mtgban host; the site's page accepts only the origins it lists,
 from the window that opened it.
