@@ -433,10 +433,19 @@ site until they stopped answering.
 
 ### 6.4 The scope is the visitor's to choose
 
-The panel carries a **This page only** checkbox, and the button says which
-it means — `Export 251 offers` against `Export 20 offers` — because naming
-the wrong one is how a twentieth of a collection gets uploaded as all of
-it.
+The panel's heading is the control. It reads **Export *all* offers** and
+clicking it reads **Export *this page* offers**, the emphasised word being
+both the thing that changes and the thing worth reading twice. Naming the
+wrong scope is how a twentieth of a collection gets uploaded as all of it,
+so the scope is never anywhere but in the sentence that describes what the
+buttons beneath it will do.
+
+A checkbox beside the heading said the same thing twice, in two places
+that could disagree.
+
+The count moved to the heading's tooltip — `2000+ offers listed — click
+for this page only` — where it still carries the plus of §6.2 without
+putting a number in a line that now names a scope.
 
 The whole list is the default: a file holding one page of a seller's stock
 is indistinguishable from a complete one once it has left here. One page is

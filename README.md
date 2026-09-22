@@ -11,8 +11,7 @@ you decide whether to submit it.
 ## What it does
 
 On a seller's offers page — `cardmarket.com/<lang>/<Game>/Users/<seller>/Offers/…`
-— a panel appears in the bottom right saying how many offers it can see. It
-appears only for a game BAN prices; on any other there is nowhere to send the
+— a panel appears in the bottom right. It appears only for a game BAN prices; on any other there is nowhere to send the
 rows, so there is no panel either.
 
 It sees the seller's **whole list**, not the twenty rows on screen. Cardmarket
@@ -27,9 +26,11 @@ It offers two things:
   lets it price them.
 - **CSV** downloads `mkm-<game>-<date>.csv` instead.
 
-Either one takes the whole list by default. **This page only** restricts both to
-the twenty rows in front of you, which is instant and is what you want when the
-page in front of you is what you meant.
+Both take whatever the panel's heading says. It reads **Export *all* offers**;
+click it and it reads **Export *this page* offers**, which restricts both
+buttons to the twenty rows in front of you — instant, and what you want when
+the page in front of you is what you meant. Hovering it says how many offers
+are listed.
 
 It reports how many rows it took, from how many pages, how many it skipped, and
 how many it could not price. The note is a fixed height while it is working —

@@ -30,8 +30,40 @@
   display: none;
 }
 
+/* The label is the scope control, so it is a button - but it reads as the
+   heading it was, because a second thing styled like a button next to two
+   actual buttons is three buttons. The word that changes is the only part
+   that advertises itself, and only under the cursor. */
 #cm-banner .cm-banner-label {
-  font-weight: 600;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  background: none;
+  color: inherit;
+
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+
+  cursor: pointer;
+}
+
+/* The word that changes carries the weight, because it is the word that
+   is worth reading twice. */
+#cm-banner .cm-banner-label .cm-banner-scope {
+  font-weight: 700;
+}
+
+#cm-banner .cm-banner-label:hover .cm-banner-scope {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+
+#cm-banner .cm-banner-label:focus-visible {
+  outline: 2px solid #8ab4f8;
+  outline-offset: 2px;
+  border-radius: 3px;
 }
 
 #cm-banner .cm-banner-actions {
@@ -152,22 +184,4 @@
 #cm-banner button[disabled] {
   cursor: default;
   opacity: 0.55;
-}
-
-#cm-banner .cm-banner-scope {
-  display: flex;
-  gap: 5px;
-  align-items: center;
-
-  cursor: pointer;
-  font-size: 12px;
-  opacity: 0.85;
-}
-
-#cm-banner .cm-banner-scope input {
-  width: 13px;
-  height: 13px;
-  margin: 0;
-  accent-color: #2d67c4;
-  cursor: pointer;
 }

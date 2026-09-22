@@ -120,14 +120,25 @@
     return said + " offers";
   }
 
-  // hereOnly says whether the panel is set to take just the page on
-  // screen. The whole list is the useful default - a file holding a
-  // twentieth of a seller's stock looks exactly like a complete one - but
-  // fifty pages is a minute of waiting, and somebody who wants the page in
-  // front of them should not have to buy the other forty-nine to get it.
-  function hereOnly(panel) {
-    var box = panel.querySelector(".cm-banner-here");
-    return !!(box && box.checked);
+  // SCOPES is what the button will take, in the order clicking moves
+  // through them, and the word it uses for it.
+  //
+  // The whole list is the useful default - a file holding a twentieth of a
+  // seller's stock looks exactly like a complete one - but fifty pages is
+  // a minute of waiting, and somebody who wants the page in front of them
+  // should not have to buy the other forty-nine to get it.
+  //
+  // The label is the control. A checkbox beside it said the same thing
+  // twice, in two places that could disagree.
+  var SCOPES = [
+    { here: false, says: "all" },
+    { here: true, says: "this page" },
+  ];
+
+  var scope = 0;
+
+  function hereOnly() {
+    return SCOPES[scope].here;
   }
 
   // thisPage answers in the shape a walk answers in, so that everything
@@ -162,7 +173,7 @@
     busy(panel, true);
 
     var reading;
-    if (hereOnly(panel)) {
+    if (hereOnly()) {
       reading = Promise.resolve(thisPage());
     } else {
       say(panel, "Reading page 1\u2026");
@@ -281,7 +292,9 @@
   function exportOffers(panel) {
     withCollected(panel, function (done) {
       download(done.csv, filename(gameFromPath(location.pathname)));
-      say(panel, done.note + " exported");
+      // In front, because the note can end in a sentence of its own
+      // and "filter to reach the rest exported" is not one.
+      say(panel, "Exported " + done.note);
     });
   }
 
@@ -337,20 +350,22 @@
 
   function label(panel) {
     var count = MKM.countRows(document);
-    var text = panel.querySelector(".cm-banner-label");
-    if (text) {
-      // What the export will actually take: the seller's whole list under
-      // the filter in force, or just the rows on screen when asked for
-      // that. Naming the wrong one of those is how a twentieth of a
-      // collection gets uploaded as all of it.
-      // Printed the way Cardmarket printed it, because it is not always a
-      // number: a seller past Cardmarket's paging limit reads "2000+", and
-      // rounding that to 2000 would promise an exact figure that is not
-      // one.
-      var taking = hereOnly(panel)
-        ? String(count)
-        : MKM.totalSaid(document) || String(count);
-      text.textContent = "Export " + taking + " offers";
+    var says = panel.querySelector(".cm-banner-scope");
+    if (says) {
+      // Naming the wrong scope is how a twentieth of a collection gets
+      // uploaded as all of it, so the button says which it means.
+      says.textContent = SCOPES[scope].says;
+    }
+    var button = panel.querySelector(".cm-banner-label");
+    if (button) {
+      // The number lives here rather than in the label, which now names a
+      // scope instead of a count. It is written the way Cardmarket wrote
+      // it: a seller past the paging limit reads "2000+", and rounding
+      // that to 2000 promises an exact figure that is not one.
+      var listed = MKM.totalSaid(document) || String(count);
+      button.title = hereOnly()
+        ? count + " offers on this page \u2014 click for the whole list"
+        : listed + " offers listed \u2014 click for this page only";
     }
     panel.hidden = count === 0;
     shown = count;
@@ -361,11 +376,9 @@
     var panel = document.createElement("div");
     panel.id = PANEL_ID;
     panel.innerHTML =
-      '<div class="cm-banner-label"></div>' +
-      '<label class="cm-banner-scope">' +
-      '<input type="checkbox" class="cm-banner-here">' +
-      "<span>This page only</span>" +
-      "</label>" +
+      '<button type="button" class="cm-banner-label">' +
+      'Export <b class="cm-banner-scope"></b> offers' +
+      "</button>" +
       '<div class="cm-banner-actions">' +
       '<button type="button" class="cm-banner-send">Send to BAN</button>' +
       '<button type="button" class="cm-banner-save">CSV</button>' +
@@ -375,9 +388,10 @@
       '<span class="cm-banner-text"></span>' +
       "</div>";
 
-    // Changing what will be taken changes what the button promises, and
-    // makes whatever the last export said about a different scope stale.
-    panel.querySelector(".cm-banner-here").addEventListener("change", function () {
+    // Changing what will be taken makes whatever the last export said
+    // about the other scope stale, so the note goes with it.
+    panel.querySelector(".cm-banner-label").addEventListener("click", function () {
+      scope = (scope + 1) % SCOPES.length;
       say(panel, "");
       label(panel);
     });
