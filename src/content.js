@@ -151,7 +151,10 @@
   // would be this extension slowing down every Cardmarket page it sat on.
   function busy(panel, working) {
     panel.classList.toggle("cm-banner-busy", working);
-    var buttons = panel.querySelectorAll("button");
+    // The two that do something. The heading is left alone: it is holding
+    // the count, and a disabled button is a dimmed one in every browser's
+    // own stylesheet, so disabling it would dim the progress.
+    var buttons = panel.querySelectorAll(".cm-banner-send, .cm-banner-save");
     for (var i = 0; i < buttons.length; i++) {
       buttons[i].disabled = working;
     }
@@ -604,6 +607,12 @@
     // Changing what will be taken makes whatever the last export said
     // about the other scope stale, so the note goes with it.
     panel.querySelector(".cm-banner-label").addEventListener("click", function () {
+      // Not while a read is running: this line is showing the count, and
+      // switching scope would write over it and abandon a read that was
+      // asked for under the other one.
+      if (panel.classList.contains("cm-banner-busy")) {
+        return;
+      }
       scope = (scope + 1) % SCOPES.length;
       // Rows read for the other scope are not the rows now being asked
       // for, and the note about them is stale too.

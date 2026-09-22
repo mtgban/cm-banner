@@ -189,7 +189,22 @@
   }
 }
 
-#cm-banner button[disabled] {
+/* The two that do something, and not the heading above them. While a read
+   runs the heading is holding the count, which is the one thing on the
+   panel worth reading at that moment - dimming it dims the progress. */
+#cm-banner .cm-banner-send[disabled],
+#cm-banner .cm-banner-save[disabled] {
   cursor: default;
   opacity: 0.55;
+}
+
+/* The heading takes no click while a read is running, since the line it
+   would write the scope into is the line showing the count. It says so by
+   dropping the affordance rather than by going grey. */
+#cm-banner.cm-banner-busy .cm-banner-label {
+  cursor: default;
+}
+
+#cm-banner.cm-banner-busy .cm-banner-label:hover .cm-banner-scope {
+  text-decoration: none;
 }

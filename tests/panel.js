@@ -63,6 +63,7 @@ export function mount({ pager = "pager-last.html", url = OFFERS, total = 14 } = 
     opened,
     heading: () => at(".cm-banner-label").textContent,
     scope: () => at(".cm-banner-scope").textContent,
+    label: () => at(".cm-banner-label"),
     send: () => at(".cm-banner-send"),
     save: () => at(".cm-banner-save"),
     note: () => at(".cm-banner-note").textContent,

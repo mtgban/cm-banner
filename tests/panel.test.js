@@ -54,6 +54,31 @@ describe("clicking send", () => {
     expect(it.send().disabled).toBe(false);
   });
 
+  test("the heading is not dimmed while it reads", async () => {
+    // It is holding the count, which is the one thing on the panel worth
+    // reading at that moment. Disabling a button dims it in every
+    // browser's own stylesheet, so the heading is not disabled - it just
+    // declines the click.
+    const it = mount();
+    it.send().click();
+    expect(it.busy()).toBe(true);
+    expect(it.send().disabled).toBe(true);
+    expect(it.save().disabled).toBe(true);
+    expect(it.label().disabled).toBe(false);
+    await it.settle();
+  });
+
+  test("and clicking it mid-read neither switches scope nor writes over the count", async () => {
+    const it = mount({ pager: "pager-next.html", total: 1093 });
+    it.send().click();
+    const counting = it.scope();
+    it.label().click();
+    expect(it.scope()).toBe(counting);
+    it.escape();
+    // The scope is where it was left, not one click along from it.
+    expect(it.scope()).toBe("all offers");
+  });
+
   test("what is left to say opens a line, and only then", async () => {
     // Three of the fixture's fourteen rows name no product, and no rates
     // were reachable, so this read has something to report. A read with
