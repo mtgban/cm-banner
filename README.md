@@ -22,7 +22,7 @@ It offers two things:
 - **CSV** downloads `mkm-<game>-<date>.csv` instead.
 
 It reports how many rows it took, how many it skipped, and how many it could
-not price. The panel is one fixed size whatever it is saying — a box that
+not price. The stack is one fixed size whatever it is saying — something that
 resized under the cursor would move the button being aimed at.
 
 It reads singles and sealed alike: Cardmarket files boxes and bundles under
@@ -197,12 +197,3 @@ quoting. It runs in CI on every push and pull request.
 The fixture carries the shapes that have actually broken this parser, not just
 the happy ones — a quantity written immediately before a price, which flattening
 the row reads as part of the number.
-
-`demo/index.html` loads that same fixture and the real content script, so the
-panel on it is the one the extension injects. Serve it over HTTP:
-
-```
-python3 -m http.server 8000
-```
-
-then open `http://localhost:8000/demo/`.
