@@ -110,23 +110,27 @@
   cursor: pointer;
 }
 
+/* Both sit a step or two above the panel rather than lit against it. This
+   is a box in the corner of somebody else's page and it is not the thing
+   being read; the pair still order themselves, but neither shouts. The
+   text is left alone - it is the part that has to stay readable. */
 #cm-banner .cm-banner-send {
   flex: 1;
-  background: #2d67c4;
+  background: #33507d;
 }
 
 #cm-banner .cm-banner-send:hover {
-  background: #3a78d8;
+  background: #3f5f92;
 }
 
 /* The quieter of the two: the file is the fallback, not the point. */
 #cm-banner .cm-banner-save {
-  background: #33507d;
+  background: #27395c;
   font-weight: 500;
 }
 
 #cm-banner .cm-banner-save:hover {
-  background: #3f5f92;
+  background: #31476e;
 }
 
 #cm-banner .cm-banner-send:focus-visible,
