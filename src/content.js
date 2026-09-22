@@ -19,6 +19,15 @@
   // What the two halves of the handoff say to each other.
   // The protocol the site's handoff page speaks.
   var SEND = "Send to BAN";
+  // What the button says once the rows are read and waiting for the click
+  // that sends them. The count is not on it: it goes in the heading, which
+  // has room and is otherwise repeating a scope that was chosen before the
+  // read and has not changed since.
+  //
+  // Not called READY - that name is taken, by the message the site's
+  // handoff page sends when it is listening, and the two are one keyword
+  // apart from silently swapping places.
+  var ARMED = "READY";
   var READY = "mtgban-handoff-ready";
   var ROWS = "mtgban-handoff-rows";
 
@@ -516,8 +525,9 @@
     armed = done;
     var send = panel.querySelector(".cm-banner-send");
     if (send) {
-      send.textContent = "Send " + done.count + " rows";
+      send.textContent = ARMED;
     }
+    counting(panel, done.count + (done.count === 1 ? " row" : " rows"));
   }
 
   // disarm is for whenever the rows in hand stop describing what is on
@@ -529,6 +539,8 @@
     if (send) {
       send.textContent = SEND;
     }
+    // The heading was holding the count. Give it its word back.
+    label(panel);
   }
 
   // stopReading abandons whatever is running and puts the panel back as

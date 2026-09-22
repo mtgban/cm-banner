@@ -46,10 +46,10 @@ describe("clicking send", () => {
     expect(it.noteShown()).toBe(false);
     await it.settle();
     expect(it.opened).toEqual([]);
-    // The button becomes the second click, and the heading has its word
-    // back.
-    expect(it.send().textContent).toBe("Send 11 rows");
-    expect(it.scope()).toBe("all offers");
+    // The button becomes the second click, and the heading keeps the
+    // count rather than going back to repeating the scope.
+    expect(it.send().textContent).toBe("READY");
+    expect(it.scope()).toBe("11 rows");
     expect(it.busy()).toBe(false);
     expect(it.send().disabled).toBe(false);
   });
@@ -78,9 +78,11 @@ describe("clicking send", () => {
     const it = mount();
     it.send().click();
     await it.settle();
-    expect(it.send().textContent).toBe("Send 11 rows");
+    expect(it.send().textContent).toBe("READY");
     it.toggleScope();
     expect(it.send().textContent).toBe("Send to BAN");
+    // And the heading stops claiming rows nobody is asking for now.
+    expect(it.scope()).toBe("this page only");
   });
 });
 

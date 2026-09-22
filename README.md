@@ -173,9 +173,10 @@ it is an ordinary navigation, so it carries your session, and it does its own
 uploading. This extension opens that page and passes it the rows — it reaches
 into no form of the site's own, so a redesign there is not a break here.
 
-**CM BANNER - this page only** sends in one click. **CM BANNER - all offers** takes two: the first
-reads the pages, with the count ticking along in the panel, and the button then
-reads *Send 251 rows* — the second click opens the tab and hands them over.
+**CM BANNER - this page only** sends in one click. **CM BANNER - all offers**
+takes two: the first reads the pages, with the count ticking along in the
+heading, and leaves the heading reading *CM BANNER - 251 rows* and the button
+*READY*. The second click opens the tab and hands them over.
 
 That is not ceremony. A browser only lets a click open a window for a few
 seconds afterwards, and reading a hundred pages takes minutes, so the tab has

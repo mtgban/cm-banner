@@ -319,8 +319,17 @@ and has no timeout — but it hands you an empty page to look at while the
 count ticks along in the tab behind it. Reading first and opening on a
 second click gives both halves a click of their own.
 
-So the button is the state: **Send to BAN** before, **Send 251 rows**
-after — which is also why the line beneath it carries no count. Rows in hand are dropped when the table moves underneath them
+So the panel is the state. Before a read the heading names the scope and
+the button says **Send to BAN**; after one the heading holds the count —
+`CM BANNER - 251 rows` — and the button says **READY**. The count goes in
+the heading because the heading is otherwise repeating a scope that was
+chosen before the read and has not changed since, and because that leaves
+the line beneath the buttons for the things a count cannot say.
+
+(The label constant is `ARMED`, not `READY`. That name belongs to the
+message the handoff page sends when it is listening, and the two are one
+keyword apart from silently swapping places — which they did, once, for
+as long as it took the suite to run.) Rows in hand are dropped when the table moves underneath them
 (Cardmarket refills it on every filter) and when the scope changes, since
 neither describes what is being asked for any more. Either button can fill
 them and either can spend them, so wanting the file as well does not mean
@@ -532,9 +541,10 @@ That takes three things, and each is a way the panel used to change size:
 
 - a **width** on the panel, rather than one that fits what it is saying;
 - **the count in the heading**, where a spinner takes the place of the
-  scope word: `CM BANNER - 140 / 251`. The heading is a line the panel
-  already has, and the scope word is the one thing not worth reading at
-  the moment the count exists. The alternative — a line of its own — means
+  scope word: `CM BANNER - 140 / 251` while reading, and `CM BANNER - 251
+  rows` once read. The heading is a line the panel already has, and the
+  scope word is the one thing not worth reading from the moment a read
+  starts until the rows have gone. The alternative — a line of its own — means
   keeping that line empty the rest of the time, which is the same problem
   paid for in advance;
 - a **spinner that fits inside that line**, inline and sized inside its
