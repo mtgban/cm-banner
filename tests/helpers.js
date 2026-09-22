@@ -43,19 +43,19 @@ export function text(name) {
 // The pager fixtures are verbatim; the next-page href and the hit count are
 // substituted, because those are the two things a test needs to vary and
 // the only two Cardmarket varies between one page and the next.
-export function pageOf({ offset = 0, next = "", total = 0 } = {}) {
+export function pageOf({ offset = 0, next = "", total = 0, pager = "" } = {}) {
   const rows = text("offers.html").replace(
     /stockRow(\d+)/g,
     (_, id) => "stockRow" + (Number(id) + offset)
   );
-  let pager = text(next ? "pager-next.html" : "pager-last.html");
+  let markup = text(pager || (next ? "pager-next.html" : "pager-last.html"));
   if (next) {
-    pager = pager.replace("/en/Magic/Users/Seller/Offers/Singles?site=3", next);
+    markup = markup.replace("/en/Magic/Users/Seller/Offers/Singles?site=3", next);
   }
   if (total) {
-    pager = pager.replace(">1093<", ">" + total + "<");
+    markup = markup.replace(">1093<", ">" + total + "<");
   }
   const window = new Window();
-  window.document.body.innerHTML = pager + rows;
+  window.document.body.innerHTML = markup + rows;
   return window.document;
 }

@@ -369,7 +369,38 @@ first, which is what page two's own previous-page link points at, so page
 one is the current URL with `site` removed. Walking forward from page five
 would silently drop four pages.
 
-### 6.2 Cloudflare decides how fast this can go
+### 6.2 The list stops at 100 pages
+
+Cardmarket pages a seller's offers to **100 pages of twenty — 2000 offers
+— and no further**. A seller with ten thousand cards has eight thousand
+of them that this listing will not reach at all.
+
+It says so with a plus on both numbers, and only with that:
+
+```html
+<span class="total-count">2000+</span><span>&nbsp;Hits</span>
+<span class="mx-1">Page 100 of 100+</span>
+```
+
+Page 100's next-page control is then `disabled` with no `href`, **exactly
+as a genuine last page's is**. So the walk ends there tidily, and nothing
+in the rows, the row count or the terminator distinguishes "that was the
+whole list" from "that is as far as Cardmarket will go". The plus is the
+only signal, which is why it is carried rather than parsed away:
+
+- `totalSaid()` returns the text as printed — `"2000+"`, not `2000` — and
+  the button prints it, because "Export 2000 offers" off a ten-thousand
+  offer seller promises an exact figure that is not one.
+- `totalCount()` still returns 2000, for counting up to while the walk
+  runs.
+- `capped()` is the plus, and the walk carries it out to the panel, which
+  says the export is Cardmarket's limit rather than the whole shelf.
+
+The way past it is the seller's own filters, which the walk already
+respects (§6.1): a listing sliced by set, language or condition is a
+different listing, each with its own 100 pages.
+
+### 6.3 Cloudflare decides how fast this can go
 
 Cardmarket is behind Cloudflare, and this is the binding constraint on the
 whole feature.
@@ -400,7 +431,7 @@ extension can send answers it. So:
 publish one, and establishing it properly would mean hammering someone's
 site until they stopped answering.
 
-### 6.3 The scope is the visitor's to choose
+### 6.4 The scope is the visitor's to choose
 
 The panel carries a **This page only** checkbox, and the button says which
 it means — `Export 251 offers` against `Export 20 offers` — because naming
@@ -415,7 +446,7 @@ Taking one page answers in the same shape a walk answers in, so everything
 downstream of it — the pricing, the counting, the CSV, the handoff — is the
 same code either way.
 
-### 6.4 What a partial walk does
+### 6.5 What a partial walk does
 
 Whatever was read is kept and handed over, and the panel says the walk
 stopped early and why. A short list is worth having; a short list that
@@ -425,7 +456,7 @@ This is also why a partial export keeps its warning on screen after being
 handed to BAN, where a complete one clears it: the receiving tab cannot
 tell that the list is short, and neither could anyone reading it there.
 
-### 6.5 The walk is not atomic
+### 6.6 The walk is not atomic
 
 Thirteen pages take some seconds, and the seller's stock moves underneath
 it — the same seller was measured at 262 offers over 14 pages one
@@ -454,6 +485,11 @@ Stated plainly so nobody takes them as tested:
   pacing was needed. The paced walk has never completed against
   Cardmarket, because provoking the challenge is what it takes to find
   out, and answering it is the visitor's to do.
+- **A walk of any real length.** 100 pages at `PACE` is around two
+  minutes, and that has not been sat through. The ceiling's *shape* is
+  verified — from a saved page 100, which is where the `2000+` and the
+  disabled terminator above were read — but no capped seller has been
+  walked end to end.
 - **A complete walk.** The longest live run reached two pages and 40
   offers, all 40 with distinct article ids, 39 of 40 with a product id,
   every one priced and graded — and it started from page five and

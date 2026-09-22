@@ -116,6 +116,27 @@ globalThis.MKM = globalThis.MKM || {};
   // from "Page 5 of 13" beside it, because that sentence is written in
   // whichever of Cardmarket's languages the visitor reads and the number is
   // not.
+  // totalSaid is the hit count exactly as Cardmarket prints it, which is
+  // not always a number. A listing longer than Cardmarket will page
+  // through says "2000+", and the plus is the whole point.
+  function totalSaid(root) {
+    var counted = root.querySelector(".total-count");
+    return counted ? (counted.textContent || "").trim() : "";
+  }
+
+  // capped says whether Cardmarket is refusing to show the rest of the
+  // list.
+  //
+  // It pages a seller's offers to 100 pages of twenty and no further,
+  // marking both numbers with a plus - "2000+ Hits", "Page 100 of 100+".
+  // Page 100's next-page control is then disabled exactly as a genuine
+  // last page's is, so the walk ends there tidily with nothing in the
+  // rows to say that a fifth of a ten-thousand-offer seller is all that
+  // came back. Only the plus says it, so the plus has to be carried.
+  function capped(root) {
+    return totalSaid(root).indexOf("+") !== -1;
+  }
+
   function totalCount(root) {
     var counted = root.querySelector(".total-count");
     if (!counted) {
@@ -171,6 +192,7 @@ globalThis.MKM = globalThis.MKM || {};
     var pace = opts.pace === undefined ? PACE : opts.pace;
 
     var expected = totalCount(doc);
+    var ceiling = capped(doc);
     var offers = [];
     var seen = Object.create(null);
     var visited = Object.create(null);
@@ -233,6 +255,9 @@ globalThis.MKM = globalThis.MKM || {};
         pages: pages,
         rows: rows,
         expected: expected,
+        // Not "how many were read" but "was there more that Cardmarket
+        // would not show", which is a different kind of short.
+        capped: ceiling,
         stopped: stopped,
       };
     }
@@ -262,5 +287,7 @@ globalThis.MKM = globalThis.MKM || {};
   MKM.nextPageURL = nextPageURL;
   MKM.firstPageURL = firstPageURL;
   MKM.totalCount = totalCount;
+  MKM.totalSaid = totalSaid;
+  MKM.capped = capped;
   MKM.fetchPage = fetchPage;
 })(globalThis.MKM);

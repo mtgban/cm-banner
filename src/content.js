@@ -141,6 +141,9 @@
       // What was on offer here, not what the seller has: nothing was
       // promised beyond this page, so nothing can be short.
       expected: offers.length,
+      // Nothing was promised beyond this page, so nothing is being
+      // withheld either.
+      capped: false,
       stopped: "",
     };
   }
@@ -227,6 +230,18 @@
       // Said out loud: a blank price is a row the upload values off its
       // own prices rather than the seller's, which is a different answer.
       note += ", " + unpriced + " unpriced";
+    }
+    if (walked.capped) {
+      // Cardmarket pages a seller to 100 and stops, and page 100 ends like
+      // any other last page. Unsaid, the file is indistinguishable from a
+      // small seller's complete one.
+      note +=
+        " \u2014 Cardmarket's limit, not the whole shelf; filter to reach the rest";
+    } else if (walked.expected && walked.rows < walked.expected) {
+      // The first page promised more than turned up. Nothing here can get
+      // the difference back - a sale mid-walk shifts every later offer up
+      // a place and one falls between two fetches - but it can be said.
+      note += " \u2014 " + walked.expected + " were listed when it started";
     }
     if (walked.stopped) {
       // A walk that gave up part way says so, rather than handing over a
@@ -328,7 +343,13 @@
       // the filter in force, or just the rows on screen when asked for
       // that. Naming the wrong one of those is how a twentieth of a
       // collection gets uploaded as all of it.
-      var taking = hereOnly(panel) ? count : MKM.totalCount(document) || count;
+      // Printed the way Cardmarket printed it, because it is not always a
+      // number: a seller past Cardmarket's paging limit reads "2000+", and
+      // rounding that to 2000 would promise an exact figure that is not
+      // one.
+      var taking = hereOnly(panel)
+        ? String(count)
+        : MKM.totalSaid(document) || String(count);
       text.textContent = "Export " + taking + " offers";
     }
     panel.hidden = count === 0;
