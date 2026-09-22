@@ -60,7 +60,7 @@ can be `content_scripts` entries without bundling; keep them that way.
 
 To look at the panel, load the extension unpacked and open a real offers
 page. There is deliberately no demo page: the last one had to be taught a
-fake offers path to get past the check for a supported game, which is a
+fake offers path to get past the manifest and the row count, which is a
 demo arranging to look like the thing rather than being it.
 
 ### Two traps that cost real time here
