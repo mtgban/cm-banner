@@ -9,6 +9,7 @@ const content = readFileSync(
   new URL("../src/content.js", import.meta.url),
   "utf8"
 );
+const css = readFileSync(new URL("../src/content.css", import.meta.url), "utf8");
 
 // Top-level functions inside the IIFE are indented two spaces; the ones
 // nested inside them are indented four, so they are not mistaken for the
@@ -146,5 +147,34 @@ describe("stopping", () => {
     const read = body("read");
     expect(read).toContain("mine !== generation");
     expect(read.indexOf("stale()")).toBeLessThan(read.indexOf("busy(panel, false)"));
+  });
+});
+
+describe("the panel does not move", () => {
+  // It is anchored to the bottom right corner of somebody else's page and
+  // the cursor is on it. Every pixel it grows, in either direction, drags
+  // a button out from under that cursor - and it grows while reading,
+  // which is exactly when nobody is looking at it.
+  test("it has one width rather than a width that fits what it says", () => {
+    const at = css.indexOf("#cm-banner {");
+    expect(at).toBeGreaterThan(-1);
+    expect(css.slice(at, css.indexOf("}", at))).toMatch(/\n\s*width:/);
+  });
+
+  test("the line it speaks on is there whether or not it is speaking", () => {
+    const at = css.indexOf("#cm-banner .cm-banner-note {");
+    expect(at).toBeGreaterThan(-1);
+    expect(css.slice(at, css.indexOf("}", at))).toMatch(/min-height:/);
+    // Hiding an empty note is the same bug by another route: the panel
+    // grows upwards, so the line arriving moves the buttons.
+    expect(body("say")).not.toContain("hidden");
+  });
+
+  test("the spinner fits inside that line", () => {
+    // A spinner taller than the text grows the note when it appears,
+    // which is the panel changing size on its way into a read.
+    const at = css.indexOf("#cm-banner.cm-banner-busy .cm-banner-spin {");
+    expect(at).toBeGreaterThan(-1);
+    expect(css.slice(at, css.indexOf("}", at))).toContain("box-sizing: border-box");
   });
 });

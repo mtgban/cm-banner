@@ -27,7 +27,11 @@ It sees the seller's **whole list**, not the twenty rows on screen. Cardmarket
 paginates at twenty, and the export follows the pager from the first page to
 the last, whichever page you happened to be looking at. That is one request per
 page and deliberately unhurried, so the panel shows a spinner and counts up —
-`Page 7 · 140 of 251 offers` — while it works.
+`140 / 251` — while it works.
+
+The panel is one fixed size and stays that size whatever it is doing. It sits
+under the cursor, and every pixel it grew would drag a button out from under
+it.
 
 It offers two things:
 
@@ -35,15 +39,14 @@ It offers two things:
   lets it price them.
 - **CSV** downloads `mkm-<game>-<date>.csv` instead.
 
-Both take whatever the panel's heading says. It reads **Export *all* offers**;
-click it and it reads **Export *this page* offers**, which restricts both
-buttons to the twenty rows in front of you — instant, and what you want when
-the page in front of you is what you meant. Hovering it says how many offers
-are listed.
+Both take whatever the panel's heading says. It reads **BANNER - *all***; click
+it and it reads **BANNER - *page***, which restricts both buttons to the twenty
+rows in front of you — instant, and what you want when the page in front of you
+is what you meant. Hovering it says how many offers are listed.
 
-It reports how many rows it took, from how many pages, how many it skipped, and
-how many it could not price. The note is a fixed height while it is working —
-something that resized under the cursor would move the button being aimed at.
+The button carries the count once the rows are read, so the line underneath it
+says only what the count does not: what was skipped, what will be valued as
+something it is not, what is missing from the list. Usually it says nothing.
 
 It reads singles and sealed alike: Cardmarket files boxes and bundles under
 their own product categories, and the upload tells one from the other by what
@@ -166,7 +169,7 @@ it is an ordinary navigation, so it carries your session, and it does its own
 uploading. This extension opens that page and passes it the rows — it reaches
 into no form of the site's own, so a redesign there is not a break here.
 
-**This page only** sends in one click. **All offers** takes two: the first
+**BANNER - page** sends in one click. **BANNER - all** takes two: the first
 reads the pages, with the count ticking along in the panel, and the button then
 reads *Send 251 rows* — the second click opens the tab and hands them over.
 

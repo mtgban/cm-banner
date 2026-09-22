@@ -320,7 +320,7 @@ count ticks along in the tab behind it. Reading first and opening on a
 second click gives both halves a click of their own.
 
 So the button is the state: **Send to BAN** before, **Send 251 rows**
-after. Rows in hand are dropped when the table moves underneath them
+after — which is also why the line beneath it carries no count. Rows in hand are dropped when the table moves underneath them
 (Cardmarket refills it on every filter) and when the scope changes, since
 neither describes what is being asked for any more. Either button can fill
 them and either can spend them, so wanting the file as well does not mean
@@ -474,9 +474,9 @@ site until they stopped answering.
 
 ### 6.4 The scope is the visitor's to choose
 
-The panel's heading is the control. It reads **Export *all* offers** and
-clicking it reads **Export *this page* offers**, the emphasised word being
-both the thing that changes and the thing worth reading twice. Naming the
+The panel's heading is the control. It reads **BANNER - *all*** and
+clicking it reads **BANNER - *page***, the emphasised word being both the
+thing that changes and the thing worth reading twice. Naming the
 wrong scope is how a twentieth of a collection gets uploaded as all of it,
 so the scope is never anywhere but in the sentence that describes what the
 buttons beneath it will do.
@@ -518,7 +518,34 @@ another, which nothing here covers. What comes back says how many were
 read against how many the first page promised, so a walk that lost one can
 be seen to have lost it.
 
-### 6.7 Stopping
+### 6.7 The panel does not move
+
+One size, always: it is anchored to the bottom right corner of somebody
+else's page with the cursor on it, and every pixel it grew in either
+direction would drag a button out from under that cursor — while reading,
+which is exactly when nobody is watching it.
+
+That takes three things, and each of them is a way the panel used to
+change size:
+
+- a **width** on the panel, rather than one that fits what it is saying;
+- a **min-height** on the line it speaks on, kept whether or not there is
+  anything on it, because the panel grows upwards and a line arriving
+  pushes the buttons up;
+- a **spinner that fits inside that line** — sized inside its border, or
+  it is taller than the text and grows the note at the moment a read
+  starts.
+
+Measured across idle, reading, read, read-with-caveats, capped and saved:
+260.00 x 95.99 in every one.
+
+What follows from the fixed width is that the output has to be short. The
+button already says how many rows there are, so the line below carries
+only what the count does not — what was skipped, what will be valued as
+something it is not, what is missing from the list — and most of the time
+it is empty.
+
+### 6.8 Stopping
 
 **Escape** abandons whatever is running and puts the panel back: spinner
 off, buttons back, note cleared, rows dropped. The scope stays where it
@@ -549,7 +576,7 @@ nothing unless there is something of ours to stop, and it does not
 `preventDefault` even then: closing a dialog of Cardmarket's and stopping
 a read of ours are not in conflict.
 
-### 6.8 Leaving while it reads
+### 6.9 Leaving while it reads
 
 The read lives in this page. Following a link, pressing back or forward,
 or reloading takes the content script with it, and a hundred pages of

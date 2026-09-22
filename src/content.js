@@ -87,14 +87,14 @@
     }, 30000);
   }
 
+  // say writes the one line the panel has to say things on. The line is
+  // always there, empty or not: the panel is anchored to the corner and
+  // grows upwards, so a line that came and went would move the buttons
+  // out from under the cursor every time it did.
   function say(panel, message) {
-    var note = panel.querySelector(".cm-banner-note");
     var text = panel.querySelector(".cm-banner-text");
     if (text) {
       text.textContent = message;
-    }
-    if (note) {
-      note.hidden = !message && !panel.classList.contains("cm-banner-busy");
     }
   }
 
@@ -138,16 +138,14 @@
     }
   }
 
-  // progress is what the panel says while the pages are being read. The
-  // page number is counted here and the total is the one printed on the
-  // page, so neither is taken from "Page 5 of 13" - that sentence is
-  // written in whichever language the visitor reads.
+  // progress is how far along the read is and nothing else. The total is
+  // the one printed on the page, never taken from "Page 5 of 13" beside
+  // it - that sentence is written in whichever language the visitor reads.
   function progress(at) {
-    var said = "Page " + at.pages + " \u00b7 " + at.offers;
     if (at.expected) {
-      said += " of " + at.expected;
+      return at.offers + " / " + at.expected;
     }
-    return said + " offers";
+    return at.offers + " offers";
   }
 
   // SCOPES is what the button will take, in the order clicking moves
@@ -162,7 +160,7 @@
   // twice, in two places that could disagree.
   var SCOPES = [
     { here: false, says: "all" },
-    { here: true, says: "this page" },
+    { here: true, says: "page" },
   ];
 
   var scope = 0;
@@ -201,12 +199,14 @@
     }
 
     busy(panel, true);
+    // Nothing is said to begin with. The spinner is already saying it,
+    // and the first page answers before a sentence would have been read.
+    say(panel, "");
 
     var reading;
     if (hereOnly()) {
       reading = Promise.resolve(thisPage());
     } else {
-      say(panel, "Reading page 1\u2026");
       reading = MKM.walkPages(document, location.href, {
         cancelled: stale,
         onProgress: function (at) {
@@ -233,14 +233,19 @@
             note: "None of the " + walked.rows + " offers here could be read",
           };
         }
-        say(panel, "Reading rates\u2026");
         return MKM.fetchRates().then(function (rates) {
           return priced(walked, rates);
         });
       });
   }
 
-  // priced puts a dollar price on every row and says what was taken.
+  // priced puts a dollar price on every row and says what is worth
+  // saying about them, which is usually nothing at all.
+  //
+  // The button already says how many rows there are, so the line below it
+  // carries only what the count does not: what was dropped, what will be
+  // valued as something it is not, and what is missing from the list
+  // altogether.
   function priced(walked, rates) {
     var offers = walked.offers;
     var unpriced = 0;
@@ -251,59 +256,48 @@
       }
     });
 
-    var note = offers.length + " rows";
-    if (walked.pages > 1) {
-      note += " from " + walked.pages + " pages";
-    }
+    var said = [];
     var skipped = walked.rows - offers.length;
     if (skipped > 0) {
-      note += ", " + skipped + " skipped";
+      said.push(skipped + " skipped");
     }
     var foreign = MKM.foreignCount(offers);
     if (foreign > 0) {
       // Worth saying: the CSV has no language column and the upload has
       // nothing to read one into, so these are valued as the English
       // printing, at a price asked for a different card.
-      note += ", " + foreign + " non-English";
+      said.push(foreign + " non-English");
     }
     if (unpriced > 0) {
       // Said out loud: a blank price is a row the upload values off its
       // own prices rather than the seller's, which is a different answer.
-      note += ", " + unpriced + " unpriced";
+      said.push(unpriced + " unpriced");
     }
     if (walked.capped) {
-      // Cardmarket pages a seller to 100 and stops, and page 100 ends like
-      // any other last page. Unsaid, the file is indistinguishable from a
-      // small seller's complete one.
-      note +=
-        " \u2014 Cardmarket's limit, not the whole shelf; filter to reach the rest";
+      // Cardmarket pages a seller to 100 and stops, and page 100 ends
+      // like any other last page. Unsaid, the file is indistinguishable
+      // from a small seller's complete one.
+      said.push("capped at 100 pages");
     } else if (walked.expected && walked.rows < walked.expected) {
-      // The first page promised more than turned up. Nothing here can get
-      // the difference back - a sale mid-walk shifts every later offer up
-      // a place and one falls between two fetches - but it can be said.
-      note += " \u2014 " + walked.expected + " were listed when it started";
+      // The first page promised more than turned up. A sale mid-walk
+      // shifts every later offer up a place and one falls between two
+      // fetches.
+      said.push(walked.expected + " were listed");
     }
     if (walked.stopped) {
-      // A walk that gave up part way says so, rather than handing over a
-      // short list that reads like the whole inventory.
-      note += " \u2014 stopped early: " + walked.stopped;
+      said.push(walked.stopped);
     }
+
     return {
       csv: MKM.toCSV(offers),
-      note: note,
+      note: said.join(", "),
       count: offers.length,
-      partial: !!walked.stopped,
+      // Short for any reason, so it goes on saying so after being handed
+      // over: the tab that receives the rows cannot tell that they are
+      // not all of them, and neither could anyone reading them there.
+      partial: !!(walked.stopped || walked.capped),
     };
   }
-
-  // generation counts the reads, and bumping it is how one is abandoned.
-  //
-  // A fetch in flight cannot be recalled, so the read is not stopped so
-  // much as disowned: the walk asks between pages whether anyone still
-  // wants it, and everything that comes back late finds it is no longer
-  // the current read and says nothing. That is also what keeps a stopped
-  // read from turning the spinner off underneath the one after it.
-  var generation = 0;
 
   // read answers with the rows, or with null having already said why there
   // are none - or silently, if it was abandoned while it ran. It returns
@@ -348,9 +342,7 @@
   function exportOffers(panel) {
     function write(done) {
       download(done.csv, filename(gameFromPath(location.pathname)));
-      // In front, because the note can end in a sentence of its own
-      // and "filter to reach the rest exported" is not one.
-      say(panel, "Exported " + done.note);
+      say(panel, done.note ? "saved, " + done.note : "saved");
     }
 
     if (armed) {
@@ -476,7 +468,7 @@
         return;
       }
       arm(panel, done);
-      say(panel, "Read " + done.note);
+      say(panel, done.note);
     });
   }
 
@@ -550,7 +542,7 @@
       var listed = MKM.totalSaid(document) || String(count);
       button.title = hereOnly()
         ? count + " offers on this page \u2014 click for the whole list"
-        : listed + " offers listed \u2014 click for this page only";
+        : listed + " offers listed \u2014 click for this page";
     }
     panel.hidden = count === 0;
     shown = count;
@@ -562,13 +554,13 @@
     panel.id = PANEL_ID;
     panel.innerHTML =
       '<button type="button" class="cm-banner-label">' +
-      'Export <b class="cm-banner-scope"></b> offers' +
+      'BANNER - <b class="cm-banner-scope"></b>' +
       "</button>" +
       '<div class="cm-banner-actions">' +
       '<button type="button" class="cm-banner-send">' + SEND + "</button>" +
       '<button type="button" class="cm-banner-save">CSV</button>' +
       "</div>" +
-      '<div class="cm-banner-note" hidden>' +
+      '<div class="cm-banner-note">' +
       '<span class="cm-banner-spin" aria-hidden="true"></span>' +
       '<span class="cm-banner-text"></span>' +
       "</div>";

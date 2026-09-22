@@ -12,6 +12,11 @@
   align-items: stretch;
   gap: 6px;
 
+  /* One width, always. The panel is anchored to the right edge, so a box
+     that grew to fit what it was saying would drag the buttons sideways
+     mid-read. */
+  width: 15rem;
+
   margin: 0;
   padding: 10px;
   border-radius: 8px;
@@ -109,13 +114,16 @@
   outline-offset: 2px;
 }
 
-/* A width rather than a max-width, because the panel is only as wide as
-   what it is saying and the progress line changes on every page: "Page 7 ·
-   140 of 251" and "Page 12 · 240 of 251" are different lengths, and the
-   panel is anchored on its right edge, so the buttons would slide about
-   under the cursor as the count went up. */
+/* A row, so the spinner can sit beside what it is saying, and one line
+   tall whether or not there is anything on it: the panel is anchored to
+   the bottom corner and grows upwards, so a line that came and went would
+   move the buttons every time it did. */
 #cm-banner .cm-banner-note {
-  width: 15rem;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+
+  min-height: 1.35em;
   opacity: 0.85;
   font-size: 12px;
 }
@@ -127,37 +135,20 @@
   }
 }
 
-/* The note is a row so the spinner can sit beside what it is saying. */
-#cm-banner .cm-banner-note {
-  display: flex;
-  gap: 6px;
-  align-items: flex-start;
-}
-
-/* [hidden] is display:none in the browser's own sheet, which the display
-   above would otherwise win against. */
-#cm-banner .cm-banner-note[hidden] {
-  display: none;
-}
-
-/* While the pages are being read the note is two lines tall whatever it
-   says. A count growing a digit rewraps the line otherwise, and the panel
-   is under the cursor - a box that changes height moves the button being
-   aimed at. */
-#cm-banner.cm-banner-busy .cm-banner-note {
-  min-height: 2.6em;
-}
-
 #cm-banner .cm-banner-spin {
   display: none;
 }
 
+/* Sized inside its border so the whole thing is shorter than the line it
+   sits on. A spinner taller than the text grows the note when it appears,
+   which is the panel changing height on its way into a read. */
 #cm-banner.cm-banner-busy .cm-banner-spin {
   display: block;
   flex: none;
+  box-sizing: border-box;
 
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
   margin-top: 2px;
   border: 2px solid rgb(255 255 255 / 30%);
   border-top-color: #fff;
