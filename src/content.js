@@ -136,6 +136,40 @@
     }
   }
 
+  // recap is what a finished read had to say about itself - what it
+  // skipped, what it could not price - kept on the hover rather than on a
+  // line of its own.
+  //
+  // It is a footnote to a number, not a thing to act on: a line under the
+  // buttons for it sits there being read once and ignored after, and the
+  // panel is small enough that a line it does not need is a line in the
+  // way. The lines it does keep are the ones that ask for something - a
+  // read that was refused, a pop-up that was blocked.
+  //
+  // Said on both the count and the mark beside it, so it answers whichever
+  // of the two the cursor stopped on.
+  function recap(panel, text) {
+    var parts = panel.querySelectorAll(".cm-banner-scope, .cm-banner-tick");
+    for (var i = 0; i < parts.length; i++) {
+      if (text) {
+        parts[i].title = text;
+      } else {
+        parts[i].removeAttribute("title");
+      }
+    }
+  }
+
+  // tick is the mark next to the count saying the file was written. The
+  // download itself is the browser's business once the anchor is clicked,
+  // and nothing here hears about it; what this says is that the rows were
+  // read and handed to it.
+  function tick(panel, done) {
+    var mark = panel.querySelector(".cm-banner-tick");
+    if (mark) {
+      mark.hidden = !done;
+    }
+  }
+
   // counting puts the read's progress where the scope word usually is.
   //
   // The heading is a line the panel already has. Giving the count a line
@@ -436,7 +470,8 @@
   function exportOffers(panel) {
     function write(done) {
       download(done.csv, filename(gameFromPath(location.pathname)));
-      say(panel, done.note ? "saved, " + done.note : "saved");
+      tick(panel, true);
+      recap(panel, done.note ? "saved, " + done.note : "saved");
     }
 
     if (armed) {
@@ -589,7 +624,6 @@
         return;
       }
       arm(panel, done);
-      say(panel, done.note);
     });
   }
 
@@ -618,6 +652,7 @@
       send.textContent = ARMED;
     }
     counting(panel, done.count + (done.count === 1 ? " row" : " rows"));
+    recap(panel, done.note);
   }
 
   // disarm is for whenever the rows in hand stop describing what is on
@@ -625,6 +660,7 @@
   // scope nobody is asking for any more.
   function disarm(panel) {
     armed = null;
+    tick(panel, false);
     var send = panel.querySelector(".cm-banner-send");
     if (send) {
       send.textContent = SEND;
@@ -684,6 +720,7 @@
         ? count + " offers on this page \u2014 click for the whole list"
         : listed + " offers listed \u2014 click for this page";
     }
+    recap(panel, "");
     panel.hidden = count === 0;
     shown = tableState();
     return count;
@@ -697,6 +734,7 @@
       'CM BAN<i class="cm-banner-ner">ner</i> - ' +
       '<span class="cm-banner-spin" aria-hidden="true"></span>' +
       '<b class="cm-banner-scope"></b>' +
+      '<span class="cm-banner-tick" aria-hidden="true" hidden>\u2713</span>' +
       "</button>" +
       '<div class="cm-banner-actions">' +
       '<button type="button" class="cm-banner-send">' + SEND + "</button>" +

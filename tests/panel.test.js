@@ -146,16 +146,44 @@ describe("clicking send", () => {
     expect(it.noteShown()).toBe(true);
   });
 
-  test("what is left to say opens a line, and only then", async () => {
+  test("what a read has to say about itself goes on the hover", async () => {
     // Three of the fixture's fourteen rows name no product, and no rates
-    // were reachable, so this read has something to report. A read with
-    // nothing to report leaves the panel as it found it.
+    // were reachable, so this read has something to report. It is a
+    // footnote to the count rather than a thing to act on, and the panel
+    // is too small to carry a line that is read once and ignored after.
     const it = mount();
     expect(it.noteShown()).toBe(false);
     it.send().click();
     await it.settle();
-    expect(it.noteShown()).toBe(true);
-    expect(it.note()).toBe("3 skipped, 1 non-English, 11 unpriced");
+    expect(it.scope()).toBe("11 rows");
+    expect(it.recap()).toBe("3 skipped, 1 non-English, 11 unpriced");
+    // The line under the buttons stays shut. It is for the things that
+    // ask for something - a refused read, a blocked pop-up.
+    expect(it.noteShown()).toBe(false);
+  });
+
+  test("and saving marks the count rather than announcing it", async () => {
+    const it = mount();
+    expect(it.tickShown()).toBe(false);
+    it.save().click();
+    await it.settle();
+
+    expect(it.tickShown()).toBe(true);
+    expect(it.scope()).toBe("11 rows");
+    expect(it.recap()).toBe("saved, 3 skipped, 1 non-English, 11 unpriced");
+    expect(it.noteShown()).toBe(false);
+    expect(it.heading()).toBe("CM BANner - 11 rows\u2713");
+  });
+
+  test("the mark goes when the rows it stood for do", async () => {
+    const it = mount();
+    it.save().click();
+    await it.settle();
+    expect(it.tickShown()).toBe(true);
+
+    it.toggleScope();
+    expect(it.tickShown()).toBe(false);
+    expect(it.recap()).toBe(null);
   });
 
   test("and the second click hands them over", async () => {

@@ -462,6 +462,13 @@ the heading because the heading is otherwise repeating a scope that was
 chosen before the read and has not changed since, and because that leaves
 the line beneath the buttons for the things a count cannot say.
 
+A finished download adds a **tick** beside the count and nothing else.
+What the read had to say about itself — `saved, 3 skipped, 1 non-English,
+11 unpriced` — is on the hover, over the count and over the tick both, so
+either answers. It used to be a line under the buttons, which is a row of
+a panel this size given over to a footnote that is read once and ignored
+after; the lines it keeps are the ones that ask for something.
+
 (The label constant is `ARMED`, not `READY`. That name belongs to the
 message the handoff page sends when it is listening, and the two are one
 keyword apart from silently swapping places — which they did, once, for
@@ -715,27 +722,33 @@ That takes three things, and each is a way the panel used to change size:
   the moment a read starts.
 
 The heading also carries the BAN stroopwafel at 14px, which the line has
-room for: of the 240px available, the longest heading uses 186px (`CM
-BANNER - 2000 / 2000`, while reading a capped seller). It is base64 in the
+room for: of the 240px available, the widest heading measured 183px —
+`CM BANner - 2000 / 2000` with the tick beside it, which is the two
+longest states put together and wider than either alone (reading a capped
+seller is 181px, and the same count with a tick is 160px). Re-measured in
+a browser after the wordmark went lowercase and the tick was added; the
+old figure was 186px. It is base64 in the
 stylesheet rather than a relative `url()`, because that url resolves to
 the extension's own origin and serving it to somebody else's page wants a
 `web_accessible_resources` entry — which is a file exposed to every page
 this runs on, for the sake of three kilobytes.
 
-The line under the buttons is therefore only ever for what is left to say,
-and it is not there when there is nothing: most reads report nothing, the
-button carries the count, and the heading carried the progress. When a read
-does have something to report it appears then — after the click, not during
-the read.
+The line under the buttons is therefore only ever for **what asks for
+something**, and it is not there when there is nothing: a read Cloudflare
+refused, a pop-up the browser blocked, a list handed over that was short
+of what the seller advertised. What a finished read merely has to report
+— what was skipped, what will be valued as something it is not, what is
+missing from the list — is on the hover over the count, where it costs no
+room at all.
 
-What follows from the fixed width is that the output has to be short. The
-line carries only what the count does not — what was skipped, what will be
-valued as something it is not, what is missing from the list altogether.
+What follows from the fixed width is that the output has to be short, and
+that a line which comes and goes moves the buttons under the cursor. The
+hover has neither problem.
 
 ### 6.8 Stopping
 
 **Escape** abandons whatever is running and puts the panel back: spinner
-off, buttons back, note cleared, rows dropped. The scope stays where it
+off, buttons back, line and tick cleared, rows dropped. The scope stays where it
 was set, since that was chosen rather than produced.
 
 The rows are dropped rather than offered. A read stopped part way is not

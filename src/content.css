@@ -163,6 +163,19 @@
   font-size: 12px;
 }
 
+/* The mark saying the file was written, beside the count it was written
+   from. Same rule as the line above: no display of its own, so hiding it
+   is the browser's job and not a rule of ours to get wrong.
+
+   What it stood for is on its title, and on the count's, rather than on a
+   line underneath - a footnote nobody has to act on should not be taking
+   up a row of a panel this size. */
+#cm-banner .cm-banner-tick {
+  margin-left: 5px;
+  color: #7bd88f;
+  font-weight: 700;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   #cm-banner .cm-banner-send,
   #cm-banner .cm-banner-save {

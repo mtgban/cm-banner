@@ -62,12 +62,23 @@ export function mount({ pager = "pager-last.html", url = OFFERS, total = 14 } = 
     window,
     panel,
     opened,
-    heading: () => at(".cm-banner-label").textContent,
+    // What the heading says out loud. textContent would include the tick
+    // whether or not it is on screen, which is the one thing about the
+    // heading worth telling apart.
+    heading: () =>
+      [...at(".cm-banner-label").childNodes]
+        .filter((node) => !node.hidden)
+        .map((node) => node.textContent)
+        .join(""),
     scope: () => at(".cm-banner-scope").textContent,
     label: () => at(".cm-banner-label"),
     send: () => at(".cm-banner-send"),
     save: () => at(".cm-banner-save"),
     note: () => at(".cm-banner-note").textContent,
+    tickShown: () => !at(".cm-banner-tick").hidden,
+    // The footnote, which lives on the hover. Said on both the count and
+    // the mark, so either answers.
+    recap: () => at(".cm-banner-scope").getAttribute("title"),
     noteShown: () => !at(".cm-banner-note").hidden,
     busy: () => panel.classList.contains("cm-banner-busy"),
     toggleScope: () => at(".cm-banner-label").click(),
