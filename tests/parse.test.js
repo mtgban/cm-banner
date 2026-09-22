@@ -259,3 +259,63 @@ describe("the way back to the offer", () => {
     expect(MKM.offerURL("", { cardName: "X" }, {})).toBe("");
   });
 });
+
+describe("the language a listing is in", () => {
+  function unfiltered() {
+    const window = new Window();
+    window.document.body.innerHTML = text("offers-unfiltered.html");
+    return window.document;
+  }
+
+  test("the page's own filter says which id a language has", () => {
+    const ids = MKM.languageIDs(unfiltered());
+    expect(ids["Italian"]).toBe("5");
+    expect(ids["English"]).toBe("1");
+    expect(ids["Japanese"]).toBe("7");
+  });
+
+  test("a row on an unfiltered page still knows its language", () => {
+    // The product link carries ?language= only once a page has been
+    // filtered by one. Every ordinary page used to parse as language-less,
+    // so a seller with 828 Italian cards reported none.
+    const doc = unfiltered();
+    expect(doc.querySelector('a[href*="/Products/"]').getAttribute("href")).not.toContain("language=");
+
+    const [offer] = MKM.parseOffers(doc, MKM.languageIDs(doc));
+    expect(offer.language).toBe("5");
+    expect(MKM.foreignCount([offer])).toBe(1);
+  });
+
+  test("and the rest of the row is read the same as ever", () => {
+    // If this fixture were mistranscribed these are what would say so.
+    const doc = unfiltered();
+    const [offer] = MKM.parseOffers(doc, MKM.languageIDs(doc));
+    expect(offer.cardName).toBe("A Tale for the Ages");
+    expect(offer.expansionName).toBe("Wilds of Eldraine");
+    expect(offer.condition).toBe("NM");
+    expect(offer.price).toBe("0.10");
+    expect(offer.mcmID).toBe("729023");
+  });
+
+  test("the row's other tooltips are not mistaken for a language", () => {
+    // A row carries its expansion, rarity and condition as tooltips too,
+    // and nothing in the markup distinguishes them - so a filter that
+    // does not list this row's language must come back with nothing
+    // rather than with "Near Mint".
+    const doc = unfiltered();
+    const [offer] = MKM.parseOffers(doc, { English: "1", Japanese: "7" });
+    expect(offer.language).toBe("");
+  });
+
+  test("without a filter it says nothing rather than guessing", () => {
+    const [offer] = MKM.parseOffers(unfiltered());
+    expect(offer.language).toBe("");
+  });
+
+  test("a filtered page still reads the language off the link", () => {
+    // Where Cardmarket does say it outright, that is what is used.
+    const offers = MKM.parseOffers(load("offers.html"), { Italian: "5" });
+    expect(offers.some((o) => o.language === "1")).toBe(true);
+    expect(offers.some((o) => o.language === "7")).toBe(true);
+  });
+});

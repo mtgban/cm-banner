@@ -317,32 +317,38 @@ many.
 - **No uuid.** Resolving an id to a card is the site's job and needs its
   datastore.
 
-### 4.5 The language is only sometimes known — and this is a bug
+### 4.5 The language comes from the page's own filter
 
-`language` is read from the product link's `?language=N`, and **that
-parameter is only there on a page that has already been filtered by
-language**. On an unfiltered page — which is the normal case — every row
-parses with an empty language.
+`?language=N` is on a product link only once the page has been **filtered
+by language**, which is not the ordinary case. Every unfiltered page
+therefore parsed as language-less, and the panel reported no foreign
+printings at all — on a seller whose own filter counts 828 Italian against
+251 English.
 
-Measured on a live seller: the tooltips said `Italian` on most rows and
-the parse reported `""` on all of them, so the panel's `N non-English`
-count reads **zero** when it should not. The seller's own language filter
-put it at 828 Italian against 251 English.
+A row does name its language, in a tooltip beside a flag. What it does not
+do is say that is what the tooltip is: the expansion, the rarity and the
+condition are tooltips too, and nothing in the markup tells them apart.
+Guessing by position or by class would be guessing.
 
-Nothing in the CSV is wrong — there is no language column — but the count
-the panel shows is, and `idLanguages` is left off links that could carry
-it.
+So the page's own language filter decides. `select[name="idLanguages[]"]`
+lists exactly the languages the seller has, with the ids the offers page
+filters on, and a tooltip is a language when that list names it. The same
+reading as §4.1's expansion id, and the same authority.
 
-The fix is the same trick §4.1 uses for the expansion: the row names its
-language in a tooltip, and `select[name="idLanguages[]"]` beside the table
-lists `1 = English`, `5 = Italian`, so the name the row shows can be
-looked up in the list the page itself would filter by. That also settles
-which tooltip is the language, which is the part worth being careful
-about — it is the one whose text the language filter names, not the one
-in a particular position.
+Two things follow from where the filters live:
 
-Not done here, because it changes what a number on the panel says and
-deserves its own measurement.
+- **They are read from the live page, never from a fetched one.** The
+  server sends the table and builds the filter dropdowns in script
+  afterwards, so a page fetched during a walk has no `<select>` at all.
+  The maps are read once, from the page being looked at, and travel with
+  the walk.
+- **A link still wins where there is one.** Where Cardmarket says the
+  language outright, that is what is used; the filter is the fallback, not
+  the override.
+
+A language the filter does not list resolves to nothing rather than to
+something near it, which is the same answer the row had before and leaves
+the rest of it unaffected.
 
 ## 5. Sending to BAN
 

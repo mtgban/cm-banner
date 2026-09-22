@@ -190,6 +190,10 @@ globalThis.MKM = globalThis.MKM || {};
     var get = opts.fetchPage || fetchPage;
     var onProgress = opts.onProgress || function () {};
     var pace = opts.pace === undefined ? PACE : opts.pace;
+    // The page's own language filter, read from the page being looked at.
+    // A fetched page has no dropdowns - the server sends the table and
+    // builds the filters in script - so it travels with the walk.
+    var languages = opts.languages;
     // Asked before every page, because a walk cannot be interrupted in
     // the middle of a fetch - only between them, and on the way out of
     // one that is already in flight.
@@ -209,7 +213,7 @@ globalThis.MKM = globalThis.MKM || {};
     function take(page) {
       pages++;
       rows += MKM.countRows(page);
-      var found = MKM.parseOffers(page);
+      var found = MKM.parseOffers(page, languages);
       for (var i = 0; i < found.length; i++) {
         if (seen[found[i].articleID]) {
           continue;

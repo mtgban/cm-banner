@@ -133,9 +133,37 @@ globalThis.MKM = globalThis.MKM || {};
       .replace(/-/g, " ");
   }
 
+  // languageOf is Cardmarket's own id for the language a listing is in.
+  //
+  // The product link carries one, but only on a page that has already been
+  // filtered by language - which is not the ordinary case, and the reason
+  // this used to answer "" for every row on an unfiltered page and the
+  // panel used to report no foreign printings on a seller with eight
+  // hundred Italian ones.
+  //
+  // So where the link says nothing, the row's tooltips are offered to the
+  // page's language filter, and the one it names is the language. The
+  // filter is the authority on which word that is; nothing else in the row
+  // distinguishes the language from the set or the rarity.
+  function languageOf(row, href, titles, languages) {
+    var linked = LANGUAGE_RE.exec(href);
+    if (linked) {
+      return linked[1];
+    }
+    if (!languages) {
+      return "";
+    }
+    for (var i = 0; i < titles.length; i++) {
+      if (languages[titles[i]]) {
+        return languages[titles[i]];
+      }
+    }
+    return "";
+  }
+
   // parseRow reads one offer, or returns null for a row naming no product and
   // for one the catalog cannot be asked about.
-  function parseRow(row) {
+  function parseRow(row, languages) {
     var article = ARTICLE_RE.exec(row.id || "");
     if (!article) {
       return null;
@@ -216,7 +244,7 @@ globalThis.MKM = globalThis.MKM || {};
       // the link names none. Reported rather than filtered on: the CSV has
       // no language column and the upload has nothing to read one into, so
       // the caller is told what it is taking rather than quietly given less.
-      language: (LANGUAGE_RE.exec(href) || ["", ""])[1],
+      language: languageOf(row, href, titles, languages),
       price: priced ? normalizeAmount(priced[1]) : "",
       currency: priced ? MKM.currencyOf(priced[2]) : "",
     };
@@ -224,12 +252,14 @@ globalThis.MKM = globalThis.MKM || {};
 
   // parseOffers reads every offer on the page, once each. A row repeated
   // under the same article id is the same offer drawn twice.
-  MKM.parseOffers = function (root) {
+  // languages is the page's own language filter, read from the live page
+  // and passed in because a fetched page does not carry one.
+  MKM.parseOffers = function (root, languages) {
     var rows = root.querySelectorAll('[id^="stockRow"]');
     var seen = Object.create(null);
     var offers = [];
     for (var i = 0; i < rows.length; i++) {
-      var offer = parseRow(rows[i]);
+      var offer = parseRow(rows[i], languages);
       if (!offer || seen[offer.articleID]) {
         continue;
       }
@@ -260,6 +290,38 @@ globalThis.MKM = globalThis.MKM || {};
     return root.querySelectorAll('[id^="stockRow"]').length;
   };
 
+  // Some options carry the seller's count for that expansion and some do
+  // not ("The List (60)" beside "Fourth Edition"), so only a trailing one
+  // is taken off - a set whose name ends in a bracketed number keeps it.
+  var COUNT_RE = /\s*\(\d+\)\s*$/;
+
+  // filterIDs reads one of the page's own filter dropdowns into the names
+  // it is keyed by.
+  //
+  // Only the live page has these. The server sends the table and builds
+  // the filters in script afterwards, so a page fetched during a walk has
+  // no dropdown at all - which is why the maps are read once, from the
+  // page being looked at, and handed to the parse.
+  function filterIDs(root, name) {
+    var ids = Object.create(null);
+    var select = root.querySelector('select[name="' + name + '"]');
+    if (!select) {
+      return ids;
+    }
+
+    var options = select.querySelectorAll("option");
+    for (var i = 0; i < options.length; i++) {
+      var value = options[i].getAttribute("value");
+      var label = (options[i].textContent || "").trim().replace(COUNT_RE, "");
+      // First wins: a name is listed twice, once with the seller's count
+      // and once without, and both carry the same id.
+      if (value && label && !ids[label]) {
+        ids[label] = value;
+      }
+    }
+    return ids;
+  }
+
   // expansionIDs reads the page's own expansion filter into the names it
   // is keyed by.
   //
@@ -269,29 +331,21 @@ globalThis.MKM = globalThis.MKM || {};
   // filters on. So the name the row shows is looked up in the list the
   // page would have used itself.
   //
-  // Some options carry the seller's count for that expansion and some do
-  // not ("The List (60)" beside "Fourth Edition"), so only a trailing one
-  // is taken off - a set whose name ends in a bracketed number keeps it.
-  var COUNT_RE = /\s*\(\d+\)\s*$/;
-
   MKM.expansionIDs = function (root) {
-    var ids = Object.create(null);
-    var select = root.querySelector('select[name="idExpansions[]"]');
-    if (!select) {
-      return ids;
-    }
+    return filterIDs(root, "idExpansions[]");
+  };
 
-    var options = select.querySelectorAll("option");
-    for (var i = 0; i < options.length; i++) {
-      var value = options[i].getAttribute("value");
-      var name = (options[i].textContent || "").trim().replace(COUNT_RE, "");
-      // First wins: the list names an expansion twice, once with the
-      // seller's count and once without, and both carry the same id.
-      if (value && name && !ids[name]) {
-        ids[name] = value;
-      }
-    }
-    return ids;
+  // languageIDs reads the page's own language filter the same way, and is
+  // what tells a language apart from every other word a row carries.
+  //
+  // A row names its language in a tooltip beside a flag, with nothing in
+  // the markup to say that is what it is: the expansion, the rarity and
+  // the condition are all tooltips too. Rather than guess which element
+  // holds it, the filter decides - a tooltip is a language when the
+  // language filter lists it, and the filter lists exactly the languages
+  // the seller has.
+  MKM.languageIDs = function (root) {
+    return filterIDs(root, "idLanguages[]");
   };
 
   // TRACKING is the attribution MTGBAN puts on the card links it sends

@@ -201,7 +201,7 @@
   // thisPage answers in the shape a walk answers in, so that everything
   // downstream of it is the same code either way.
   function thisPage() {
-    var offers = MKM.parseOffers(document);
+    var offers = MKM.parseOffers(document, MKM.languageIDs(document));
     return {
       offers: offers,
       pages: 1,
@@ -237,6 +237,7 @@
     } else {
       reading = MKM.walkPages(document, location.href, {
         cancelled: stale,
+        languages: MKM.languageIDs(document),
         onProgress: function (at) {
           if (stale()) {
             return;
@@ -254,6 +255,13 @@
           return { csv: "", note: "" };
         }
         if (walked.offers.length === 0) {
+          // A read that was refused says why. It comes back with no rows
+          // for the same reason it comes back with no answer, and
+          // "None of the 0 offers here could be read" is a true sentence
+          // that tells nobody to reload the page and pass the check.
+          if (walked.stopped) {
+            return { csv: "", note: walked.stopped };
+          }
           // Told apart deliberately: a list whose rows all refused is not
           // an empty list, and only one of the two is worth reporting.
           return {

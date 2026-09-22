@@ -79,6 +79,31 @@ describe("clicking send", () => {
     expect(it.scope()).toBe("all offers");
   });
 
+  test("a read that was refused says why, not how many rows it did not get", async () => {
+    // Starting mid-list, the first thing a walk does is fetch page one.
+    // When that is refused there are no rows and no pages, and the count
+    // of what was missed is the least useful thing to say about it.
+    const it = mount({
+      url: OFFERS + "?site=4",
+      pager: "pager-next.html",
+      total: 1093,
+    });
+    it.window.fetch = () =>
+      Promise.resolve({
+        ok: false,
+        status: 429,
+        headers: { get: (name) => (name === "cf-mitigated" ? "challenge" : null) },
+        text: () => Promise.resolve(""),
+      });
+
+    it.send().click();
+    await it.settle(120);
+    expect(it.note()).toBe(
+      "Cardmarket is checking the browser; reload and try again"
+    );
+    expect(it.noteShown()).toBe(true);
+  });
+
   test("what is left to say opens a line, and only then", async () => {
     // Three of the fixture's fourteen rows name no product, and no rates
     // were reachable, so this read has something to report. A read with
