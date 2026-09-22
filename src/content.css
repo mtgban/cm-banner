@@ -77,12 +77,13 @@
   outline-offset: 2px;
 }
 
-#cm-banner .cm-banner-note:empty {
-  display: none;
-}
-
+/* A width rather than a max-width, because the panel is only as wide as
+   what it is saying and the progress line changes on every page: "Page 7 ·
+   140 of 251" and "Page 12 · 240 of 251" are different lengths, and the
+   panel is anchored on its right edge, so the buttons would slide about
+   under the cursor as the count went up. */
 #cm-banner .cm-banner-note {
-  max-width: 15rem;
+  width: 15rem;
   opacity: 0.85;
   font-size: 12px;
 }
@@ -92,4 +93,81 @@
   #cm-banner .cm-banner-save {
     transition: background 120ms ease;
   }
+}
+
+/* The note is a row so the spinner can sit beside what it is saying. */
+#cm-banner .cm-banner-note {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+/* [hidden] is display:none in the browser's own sheet, which the display
+   above would otherwise win against. */
+#cm-banner .cm-banner-note[hidden] {
+  display: none;
+}
+
+/* While the pages are being read the note is two lines tall whatever it
+   says. A count growing a digit rewraps the line otherwise, and the panel
+   is under the cursor - a box that changes height moves the button being
+   aimed at. */
+#cm-banner.cm-banner-busy .cm-banner-note {
+  min-height: 2.6em;
+}
+
+#cm-banner .cm-banner-spin {
+  display: none;
+}
+
+#cm-banner.cm-banner-busy .cm-banner-spin {
+  display: block;
+  flex: none;
+
+  width: 11px;
+  height: 11px;
+  margin-top: 2px;
+  border: 2px solid rgb(255 255 255 / 30%);
+  border-top-color: #fff;
+  border-radius: 50%;
+
+  animation: cm-banner-spin 700ms linear infinite;
+}
+
+@keyframes cm-banner-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Still turning, because a still spinner says the opposite of what it is
+   there to say - just slowly enough not to be the thing on the page that
+   demands attention. */
+@media (prefers-reduced-motion: reduce) {
+  #cm-banner.cm-banner-busy .cm-banner-spin {
+    animation-duration: 2.4s;
+  }
+}
+
+#cm-banner button[disabled] {
+  cursor: default;
+  opacity: 0.55;
+}
+
+#cm-banner .cm-banner-scope {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+
+  cursor: pointer;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+#cm-banner .cm-banner-scope input {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  accent-color: #2d67c4;
+  cursor: pointer;
 }
