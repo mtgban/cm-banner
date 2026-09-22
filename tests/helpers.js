@@ -10,7 +10,7 @@ function source(name) {
 
 // The scripts attach to globalThis.MKM, so they are run once, here.
 globalThis.MKM = globalThis.MKM || {};
-for (const name of ["rates.js", "parse.js", "csv.js"]) {
+for (const name of ["rates.js", "parse.js", "pages.js", "csv.js"]) {
   new Function("globalThis", source(name))(globalThis);
 }
 
@@ -30,3 +30,32 @@ export function parse(doc) {
 }
 
 export const MKM = globalThis.MKM;
+
+// text reads a fixture as it sits on disk.
+export function text(name) {
+  return readFileSync(new URL("./fixtures/" + name, import.meta.url), "utf8");
+}
+
+// pageOf builds one page of a seller's list: the offers fixture's rows with
+// their article ids moved along, so two pages can be told apart, under a
+// pager copied from a real response.
+//
+// The pager fixtures are verbatim; the next-page href and the hit count are
+// substituted, because those are the two things a test needs to vary and
+// the only two Cardmarket varies between one page and the next.
+export function pageOf({ offset = 0, next = "", total = 0 } = {}) {
+  const rows = text("offers.html").replace(
+    /stockRow(\d+)/g,
+    (_, id) => "stockRow" + (Number(id) + offset)
+  );
+  let pager = text(next ? "pager-next.html" : "pager-last.html");
+  if (next) {
+    pager = pager.replace("/en/Magic/Users/Seller/Offers/Singles?site=3", next);
+  }
+  if (total) {
+    pager = pager.replace(">1093<", ">" + total + "<");
+  }
+  const window = new Window();
+  window.document.body.innerHTML = pager + rows;
+  return window.document;
+}

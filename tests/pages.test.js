@@ -1,0 +1,271 @@
+import { test, expect, describe } from "bun:test";
+import { load, pageOf, text, MKM } from "./helpers.js";
+import { Window } from "happy-dom";
+
+const BASE = "https://www.cardmarket.com/en/Magic/Users/Seller/Offers/Singles";
+
+function docOf(html) {
+  const window = new Window();
+  window.document.body.innerHTML = html;
+  return window.document;
+}
+
+describe("finding the next page", () => {
+  test("the server's relative href is resolved against the page it came from", () => {
+    // The live server writes "/en/Magic/Users/Seller/Offers/Singles?site=3".
+    // Handing that to fetch unresolved works by accident on the page itself
+    // and not at all on a document parsed out of a response.
+    expect(MKM.nextPageURL(docOf(text("pager-next.html")), BASE + "?site=2")).toBe(
+      BASE + "?site=3"
+    );
+  });
+
+  test("an absolute href is taken as it stands", () => {
+    // Which is how the same control reads on a page saved out of a browser,
+    // after Cardmarket's own scripts have been over it.
+    const absolute =
+      '<a href="https://www.cardmarket.com/en/Magic/Users/Seller/Offers/Singles?idLanguages=1&sortBy=name_asc&site=3"' +
+      ' role="button" aria-label="Next page" data-direction="next"' +
+      ' class="btn btn-primary btn-sm ms-3 pagination-control"></a>';
+    expect(MKM.nextPageURL(docOf(absolute), BASE)).toBe(
+      BASE + "?idLanguages=1&sortBy=name_asc&site=3"
+    );
+  });
+
+  test("the last page has no next page", () => {
+    // Cardmarket draws the control anyway, with no href and a disabled
+    // class. Both say the same thing and either one alone would do.
+    expect(MKM.nextPageURL(docOf(text("pager-last.html")), BASE)).toBe("");
+  });
+
+  test("a page with no pager at all has no next page", () => {
+    expect(MKM.nextPageURL(load("offers.html"), BASE)).toBe("");
+  });
+});
+
+describe("finding the first page", () => {
+  test("the first page is the list without a site", () => {
+    expect(MKM.firstPageURL(BASE + "?site=7")).toBe(BASE);
+  });
+
+  test("the filter in force comes with it", () => {
+    // Whatever the seller's page is filtered to is the list being exported,
+    // so dropping the query on the way to page one would export a different
+    // list from the one on screen.
+    expect(MKM.firstPageURL(BASE + "?idLanguages=1&sortBy=name_asc&site=7")).toBe(
+      BASE + "?idLanguages=1&sortBy=name_asc"
+    );
+  });
+
+  test("a page already at the top answers with nothing to fetch", () => {
+    expect(MKM.firstPageURL(BASE)).toBe("");
+    expect(MKM.firstPageURL(BASE + "?idLanguages=1")).toBe("");
+  });
+});
+
+describe("the hit count", () => {
+  test("it is the number beside the pager, not the sentence", () => {
+    expect(MKM.totalCount(docOf(text("pager-next.html")))).toBe(1093);
+  });
+
+  test("grouped thousands are read whichever way they are grouped", () => {
+    // "Page 5 of 13" is written in whichever of Cardmarket's languages the
+    // visitor reads; so is the grouping of the number beside it.
+    expect(MKM.totalCount(docOf('<span class="total-count">1.093</span>'))).toBe(1093);
+    expect(MKM.totalCount(docOf('<span class="total-count">1,093</span>'))).toBe(1093);
+  });
+
+  test("a page that does not say is not guessed at", () => {
+    expect(MKM.totalCount(load("offers.html"))).toBe(0);
+  });
+});
+
+describe("walking the list", () => {
+  // A seller with three pages. Each page's rows are the fixture's with
+  // their article ids moved along, which is what tells one page's rows
+  // from another's.
+  function seller() {
+    const pages = {
+      [BASE]: pageOf({ offset: 0, next: BASE + "?site=2", total: 42 }),
+      [BASE + "?site=2"]: pageOf({ offset: 100, next: BASE + "?site=3", total: 42 }),
+      [BASE + "?site=3"]: pageOf({ offset: 200, total: 42 }),
+    };
+    const asked = [];
+    return {
+      asked,
+      fetchPage(url) {
+        asked.push(url);
+        return pages[url]
+          ? Promise.resolve(pages[url])
+          : Promise.reject(new Error("Cardmarket answered 404"));
+      },
+    };
+  }
+
+  test("every page lands in the one list", async () => {
+    const site = seller();
+    const walked = await MKM.walkPages(pageOf({ next: BASE + "?site=2", total: 42 }), BASE, {
+      fetchPage: site.fetchPage,
+      pace: 0,
+    });
+
+    const onePage = MKM.parseOffers(load("offers.html")).length;
+    expect(walked.pages).toBe(3);
+    expect(walked.offers.length).toBe(onePage * 3);
+    // Every article id distinct: three pages of the same fixture would
+    // collapse to one page's worth if the ids had not moved, and that is
+    // the failure this is watching for.
+    expect(new Set(walked.offers.map((o) => o.articleID)).size).toBe(onePage * 3);
+    expect(walked.expected).toBe(42);
+  });
+
+  test("it starts at page one however far in the seller's page was left", async () => {
+    // Walking forward from page five would drop the first four pages and
+    // hand over a file that looks complete.
+    const site = seller();
+    const walked = await MKM.walkPages(pageOf({ next: "", total: 42 }), BASE + "?site=3", {
+      fetchPage: site.fetchPage,
+      pace: 0,
+    });
+    expect(site.asked[0]).toBe(BASE);
+    expect(walked.pages).toBe(3);
+  });
+
+  test("the page in hand is not fetched again when it is already page one", async () => {
+    const site = seller();
+    await MKM.walkPages(pageOf({ next: BASE + "?site=2", total: 42 }), BASE, {
+      fetchPage: site.fetchPage,
+      pace: 0,
+    });
+    expect(site.asked).toEqual([BASE + "?site=2", BASE + "?site=3"]);
+  });
+
+  test("progress is reported a page at a time", async () => {
+    const site = seller();
+    const seen = [];
+    await MKM.walkPages(pageOf({ next: BASE + "?site=2", total: 42 }), BASE, {
+      fetchPage: site.fetchPage,
+      pace: 0,
+      onProgress: (at) => seen.push(at.pages + ":" + at.offers),
+    });
+    const onePage = MKM.parseOffers(load("offers.html")).length;
+    expect(seen).toEqual([`1:${onePage}`, `2:${onePage * 2}`, `3:${onePage * 3}`]);
+  });
+
+  test("a row seen twice is carried once", async () => {
+    // A sale between two fetches shifts every later offer up a place, and
+    // the row on the boundary is shown again on the next page.
+    const pages = {
+      [BASE]: pageOf({ offset: 0, next: BASE + "?site=2", total: 42 }),
+      [BASE + "?site=2"]: pageOf({ offset: 0, total: 42 }),
+    };
+    const walked = await MKM.walkPages(pages[BASE], BASE, {
+      fetchPage: (url) => Promise.resolve(pages[url]),
+      pace: 0,
+    });
+    const onePage = MKM.parseOffers(load("offers.html")).length;
+    expect(walked.pages).toBe(2);
+    // Every row was read twice; only the offers behind them are deduped.
+    expect(walked.rows).toBe(MKM.countRows(load("offers.html")) * 2);
+    expect(walked.offers.length).toBe(onePage);
+  });
+
+  test("a walk that is refused keeps what it read and says it stopped", async () => {
+    // Cardmarket answering 429 half way through is a short list that would
+    // otherwise read as the whole inventory.
+    const walked = await MKM.walkPages(pageOf({ next: BASE + "?site=2", total: 42 }), BASE, {
+      fetchPage: () => Promise.reject(new Error("Cardmarket answered 429")),
+      pace: 0,
+    });
+    expect(walked.pages).toBe(1);
+    expect(walked.offers.length).toBeGreaterThan(0);
+    expect(walked.stopped).toBe("Cardmarket answered 429");
+  });
+
+  test("a page with no rows on it ends the walk", async () => {
+    const empty = docOf(text("pager-next.html"));
+    const walked = await MKM.walkPages(pageOf({ next: BASE + "?site=2", total: 42 }), BASE, {
+      fetchPage: () => Promise.resolve(empty),
+      pace: 0,
+    });
+    expect(walked.pages).toBe(1);
+    expect(walked.stopped).toBe("");
+  });
+
+  test("a pager pointing back at a page already read ends the walk", async () => {
+    // Nothing here counts pages, so a loop would otherwise be forever.
+    const loop = pageOf({ offset: 0, next: BASE + "?site=2", total: 42 });
+    const walked = await MKM.walkPages(loop, BASE, {
+      fetchPage: () => Promise.resolve(loop),
+      pace: 0,
+    });
+    expect(walked.pages).toBe(2);
+  });
+});
+
+describe("not looking like a bot", () => {
+  test("it waits between pages", async () => {
+    // Cardmarket sits behind Cloudflare and three fetches inside a second
+    // were answered with a challenge rather than a page.
+    const at = [];
+    const pages = {
+      [BASE]: pageOf({ offset: 0, next: BASE + "?site=2", total: 42 }),
+      [BASE + "?site=2"]: pageOf({ offset: 100, next: BASE + "?site=3", total: 42 }),
+      [BASE + "?site=3"]: pageOf({ offset: 200, total: 42 }),
+    };
+    const started = Date.now();
+    await MKM.walkPages(pages[BASE], BASE, {
+      pace: 40,
+      fetchPage: (url) => {
+        at.push(Date.now() - started);
+        return Promise.resolve(pages[url]);
+      },
+    });
+    expect(at.length).toBe(2);
+    // Before each fetch and not after the last, so a one-page seller pays
+    // nothing for the pacing at all.
+    expect(at[0]).toBeGreaterThanOrEqual(35);
+    expect(at[1] - at[0]).toBeGreaterThanOrEqual(35);
+  });
+
+  test("a one-page seller waits for nothing", async () => {
+    const started = Date.now();
+    await MKM.walkPages(pageOf({ total: 11 }), BASE, { pace: 500 });
+    expect(Date.now() - started).toBeLessThan(200);
+  });
+
+  test("a Cloudflare challenge is told apart from an ordinary refusal", async () => {
+    // Both come back 429. Only one of them is worth waiting out, and it is
+    // not this one: nothing an extension can send answers a check meant
+    // for the person at the keyboard.
+    const saved = globalThis.fetch;
+    globalThis.fetch = () =>
+      Promise.resolve({
+        ok: false,
+        status: 429,
+        headers: { get: (name) => (name === "cf-mitigated" ? "challenge" : null) },
+        text: () => Promise.resolve("<html><title>Just a moment...</title></html>"),
+      });
+    try {
+      expect(MKM.fetchPage(BASE)).rejects.toThrow(MKM.CHALLENGE);
+    } finally {
+      globalThis.fetch = saved;
+    }
+  });
+
+  test("an ordinary refusal says what it was", async () => {
+    const saved = globalThis.fetch;
+    globalThis.fetch = () =>
+      Promise.resolve({
+        ok: false,
+        status: 503,
+        headers: { get: () => null },
+        text: () => Promise.resolve(""),
+      });
+    try {
+      expect(MKM.fetchPage(BASE)).rejects.toThrow("Cardmarket answered 503");
+    } finally {
+      globalThis.fetch = saved;
+    }
+  });
+});
