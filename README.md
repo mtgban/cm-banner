@@ -15,15 +15,25 @@ On a seller's offers page — `cardmarket.com/<lang>/<Game>/Users/<seller>/Offer
 appears only for a game BAN prices; on any other there is nowhere to send the
 rows, so there is no panel either.
 
+It sees the seller's **whole list**, not the twenty rows on screen. Cardmarket
+paginates at twenty, and the export follows the pager from the first page to
+the last, whichever page you happened to be looking at. That is one request per
+page and deliberately unhurried, so the panel shows a spinner and counts up —
+`Page 7 · 140 of 251 offers` — while it works.
+
 It offers two things:
 
 - **Send to BAN** opens that game's own upload page, hands it the rows, and
   lets it price them.
 - **CSV** downloads `mkm-<game>-<date>.csv` instead.
 
-It reports how many rows it took, how many it skipped, and how many it could
-not price. The stack is one fixed size whatever it is saying — something that
-resized under the cursor would move the button being aimed at.
+Either one takes the whole list by default. **This page only** restricts both to
+the twenty rows in front of you, which is instant and is what you want when the
+page in front of you is what you meant.
+
+It reports how many rows it took, from how many pages, how many it skipped, and
+how many it could not price. The note is a fixed height while it is working —
+something that resized under the cursor would move the button being aimed at.
 
 It reads singles and sealed alike: Cardmarket files boxes and bundles under
 their own product categories, and the upload tells one from the other by what
@@ -162,8 +172,22 @@ and sends nothing with that request.
 
 ## Limitations
 
-It exports **the offers on the page you are looking at**. Cardmarket paginates,
-so a large list needs exporting a page at a time and the files concatenating.
+**It takes a while, and Cardmarket can stop it.** A seller with 1093 offers is
+55 pages, and the walk waits about a second between them on purpose: Cardmarket
+sits behind Cloudflare, and three requests inside a second are answered with a
+bot challenge instead of a page. If that happens anyway the export stops, keeps
+whatever it had read, and says so — reload the page, clear the check the way you
+would any other, and run it again. Nothing here tries to answer that check for
+you.
+
+Because the walk takes seconds, it is **not a snapshot**. If something sells
+while it is running, every later offer shifts up a place: a row can be listed
+twice, which is deduplicated, or missed, which cannot be. The count it reports
+is what it actually read, against what the first page said to expect.
+
+Whatever **filter** the seller's page is showing is what gets exported —
+Cardmarket carries the query into its own next-page links, so a list filtered to
+English exports as the filtered list.
 
 It reads Cardmarket's current markup. A redesign would break it, and the honest
 failure is visible rather than silent: the panel reports either "No offers on
