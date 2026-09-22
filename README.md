@@ -157,10 +157,19 @@ it is an ordinary navigation, so it carries your session, and it does its own
 uploading. This extension opens that page and passes it the rows — it reaches
 into no form of the site's own, so a redesign there is not a break here.
 
-The tab opens **when you click**, and waits there while the pages are read,
-rather than appearing at the end. A browser only lets a click open a window for
-a few seconds afterwards; an export that takes a minute would arrive as a
-blocked pop-up. If there turns out to be nothing to send, the tab closes again.
+**This page only** sends in one click. **All offers** takes two: the first
+reads the pages, with the count ticking along in the panel, and the button then
+reads *Send 251 rows* — the second click opens the tab and hands them over.
+
+That is not ceremony. A browser only lets a click open a window for a few
+seconds afterwards, and reading a hundred pages takes minutes, so the tab has
+to be opened by a click that is still warm. Doing it the other way round — tab
+first, read after — means watching an empty page while the work happens in the
+tab behind it.
+
+Rows already read are kept, so pressing **CSV** afterwards writes them out
+without reading anything again. They are dropped if the table changes or you
+switch scope, because then they no longer describe what you are asking for.
 
 Both ends check who they are talking to. This end accepts only the window it
 opened, at an mtgban host; the site's page accepts only the origins it lists,

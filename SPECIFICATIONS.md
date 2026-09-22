@@ -302,26 +302,46 @@ source check beside it, which a redirect does not disturb.
 `rows` is passed because the page receives text, and text does not say
 whether its first line is a header or a card.
 
-**The tab is opened by the click, not by the rows arriving.** This is the
-ordering the walk of §6 broke and it is not optional. `window.open` needs
-the click's transient activation, which Firefox gives for about five
-seconds; reading thirteen pages takes longer than that and a hundred takes
-minutes, so opening at the end made it a pop-up — blocked, with a bar
-across the top of the page saying so.
+**The window is opened by a click, with nothing asynchronous in front of
+it.** `window.open` needs the click's transient activation, which Firefox
+keeps alive about five seconds and then calls the result a pop-up — blocks
+it, and puts a bar across the top of the page saying so. How many clicks
+that costs depends on how long the reading takes, and nothing else:
 
-So the tab opens first and waits. Two things follow from that:
+| scope | clicks | why |
+| --- | --- | --- |
+| this page | one | a DOM read and one rates fetch, comfortably inside the window |
+| all offers | two | thirteen pages already outlives it, a hundred takes minutes |
 
-- **The listener is attached before the tab can have loaded.** The handoff
-  page announces itself once, as it loads, and never repeats it. Whichever
-  of "the page is listening" and "the rows are ready" lands second does
-  the handing over.
-- **A read that produced nothing closes the tab again.** It was opened on
-  the promise of a list; left alone it sits on *Waiting for the card
-  list…* for good. The page has no timeout, which is what makes opening it
-  early safe and closing it afterwards necessary.
+The second click is not ceremony. Opening the tab first and reading
+afterwards does work — the handoff page says *Waiting for the card list…*
+and has no timeout — but it hands you an empty page to look at while the
+count ticks along in the tab behind it. Reading first and opening on a
+second click gives both halves a click of their own.
 
-`tests/content.test.js` holds both orderings, because they are invisible
-until they break.
+So the button is the state: **Send to BAN** before, **Send 251 rows**
+after. Rows in hand are dropped when the table moves underneath them
+(Cardmarket refills it on every filter) and when the scope changes, since
+neither describes what is being asked for any more. Either button can fill
+them and either can spend them, so wanting the file as well does not mean
+walking a hundred pages twice.
+
+Two orderings inside the handover, both invisible until they break:
+
+- **The listener goes up before the rows are waited on.** The handoff page
+  announces itself once, as it loads, and never repeats it. Whichever of
+  "the page is listening" and "the rows are ready" lands second does the
+  handing over.
+- **The rows are spent only once they have landed**, so a tab that never
+  answered is worth another click rather than another hundred pages.
+
+A read that produced nothing closes the tab again, rather than leaving it
+waiting for a list that is not coming.
+
+`tests/content.test.js` holds all of this. It reads the source rather than
+running it — content.js installs a panel into a live Cardmarket page on
+sight — which is weak, but an ordering nobody would think to preserve is
+worth pinning even loosely.
 
 ### 5.3 Hosts, and the Magic exception
 
