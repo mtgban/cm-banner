@@ -161,6 +161,39 @@ describe("walking the list", () => {
     expect(walked.expected).toBe(42);
   });
 
+  test("it reports how big a page was, for measuring a shortfall in pages", async () => {
+    // A row missing is an offer sold mid-walk. A page missing is a walk
+    // that ended before the pages did, and only the second is a failure -
+    // so the size of a page is what the difference has to be measured in.
+    const site = seller();
+    const walked = await MKM.walkPages(pageOf({ next: BASE + "?site=2", total: 42 }), BASE, {
+      fetchPage: site.fetchPage,
+      pace: 0,
+    });
+    expect(walked.perPage).toBe(MKM.countRows(load("offers.html")));
+    expect(walked.rows).toBe(walked.perPage * 3);
+  });
+
+  test("a page with no rows ends the walk, and the count says so", async () => {
+    // What Cardmarket serves a visitor it has not signed in, past page
+    // one. A link leading to an empty page is where a pager stops, so
+    // nothing here fails - the walk simply finishes early, holding one
+    // page and a total that says there were forty-two.
+    const walked = await MKM.walkPages(pageOf({ next: BASE + "?site=2", total: 42 }), BASE, {
+      fetchPage: () => Promise.resolve(docOf("<html><body></body></html>")),
+      pace: 0,
+    });
+
+    expect(walked.pages).toBe(1);
+    expect(walked.stopped).toBe("");
+    expect(walked.expected).toBe(42);
+    expect(walked.rows).toBe(walked.perPage);
+    // Which is the whole difficulty: nothing about this walk announces
+    // itself as short, and the caller has to work it out from the
+    // numbers.
+    expect(walked.expected - walked.rows).toBeGreaterThanOrEqual(walked.perPage);
+  });
+
   test("it starts at page one however far in the seller's page was left", async () => {
     // Walking forward from page five would drop the first four pages and
     // hand over a file that looks complete.

@@ -164,11 +164,11 @@ describe("clicking send", () => {
 
   test("and saving marks the count rather than announcing it", async () => {
     const it = mount();
-    expect(it.tickShown()).toBe(false);
+    expect(it.markShown()).toBe(false);
     it.save().click();
     await it.settle();
 
-    expect(it.tickShown()).toBe(true);
+    expect(it.markShown()).toBe(true);
     expect(it.scope()).toBe("11 rows");
     expect(it.recap()).toBe("saved, 3 skipped, 1 non-English, 11 unpriced");
     expect(it.noteShown()).toBe(false);
@@ -186,7 +186,7 @@ describe("clicking send", () => {
     it.save().click();
     await it.settle();
 
-    expect(it.tickRecap()).toBe("saved, 3 skipped, 1 non-English, 11 unpriced");
+    expect(it.markRecap()).toBe("saved, 3 skipped, 1 non-English, 11 unpriced");
     expect(it.hint()).toBe(null);
 
     // And the heading gets its own back when the rows are dropped.
@@ -198,10 +198,10 @@ describe("clicking send", () => {
     const it = mount();
     it.save().click();
     await it.settle();
-    expect(it.tickShown()).toBe(true);
+    expect(it.markShown()).toBe(true);
 
     it.toggleScope();
-    expect(it.tickShown()).toBe(false);
+    expect(it.markShown()).toBe(false);
     expect(it.recap()).toBe(null);
   });
 
@@ -278,5 +278,55 @@ describe("Escape", () => {
     it.escape();
     expect(it.busy()).toBe(false);
     expect(it.heading()).toBe("CM BANner - all offers");
+  });
+});
+
+describe("a walk that ended before the pages did", () => {
+  // What a signed-out visitor is served past page one, and what anything
+  // else serving an empty page would look like: the pager leads to a page
+  // with no rows on it, which is where a walk stops. Nothing says so.
+  const emptyPage = () =>
+    Promise.resolve({
+      ok: true,
+      status: 200,
+      headers: { get: () => null },
+      text: () => Promise.resolve("<html><body><div>nothing here</div></body></html>"),
+    });
+
+  test("is refused rather than written out short", async () => {
+    const it = mount({ pager: "pager-next.html", total: 1093 });
+    it.window.fetch = emptyPage;
+
+    it.save().click();
+    // The walk waits PACE before asking for page two, which is the one
+    // place in the suite where that wait is not worth mocking away: what
+    // is being tested is what comes back from it.
+    await it.settle(1500);
+
+    // One page of fourteen against the 1093 the page itself advertises.
+    expect(it.note()).toBe(
+      "Only 14 of 1093 offers came back, so nothing was saved"
+    );
+    expect(it.noteShown()).toBe(true);
+    expect(it.markShown()).toBe(true);
+    expect(it.mark()).toBe("✗");
+    expect(it.markFailed()).toBe(true);
+    // And nothing was armed, so the send button cannot spend it either.
+    expect(it.send().textContent).toBe("Send to BAN");
+  });
+
+  test("while a page short of one offer still writes the file", async () => {
+    // An offer sold mid-walk shifts the rest up a place and one falls
+    // between two fetches. That is a footnote, not a failure, and telling
+    // the two apart is the whole point of measuring in pages.
+    const it = mount({ pager: "pager-last.html", total: 15 });
+
+    it.save().click();
+    await it.settle(120);
+
+    expect(it.markShown()).toBe(true);
+    expect(it.mark()).toBe("✓");
+    expect(it.markFailed()).toBe(false);
+    expect(it.markRecap()).toContain("15 were listed");
   });
 });

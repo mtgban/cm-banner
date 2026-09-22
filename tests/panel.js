@@ -75,11 +75,14 @@ export function mount({ pager = "pager-last.html", url = OFFERS, total = 14 } = 
     send: () => at(".cm-banner-send"),
     save: () => at(".cm-banner-save"),
     note: () => at(".cm-banner-note").textContent,
-    tickShown: () => !at(".cm-banner-tick").hidden,
+    markShown: () => !at(".cm-banner-mark").hidden,
+    mark: () => at(".cm-banner-mark").textContent,
+    markFailed: () =>
+      at(".cm-banner-mark").classList.contains("cm-banner-failed"),
     // The footnote, which lives on the hover. Said on both the count and
     // the mark, so either answers.
     recap: () => at(".cm-banner-scope").getAttribute("title"),
-    tickRecap: () => at(".cm-banner-tick").getAttribute("title"),
+    markRecap: () => at(".cm-banner-mark").getAttribute("title"),
     // The heading's own tooltip, which says what clicking it does.
     hint: () => at(".cm-banner-label").getAttribute("title"),
     noteShown: () => !at(".cm-banner-note").hidden,

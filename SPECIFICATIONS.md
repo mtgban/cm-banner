@@ -462,7 +462,9 @@ the heading because the heading is otherwise repeating a scope that was
 chosen before the read and has not changed since, and because that leaves
 the line beneath the buttons for the things a count cannot say.
 
-A finished download adds a **tick** beside the count and nothing else.
+A finished download adds a green **tick** beside the count and nothing
+else; a read that came to nothing puts a red **✗** there instead and keeps
+the line, because that one is asking for something.
 What the read had to say about itself — `saved, 3 skipped, 1 non-English,
 11 unpriced` — is on the hover, over the count and over the tick both, so
 either answers, and **the heading carries no tooltip of its own while it
@@ -659,8 +661,8 @@ site until they stopped answering.
 
 ### 6.4 The scope is the visitor's to choose
 
-The panel's heading is the control. It reads **CM BANNER - *all offers*** and
-clicking it reads **CM BANNER - *this page only***, the emphasised word being both the
+The panel's heading is the control. It reads **CM BANner - *all offers*** and
+clicking it reads **CM BANner - *this page only***, the emphasised word being both the
 thing that changes and the thing worth reading twice. Naming the
 wrong scope is how a twentieth of a collection gets uploaded as all of it,
 so the scope is never anywhere but in the sentence that describes what the
@@ -686,6 +688,20 @@ same code either way.
 Whatever was read is kept and handed over, and the panel says the walk
 stopped early and why. A short list is worth having; a short list that
 reads like a whole inventory is not.
+
+**A walk that came back short of a whole page is refused outright.** There
+is a way for the walk to end early and say nothing at all: Cardmarket
+answers a fetch with a page holding no rows, and a link leading to nothing
+is exactly where a pager stops, so the walk finishes believing it reached
+the end. What comes out is page one wearing the shape of an inventory, and
+before this it was written to a file without comment.
+
+The difference is measured in **pages, not rows**, which is why the walk
+reports the size of the first page it read. A row missing is §6.6 — an
+offer sold between two fetches — and is a footnote. A whole page missing
+is not a sale. When one is, no file is written and nothing is armed: the
+panel shows a red **✗** beside the scope and says `Only 14 of 1093 offers
+came back, so nothing was saved`.
 
 This is also why a partial export keeps its warning on screen after being
 handed to BAN, where a complete one clears it: the receiving tab cannot

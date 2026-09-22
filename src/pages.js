@@ -234,11 +234,19 @@ globalThis.MKM = globalThis.MKM || {};
     var visited = Object.create(null);
     var pages = 0;
     var rows = 0;
+    var perPage = 0;
     var stopped = "";
 
     function take(page) {
       pages++;
-      rows += MKM.countRows(page);
+      var here = MKM.countRows(page);
+      // The first page's size is the unit a shortfall is measured in
+      // later: an offer sold mid-walk costs a row, and only a page that
+      // never arrived costs a page.
+      if (pages === 1) {
+        perPage = here;
+      }
+      rows += here;
       var found = MKM.parseOffers(page, languages);
       for (var i = 0; i < found.length; i++) {
         if (seen[found[i].articleID]) {
@@ -301,6 +309,7 @@ globalThis.MKM = globalThis.MKM || {};
         offers: offers,
         pages: pages,
         rows: rows,
+        perPage: perPage,
         expected: expected,
         // Not "how many were read" but "was there more that Cardmarket
         // would not show", which is a different kind of short.

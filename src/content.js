@@ -157,7 +157,7 @@
   // there is one at a time. `label()` puts the heading's own back when it
   // clears this.
   function recap(panel, text) {
-    var parts = panel.querySelectorAll(".cm-banner-scope, .cm-banner-tick");
+    var parts = panel.querySelectorAll(".cm-banner-scope, .cm-banner-mark");
     for (var i = 0; i < parts.length; i++) {
       if (text) {
         parts[i].title = text;
@@ -171,15 +171,21 @@
     }
   }
 
-  // tick is the mark next to the count saying the file was written. The
-  // download itself is the browser's business once the anchor is clicked,
-  // and nothing here hears about it; what this says is that the rows were
-  // read and handed to it.
-  function tick(panel, done) {
-    var mark = panel.querySelector(".cm-banner-tick");
-    if (mark) {
-      mark.hidden = !done;
+  // mark is the sign beside the count: a tick when a file was written, a
+  // cross when a read came to nothing. One element rather than two, since
+  // the panel never wants both and a pair would need keeping in step.
+  //
+  // The download itself is the browser's business once the anchor is
+  // clicked and nothing here hears about it; what the tick says is that
+  // the rows were read and handed over to it.
+  function mark(panel, how) {
+    var at = panel.querySelector(".cm-banner-mark");
+    if (!at) {
+      return;
     }
+    at.hidden = !how;
+    at.textContent = how === "failed" ? "\u2717" : "\u2713";
+    at.classList.toggle("cm-banner-failed", how === "failed");
   }
 
   // counting puts the read's progress where the scope word usually is.
@@ -419,6 +425,30 @@
       said.push(walked.stopped);
     }
 
+    // A walk that ended before the pages did. Cardmarket answers a fetch
+    // with a page holding no rows - which is what it serves a signed-out
+    // visitor past page one - and a link leading to nothing is where a
+    // pager stops, so the walk finishes without ever knowing it was cut
+    // off. What comes out is page one wearing the shape of an inventory.
+    //
+    // Told apart from the ordinary shortfall by the size of it: an offer
+    // sold mid-walk shifts the rest up a place and one falls between two
+    // fetches, which is the note above. A whole page is not a sale.
+    var missing = walked.expected ? walked.expected - walked.rows : 0;
+    if (
+      !walked.capped &&
+      !walked.stopped &&
+      walked.perPage > 0 &&
+      missing >= walked.perPage
+    ) {
+      return {
+        csv: "",
+        note:
+          "Only " + walked.rows + " of " + walked.expected +
+          " offers came back, so nothing was saved",
+      };
+    }
+
     return {
       csv: MKM.toCSV(offers),
       note: said.join(", "),
@@ -457,6 +487,7 @@
         busy(panel, false);
         if (!done.csv) {
           say(panel, done.note);
+          mark(panel, "failed");
           return null;
         }
         return done;
@@ -482,7 +513,7 @@
   function exportOffers(panel) {
     function write(done) {
       download(done.csv, filename(gameFromPath(location.pathname)));
-      tick(panel, true);
+      mark(panel, "done");
       recap(panel, done.note ? "saved, " + done.note : "saved");
     }
 
@@ -672,7 +703,7 @@
   // scope nobody is asking for any more.
   function disarm(panel) {
     armed = null;
-    tick(panel, false);
+    mark(panel, "");
     var send = panel.querySelector(".cm-banner-send");
     if (send) {
       send.textContent = SEND;
@@ -746,7 +777,7 @@
       'CM BAN<i class="cm-banner-ner">ner</i> - ' +
       '<span class="cm-banner-spin" aria-hidden="true"></span>' +
       '<b class="cm-banner-scope"></b>' +
-      '<span class="cm-banner-tick" aria-hidden="true" hidden>\u2713</span>' +
+      '<span class="cm-banner-mark" aria-hidden="true" hidden>\u2713</span>' +
       "</button>" +
       '<div class="cm-banner-actions">' +
       '<button type="button" class="cm-banner-send">' + SEND + "</button>" +
