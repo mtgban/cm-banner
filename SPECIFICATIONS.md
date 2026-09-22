@@ -465,7 +465,13 @@ the line beneath the buttons for the things a count cannot say.
 A finished download adds a **tick** beside the count and nothing else.
 What the read had to say about itself — `saved, 3 skipped, 1 non-English,
 11 unpriced` — is on the hover, over the count and over the tick both, so
-either answers. It used to be a line under the buttons, which is a row of
+either answers, and **the heading carries no tooltip of its own while it
+is up**. The heading is one button with the count inside it: a title
+there as well is a second tooltip over the same few words, and which of
+the two a reader gets depends on where the cursor crossed in, since the
+one already on screen does not swap for the other until the pointer moves
+again. The heading's own hint — what clicking it does — comes back when
+the rows are dropped. It used to be a line under the buttons, which is a row of
 a panel this size given over to a footnote that is read once and ignored
 after; the lines it keeps are the ones that ask for something.
 

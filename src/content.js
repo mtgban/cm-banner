@@ -147,7 +147,15 @@
   // read that was refused, a pop-up that was blocked.
   //
   // Said on both the count and the mark beside it, so it answers whichever
-  // of the two the cursor stopped on.
+  // of the two the cursor stopped on - and while it is up, the heading
+  // itself says nothing.
+  //
+  // The heading is one button with the count inside it. A title there as
+  // well is a second tooltip over the same few words, and which of the two
+  // a reader gets depends on where the cursor crossed in: one already on
+  // screen does not swap for the other until the pointer moves again. So
+  // there is one at a time. `label()` puts the heading's own back when it
+  // clears this.
   function recap(panel, text) {
     var parts = panel.querySelectorAll(".cm-banner-scope, .cm-banner-tick");
     for (var i = 0; i < parts.length; i++) {
@@ -156,6 +164,10 @@
       } else {
         parts[i].removeAttribute("title");
       }
+    }
+    var button = panel.querySelector(".cm-banner-label");
+    if (button && text) {
+      button.removeAttribute("title");
     }
   }
 

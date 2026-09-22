@@ -79,6 +79,9 @@ export function mount({ pager = "pager-last.html", url = OFFERS, total = 14 } = 
     // The footnote, which lives on the hover. Said on both the count and
     // the mark, so either answers.
     recap: () => at(".cm-banner-scope").getAttribute("title"),
+    tickRecap: () => at(".cm-banner-tick").getAttribute("title"),
+    // The heading's own tooltip, which says what clicking it does.
+    hint: () => at(".cm-banner-label").getAttribute("title"),
     noteShown: () => !at(".cm-banner-note").hidden,
     busy: () => panel.classList.contains("cm-banner-busy"),
     toggleScope: () => at(".cm-banner-label").click(),

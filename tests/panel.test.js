@@ -175,6 +175,25 @@ describe("clicking send", () => {
     expect(it.heading()).toBe("CM BANner - 11 rows\u2713");
   });
 
+  test("and the hover over it says the results and nothing else", async () => {
+    // The heading is one button with the count inside it. A tooltip on
+    // the button as well as on the mark is two tooltips over the same few
+    // words, and which one a reader gets depends on where the cursor
+    // crossed in - so there is one at a time.
+    const it = mount();
+    expect(it.hint()).toBe("14 offers listed \u2014 click for this page");
+
+    it.save().click();
+    await it.settle();
+
+    expect(it.tickRecap()).toBe("saved, 3 skipped, 1 non-English, 11 unpriced");
+    expect(it.hint()).toBe(null);
+
+    // And the heading gets its own back when the rows are dropped.
+    it.toggleScope();
+    expect(it.hint()).toBe("14 offers on this page \u2014 click for the whole list");
+  });
+
   test("the mark goes when the rows it stood for do", async () => {
     const it = mount();
     it.save().click();
