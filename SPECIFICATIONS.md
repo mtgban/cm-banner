@@ -1,9 +1,11 @@
 # cm-banner — Specification
 
 > Written 2026-09-22, from the work that built the extension. Every fact
-> about Cardmarket's markup below was read off saved pages rather than
-> inferred: two singles offers pages and one sealed one, 20 offers each.
-> Where something is unverified it says so.
+> about Cardmarket's markup below was read off real pages rather than
+> inferred: fourteen consecutive saved singles pages and one sealed one,
+> and — for §6 — the responses cardmarket.com's own server gave to a
+> browser asking for the next page. Where something is unverified it says
+> so.
 
 ## 1. What it is
 
@@ -19,6 +21,7 @@ the handoff is `postMessage`.
 ```
 src/rates.js     currency feed → multipliers
 src/parse.js     DOM → offers
+src/pages.js     one page → every page
 src/csv.js       offers → CSV text
 src/content.js   the panel, and the two things its buttons do
 icons/           the BAN stroopwafel at 16/32/48/128
@@ -318,7 +321,123 @@ by its subdomain both sends the rows a hop out of their way and changes the
 origin mid-flight, which broke the handshake until the origin check was
 loosened as above.
 
-## 6. Not verified
+## 6. Reading every page
+
+Cardmarket shows twenty offers to a page. An export that took only the
+page on screen would hand over a twentieth of a seller's list in a file
+that looked complete, so the walk follows the pager to the end.
+
+### 6.1 The pager
+
+Drawn twice, above and below the table, inside `div.pagination`:
+
+```html
+<span class="total-count">1093</span><span>&nbsp;Hits</span>
+...
+<a href="/en/Magic/Users/Seller/Offers/Singles?site=3"
+   data-direction="next" class="... pagination-control">
+```
+
+Three things are read from it, and two things beside it are deliberately
+not.
+
+**The next page is `a[data-direction="next"]`.** On the last page
+Cardmarket draws the same anchor with **no `href` at all** and adds
+`disabled`, so "is there another page" and "does the link have an href"
+are the same question. That is what ends the walk — not arithmetic over a
+total that can move while the walk is running. Confirmed on both the live
+`?site=55` and a saved last page.
+
+**The href's shape depends on where it was read.** The server writes it
+**relative** (`/en/Magic/Users/…?site=3`); the same control on a page
+saved out of a browser carries it **absolute**. It is resolved against the
+page it came from, which is right for both.
+
+**The filter comes with it.** Cardmarket writes the query it was given
+back into the link, so a seller's page filtered to English walks the
+filtered list. The same seller read 1093 offers over 55 pages unfiltered
+and 251 over 13 with `idLanguages=1`.
+
+**The count is `.total-count`, not "Page 5 of 13".** That sentence is
+written in whichever of Cardmarket's six languages the visitor reads; the
+number beside it is not. It is used only to say how far along the walk is
+and to label the button — nothing terminates on it.
+
+**The walk starts at page one, wherever the seller's page was left.**
+Cardmarket numbers pages with a `site` parameter and omits it on the
+first, which is what page two's own previous-page link points at, so page
+one is the current URL with `site` removed. Walking forward from page five
+would silently drop four pages.
+
+### 6.2 Cloudflare decides how fast this can go
+
+Cardmarket is behind Cloudflare, and this is the binding constraint on the
+whole feature.
+
+- A plain `curl` for a public offers page is refused outright: **403**.
+- A `fetch` from the page itself is answered normally — same-origin, so it
+  carries the session and needs no permission.
+- **Three of those inside one second were answered with a challenge**: 429
+  carrying `cf-mitigated: challenge` and a "Just a moment…" interstitial,
+  and then a "Verify you are human" checkbox on the next ordinary
+  navigation.
+
+That last state is not a rate limit that lapses while the extension waits.
+It is a check meant for the person at the keyboard, and nothing an
+extension can send answers it. So:
+
+- The walk **paces itself**, one page at a time with a wait between them
+  (`PACE`, 1200ms). The wait goes before each fetch rather than after, so
+  a one-page seller pays nothing for it.
+- A challenge is **told apart from an ordinary refusal** by the
+  `cf-mitigated` header, and **stops the walk immediately** rather than
+  retrying into a door being held shut.
+- The request asks the way a page load asks (`Accept: text/html,…`),
+  because a request for an HTML page that says it will take anything is
+  one of the things that makes a fetch look unlike somebody reading.
+
+`PACE` is a judgement and not a measured ceiling. Cardmarket does not
+publish one, and establishing it properly would mean hammering someone's
+site until they stopped answering.
+
+### 6.3 The scope is the visitor's to choose
+
+The panel carries a **This page only** checkbox, and the button says which
+it means — `Export 251 offers` against `Export 20 offers` — because naming
+the wrong one is how a twentieth of a collection gets uploaded as all of
+it.
+
+The whole list is the default: a file holding one page of a seller's stock
+is indistinguishable from a complete one once it has left here. One page is
+the escape hatch, and it costs no requests at all.
+
+Taking one page answers in the same shape a walk answers in, so everything
+downstream of it — the pricing, the counting, the CSV, the handoff — is the
+same code either way.
+
+### 6.4 What a partial walk does
+
+Whatever was read is kept and handed over, and the panel says the walk
+stopped early and why. A short list is worth having; a short list that
+reads like a whole inventory is not.
+
+This is also why a partial export keeps its warning on screen after being
+handed to BAN, where a complete one clears it: the receiving tab cannot
+tell that the list is short, and neither could anyone reading it there.
+
+### 6.5 The walk is not atomic
+
+Thirteen pages take some seconds, and the seller's stock moves underneath
+it — the same seller was measured at 262 offers over 14 pages one
+afternoon and 251 over 13 that evening.
+
+A sale between two fetches shifts every later offer up a place. That can
+show one row twice, which the dedupe on article id covers, and can hide
+another, which nothing here covers. What comes back says how many were
+read against how many the first page promised, so a walk that lost one can
+be seen to have lost it.
+
+## 7. Not verified
 
 Stated plainly so nobody takes them as tested:
 
@@ -330,3 +449,12 @@ Stated plainly so nobody takes them as tested:
   Other sealed categories are assumed to share its shape.
 - **Safari.** The extension is written to run there and has never been
   built for it.
+- **That `PACE` is slow enough.** The walk was run live only at full
+  speed, which is what provoked the challenge and established that the
+  pacing was needed. The paced walk has never completed against
+  Cardmarket, because provoking the challenge is what it takes to find
+  out, and answering it is the visitor's to do.
+- **A complete walk.** The longest live run reached two pages and 40
+  offers, all 40 with distinct article ids, 39 of 40 with a product id,
+  every one priced and graded — and it started from page five and
+  correctly went back to page one first.

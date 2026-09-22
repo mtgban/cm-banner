@@ -36,6 +36,7 @@ visible without one. When you change the parser, ask for a saved page
 manifest.json    MV3; two things matter — the host list and no permissions
 src/rates.js     the currency feed, and the inversion it needs
 src/parse.js     DOM → offers. The volatile half; see SPECIFICATIONS.md §3
+src/pages.js     one page → every page, at Cloudflare's pace; see §6
 src/csv.js       offers → CSV. The contract with mtgban; see §4
 src/content.js   the panel, the download, the handoff
 icons/           the stroopwafel, 128 is the original and the rest are made
@@ -76,6 +77,16 @@ needs the extension reloaded, not just the page. Icons are cached harder
 still: removing and re-adding the extension is the reliable way to see a new
 one.
 
+**Cardmarket is behind Cloudflare, and it is the thing that decides whether
+this works.** A `curl` gets a flat 403; three `fetch`es inside a second get a
+challenge and then a "Verify you are human" checkbox on the next ordinary
+page load. Treat that budget as the real constraint on anything that adds a
+request, and never try to answer the challenge in code — it is meant for the
+person at the keyboard, it is theirs to clear, and code that got around it
+would be the worst thing in this repository. `PACE` in `src/pages.js` is a
+guess at politeness, not a measured limit; if you change it, say in the commit
+what you actually observed.
+
 ## Things not to do
 
 **Do not drive mtgban's upload form.** An earlier version synthesised a
@@ -97,6 +108,10 @@ honestly carries an empty column and the panel says how many. Every place
 this comes up, the refusal is the answer: an unknown currency, an id the
 site does not carry, a row with no thumbnail. `SPECIFICATIONS.md` says why
 in each case.
+
+**Do not fan out the page walk.** Parallel fetches are the obvious speedup and
+the fastest way to get the visitor challenged. One page at a time, with a wait
+before each.
 
 **Do not let the panel resize as it speaks.** It sits under the cursor; a
 box that grows and shrinks moves the button being aimed at. If you add
