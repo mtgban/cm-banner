@@ -518,32 +518,38 @@ another, which nothing here covers. What comes back says how many were
 read against how many the first page promised, so a walk that lost one can
 be seen to have lost it.
 
-### 6.7 The panel does not move
+### 6.7 The panel does not move while it reads
 
-One size, always: it is anchored to the bottom right corner of somebody
-else's page with the cursor on it, and every pixel it grew in either
-direction would drag a button out from under that cursor — while reading,
-which is exactly when nobody is watching it.
+It is anchored to the bottom right corner of somebody else's page with the
+cursor on it, and it grows upwards and leftwards — so every pixel it gains
+in either direction drags a button out from under that cursor, during the
+one stretch when nobody is watching it.
 
-That takes three things, and each of them is a way the panel used to
-change size:
+Nothing about a read changes its size. Measured across idle, reading, and
+read: **260 x 74** in all three.
+
+That takes three things, and each is a way the panel used to change size:
 
 - a **width** on the panel, rather than one that fits what it is saying;
-- a **min-height** on the line it speaks on, kept whether or not there is
-  anything on it, because the panel grows upwards and a line arriving
-  pushes the buttons up;
-- a **spinner that fits inside that line** — sized inside its border, or
-  it is taller than the text and grows the note at the moment a read
-  starts.
+- **the count in the heading**, where a spinner takes the place of the
+  scope word: `CM BANNER - 140 / 251`. The heading is a line the panel
+  already has, and the scope word is the one thing not worth reading at
+  the moment the count exists. The alternative — a line of its own — means
+  keeping that line empty the rest of the time, which is the same problem
+  paid for in advance;
+- a **spinner that fits inside that line**, inline and sized inside its
+  border, or it is taller than the text beside it and grows the heading at
+  the moment a read starts.
 
-Measured across idle, reading, read, read-with-caveats, capped and saved:
-260.00 x 95.99 in every one.
+The line under the buttons is therefore only ever for what is left to say,
+and it is not there when there is nothing: most reads report nothing, the
+button carries the count, and the heading carried the progress. When a read
+does have something to report it appears then — after the click, not during
+the read.
 
 What follows from the fixed width is that the output has to be short. The
-button already says how many rows there are, so the line below carries
-only what the count does not — what was skipped, what will be valued as
-something it is not, what is missing from the list — and most of the time
-it is empty.
+line carries only what the count does not — what was skipped, what will be
+valued as something it is not, what is missing from the list altogether.
 
 ### 6.8 Stopping
 

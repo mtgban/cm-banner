@@ -165,20 +165,22 @@ describe("the panel does not move", () => {
     expect(css.slice(at, css.indexOf("}", at))).toMatch(/\n\s*width:/);
   });
 
-  test("the line it speaks on is there whether or not it is speaking", () => {
-    const at = css.indexOf("#cm-banner .cm-banner-note {");
-    expect(at).toBeGreaterThan(-1);
-    expect(css.slice(at, css.indexOf("}", at))).toMatch(/min-height:/);
-    // Hiding an empty note is the same bug by another route: the panel
-    // grows upwards, so the line arriving moves the buttons.
-    expect(body("say")).not.toContain("hidden");
+  test("the count goes on a line the panel already has", () => {
+    // Giving it a line of its own means keeping that line empty the rest
+    // of the time, since one that came and went would move the buttons.
+    // The heading is free at exactly the moment the count needs it.
+    expect(body("counting")).toContain("cm-banner-scope");
+    expect(body("say")).toContain("hidden");
   });
 
-  test("the spinner fits inside that line", () => {
-    // A spinner taller than the text grows the note when it appears,
-    // which is the panel changing size on its way into a read.
+  test("the spinner sits on the heading's line without growing it", () => {
+    // Inline, and sized inside its border, so it is shorter than the text
+    // beside it. A taller one grows the heading at the moment a read
+    // starts - the panel changing size under the cursor that clicked it.
     const at = css.indexOf("#cm-banner.cm-banner-busy .cm-banner-spin {");
     expect(at).toBeGreaterThan(-1);
-    expect(css.slice(at, css.indexOf("}", at))).toContain("box-sizing: border-box");
+    const spin = css.slice(at, css.indexOf("}", at));
+    expect(spin).toContain("display: inline-block");
+    expect(spin).toContain("box-sizing: border-box");
   });
 });

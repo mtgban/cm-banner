@@ -114,16 +114,11 @@
   outline-offset: 2px;
 }
 
-/* A row, so the spinner can sit beside what it is saying, and one line
-   tall whether or not there is anything on it: the panel is anchored to
-   the bottom corner and grows upwards, so a line that came and went would
-   move the buttons every time it did. */
+/* Deliberately without a display of its own, so [hidden] means what the
+   browser's own sheet says it means. The line is there only when there is
+   something on it - the read's count lives in the heading instead, which
+   is a line the panel already has. */
 #cm-banner .cm-banner-note {
-  display: flex;
-  gap: 6px;
-  align-items: flex-start;
-
-  min-height: 1.35em;
   opacity: 0.85;
   font-size: 12px;
 }
@@ -139,17 +134,18 @@
   display: none;
 }
 
-/* Sized inside its border so the whole thing is shorter than the line it
-   sits on. A spinner taller than the text grows the note when it appears,
-   which is the panel changing height on its way into a read. */
+/* On the heading's own line, and sized inside its border so it is shorter
+   than the text it sits beside. A spinner taller than the line grows the
+   heading at the moment a read starts, which is the panel changing size
+   under the cursor that just clicked it. */
 #cm-banner.cm-banner-busy .cm-banner-spin {
-  display: block;
-  flex: none;
+  display: inline-block;
   box-sizing: border-box;
 
-  width: 12px;
-  height: 12px;
-  margin-top: 2px;
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+  vertical-align: -1px;
   border: 2px solid rgb(255 255 255 / 30%);
   border-top-color: #fff;
   border-radius: 50%;

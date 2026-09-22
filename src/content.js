@@ -87,14 +87,29 @@
     }, 30000);
   }
 
-  // say writes the one line the panel has to say things on. The line is
-  // always there, empty or not: the panel is anchored to the corner and
-  // grows upwards, so a line that came and went would move the buttons
-  // out from under the cursor every time it did.
+  // say writes the line under the buttons, and takes the line away when
+  // there is nothing to put on it. Most reads have nothing: the count goes
+  // in the heading and the total goes on the button, so this is left with
+  // the exceptions.
   function say(panel, message) {
-    var text = panel.querySelector(".cm-banner-text");
-    if (text) {
-      text.textContent = message;
+    var note = panel.querySelector(".cm-banner-note");
+    if (note) {
+      note.textContent = message;
+      note.hidden = !message;
+    }
+  }
+
+  // counting puts the read's progress where the scope word usually is.
+  //
+  // The heading is a line the panel already has. Giving the count a line
+  // of its own means keeping that line empty the rest of the time, since
+  // one that came and went would move the buttons - and the count is only
+  // there while the spinner is, which is the one moment the scope word is
+  // not worth reading.
+  function counting(panel, text) {
+    var says = panel.querySelector(".cm-banner-scope");
+    if (says) {
+      says.textContent = text;
     }
   }
 
@@ -135,6 +150,8 @@
       window.addEventListener("beforeunload", hold);
     } else {
       window.removeEventListener("beforeunload", hold);
+      // The heading was carrying the count. Give it its word back.
+      label(panel);
     }
   }
 
@@ -199,8 +216,7 @@
     }
 
     busy(panel, true);
-    // Nothing is said to begin with. The spinner is already saying it,
-    // and the first page answers before a sentence would have been read.
+    // Whatever the last read said of a different list, it no longer holds.
     say(panel, "");
 
     var reading;
@@ -213,7 +229,7 @@
           if (stale()) {
             return;
           }
-          say(panel, progress(at));
+          counting(panel, progress(at));
         },
       });
     }
@@ -563,16 +579,15 @@
     panel.id = PANEL_ID;
     panel.innerHTML =
       '<button type="button" class="cm-banner-label">' +
-      'CM BANNER - <b class="cm-banner-scope"></b>' +
+      "CM BANNER - " +
+      '<span class="cm-banner-spin" aria-hidden="true"></span>' +
+      '<b class="cm-banner-scope"></b>' +
       "</button>" +
       '<div class="cm-banner-actions">' +
       '<button type="button" class="cm-banner-send">' + SEND + "</button>" +
       '<button type="button" class="cm-banner-save">CSV</button>' +
       "</div>" +
-      '<div class="cm-banner-note">' +
-      '<span class="cm-banner-spin" aria-hidden="true"></span>' +
-      '<span class="cm-banner-text"></span>' +
-      "</div>";
+      '<div class="cm-banner-note" hidden></div>';
 
     // Changing what will be taken makes whatever the last export said
     // about the other scope stale, so the note goes with it.

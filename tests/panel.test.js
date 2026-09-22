@@ -40,12 +40,30 @@ describe("clicking send", () => {
     it.send().click();
     expect(it.busy()).toBe(true);
     expect(it.send().disabled).toBe(true);
+    // The count takes the heading's word while it reads, and no line is
+    // opened underneath for it.
+    expect(it.scope()).toBe("11 / 14");
+    expect(it.noteShown()).toBe(false);
     await it.settle();
     expect(it.opened).toEqual([]);
-    // The button becomes the second click.
+    // The button becomes the second click, and the heading has its word
+    // back.
     expect(it.send().textContent).toBe("Send 11 rows");
+    expect(it.scope()).toBe("all offers");
     expect(it.busy()).toBe(false);
     expect(it.send().disabled).toBe(false);
+  });
+
+  test("what is left to say opens a line, and only then", async () => {
+    // Three of the fixture's fourteen rows name no product, and no rates
+    // were reachable, so this read has something to report. A read with
+    // nothing to report leaves the panel as it found it.
+    const it = mount();
+    expect(it.noteShown()).toBe(false);
+    it.send().click();
+    await it.settle();
+    expect(it.noteShown()).toBe(true);
+    expect(it.note()).toBe("3 skipped, 1 non-English, 11 unpriced");
   });
 
   test("and the second click hands them over", async () => {

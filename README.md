@@ -26,12 +26,15 @@ browser's own; pages have not been able to choose it for years.
 It sees the seller's **whole list**, not the twenty rows on screen. Cardmarket
 paginates at twenty, and the export follows the pager from the first page to
 the last, whichever page you happened to be looking at. That is one request per
-page and deliberately unhurried, so the panel shows a spinner and counts up —
-`140 / 251` — while it works.
+page and deliberately unhurried, so the heading counts up while it works — a
+spinner takes the place of the scope word and the line reads `CM BANNER -
+140 / 251`.
 
-The panel is one fixed size and stays that size whatever it is doing. It sits
-under the cursor, and every pixel it grew would drag a button out from under
-it.
+It goes there rather than on a line of its own because the panel does not
+change size while it reads. It sits under the cursor, and every pixel it grew
+would drag a button out from under it; a line kept permanently empty for a
+count that is only there some of the time is the same problem paid for in
+advance.
 
 It offers two things:
 
@@ -44,9 +47,10 @@ it and it reads **CM BANNER - *this page only***, which restricts both buttons t
 rows in front of you — instant, and what you want when the page in front of you
 is what you meant. Hovering it says how many offers are listed.
 
-The button carries the count once the rows are read, so the line underneath it
-says only what the count does not: what was skipped, what will be valued as
-something it is not, what is missing from the list. Usually it says nothing.
+The button carries the count once the rows are read, so a line appears under it
+only for what the count does not say: what was skipped, what will be valued as
+something it is not, what is missing from the list. Usually nothing does, and
+then there is no line.
 
 It reads singles and sealed alike: Cardmarket files boxes and bundles under
 their own product categories, and the upload tells one from the other by what
