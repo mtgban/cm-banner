@@ -86,11 +86,11 @@
     }, 30000);
   }
 
+  // What the panel has to say goes in its title rather than on its face.
+  // There is no room in a circle for a line of text that changes length, and
+  // a control that resizes under the cursor moves the thing being aimed at.
   function say(panel, message) {
-    var note = panel.querySelector(".cm-banner-note");
-    if (note) {
-      note.textContent = message;
-    }
+    panel.title = message || panel.dataset.cmCount || "";
   }
 
   // collect reads the page and converts what it found, answering with the
@@ -218,9 +218,10 @@
 
   function label(panel) {
     var count = MKM.countRows(document);
-    var text = panel.querySelector(".cm-banner-label");
-    if (text) {
-      text.textContent = "Export " + count + " offers";
+    panel.dataset.cmCount =
+      count + " offer" + (count === 1 ? "" : "s") + " on this page";
+    if (!panel.title || panel.title === panel.dataset.cmCount) {
+      panel.title = panel.dataset.cmCount;
     }
     panel.hidden = count === 0;
     shown = count;
@@ -231,13 +232,8 @@
     var panel = document.createElement("div");
     panel.id = PANEL_ID;
     panel.innerHTML =
-      '<div class="cm-banner-brand">' +
-      '<span class="cm-banner-mark" aria-hidden="true"></span>' +
-      '<span class="cm-banner-label"></span>' +
-      "</div>" +
-      '<button type="button" class="cm-banner-send">Send to BAN</button>' +
-      '<button type="button" class="cm-banner-save">Download CSV</button>' +
-      '<div class="cm-banner-note"></div>';
+      '<button type="button" class="cm-banner-send">Send</button>' +
+      '<button type="button" class="cm-banner-save">CSV</button>';
 
     panel.querySelector(".cm-banner-send").addEventListener("click", function () {
       sendToBan(panel);
