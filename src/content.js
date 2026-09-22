@@ -231,13 +231,13 @@
     var panel = document.createElement("div");
     panel.id = PANEL_ID;
     panel.innerHTML =
-      '<div class="cm-banner-note"></div>' +
-      '<button type="button" class="cm-banner-send">Send to BAN</button>' +
-      '<button type="button" class="cm-banner-save">Download CSV</button>' +
       '<div class="cm-banner-brand">' +
       '<span class="cm-banner-mark" aria-hidden="true"></span>' +
       '<span class="cm-banner-label"></span>' +
-      "</div>";
+      "</div>" +
+      '<button type="button" class="cm-banner-send">Send to BAN</button>' +
+      '<button type="button" class="cm-banner-save">Download CSV</button>' +
+      '<div class="cm-banner-note"></div>';
 
     panel.querySelector(".cm-banner-send").addEventListener("click", function () {
       sendToBan(panel);
