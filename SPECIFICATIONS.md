@@ -41,6 +41,14 @@ for the seven games Cardmarket sells that BAN prices: Magic, Pokemon,
 YuGiOh, Lorcana, OnePiece, FleshAndBlood, Riftbound. The path segment is
 the game, capitalised as Cardmarket writes it.
 
+**The `www` is not an oversight.** The bare `cardmarket.com` redirects to
+it before a page loads — navigating to `cardmarket.com/en/Magic/Users/…`
+lands on `www.cardmarket.com/…`, with `location.origin` reporting the www
+host — so a content script never runs on the bare domain and nothing this
+sends ever carries it. The site's `HandoffOrigins` leaves it off for the
+same reason, and adding it there would widen what is allowed to hand a
+list over for a host that only ever sends visitors somewhere else.
+
 A page that reaches the content script naming a game with no deployment
 behind it gets **no panel at all** — `install()` asks where the rows would
 go before drawing anything. A panel whose main button can only apologise is
