@@ -30,7 +30,7 @@ export function mount({ pager = "pager-last.html", url = OFFERS, total = 14 } = 
   const opened = [];
   window.open = function (href) {
     opened.push(href);
-    return {
+    opened.source = {
       closed: false,
       postMessage: function (data, origin) {
         opened.push({ data: data, origin: origin });
@@ -39,6 +39,7 @@ export function mount({ pager = "pager-last.html", url = OFFERS, total = 14 } = 
         opened.push("closed");
       },
     };
+    return opened.source;
   };
   // No rates and no further pages: a refused feed is a blank price column
   // rather than a refused export, which is its own tested behaviour.
@@ -73,6 +74,15 @@ export function mount({ pager = "pager-last.html", url = OFFERS, total = 14 } = 
     escape: () =>
       window.document.dispatchEvent(
         new window.KeyboardEvent("keydown", { key: "Escape" })
+      ),
+    // Answers the way the site's handoff page does once it has loaded.
+    ready: () =>
+      window.dispatchEvent(
+        Object.assign(new window.Event("message"), {
+          source: opened.source,
+          origin: "https://mtgban.com",
+          data: { type: "mtgban-handoff-ready" },
+        })
       ),
     settle: (ms = 50) => new Promise((done) => setTimeout(done, ms)),
   };

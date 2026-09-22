@@ -438,7 +438,17 @@
       // The count goes with them: the page receives text, and text does
       // not say whether its first line is a header or a card.
       opened.postMessage(
-        { type: ROWS, csv: collected.csv, rows: collected.count },
+        {
+          type: ROWS,
+          csv: collected.csv,
+          rows: collected.count,
+          // Where they were read. The site says "Results from Cardmarket -
+          // <seller>" rather than "from pasted text", which is all a form
+          // post looks like by the time it gets there. It decides what to
+          // call this; what goes over is the page, filters and all, so the
+          // heading can link back to the list these rows actually are.
+          source: location.href,
+        },
         listening
       );
       // Spent only once they have landed somewhere, so a tab that never

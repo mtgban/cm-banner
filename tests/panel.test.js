@@ -99,6 +99,22 @@ describe("clicking send", () => {
     expect(it.opened[0]).toBe("https://mtgban.com/upload/handoff");
   });
 
+  test("the rows say which page they were read from", async () => {
+    // Without it the site can only call them pasted text, which is all a
+    // form post looks like by the time it arrives there.
+    const it = mount();
+    it.send().click();
+    await it.settle();
+    it.send().click();
+    it.ready();
+    // The rows go over when both halves are in hand, which is a tick away
+    // when the page answers before the promise holding them resolves.
+    await it.settle();
+    const handed = it.opened.find((o) => o && o.data && o.data.csv);
+    expect(handed.data.source).toBe(OFFERS);
+    expect(handed.data.rows).toBe(11);
+  });
+
   test("rows in hand are dropped when the scope changes", async () => {
     const it = mount();
     it.send().click();

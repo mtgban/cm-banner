@@ -302,6 +302,18 @@ source check beside it, which a redirect does not disturb.
 `rows` is passed because the page receives text, and text does not say
 whether its first line is a header or a card.
 
+`source` is the page they were read from, filters and all. By the time a
+handed-over list reaches the upload handler it is a form post with a
+filled textarea, which is indistinguishable from somebody pasting one — so
+the results said *Results from pasted text* for a list read off a named
+seller on a named site. With it they say *Results from Cardmarket —
+Lemhast* and link back.
+
+What it is called is the site's to decide, not this end's: that heading is
+rendered and logged, so the site derives the name from the URL's origin
+against its own list and ignores anything it does not recognise. This end
+sends a page, not a label.
+
 **The window is opened by a click, with nothing asynchronous in front of
 it.** `window.open` needs the click's transient activation, which Firefox
 keeps alive about five seconds and then calls the result a pop-up — blocks
