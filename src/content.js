@@ -98,14 +98,43 @@
     }
   }
 
+  // hold asks the browser to confirm before the page goes anywhere.
+  //
+  // A read lives in this page. Following a link, going back, or reloading
+  // takes the content script with it, and a hundred pages of reading goes
+  // too - silently, since by then there is nothing left to say so. The
+  // prompt covers all three, which is the point of using this rather than
+  // watching for clicks on links.
+  //
+  // The wording is the browser's own. Chrome, Firefox and Safari all
+  // stopped showing a page's message years ago; preventDefault is what
+  // asks for the prompt at all, and the other two lines are how older
+  // browsers spell the same request.
+  function hold(event) {
+    event.preventDefault();
+    event.returnValue = "";
+    return "";
+  }
+
   // busy turns the spinner on and takes the buttons away for as long as the
   // walk runs. A second click would start a second walk over the same
   // pages, and the export is slow enough to invite one.
+  //
+  // It is also where the page is held, because "a read is running" and
+  // "leaving would throw it away" are the same condition. The listener
+  // comes off the moment it is not: a page carrying one of these is a
+  // page the browser will not keep in its back/forward cache, and that
+  // would be this extension slowing down every Cardmarket page it sat on.
   function busy(panel, working) {
     panel.classList.toggle("cm-banner-busy", working);
     var buttons = panel.querySelectorAll("button");
     for (var i = 0; i < buttons.length; i++) {
       buttons[i].disabled = working;
+    }
+    if (working) {
+      window.addEventListener("beforeunload", hold);
+    } else {
+      window.removeEventListener("beforeunload", hold);
     }
   }
 

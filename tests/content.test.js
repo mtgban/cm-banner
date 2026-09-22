@@ -99,3 +99,23 @@ describe("rows in hand", () => {
     );
   });
 });
+
+describe("staying put while it reads", () => {
+  test("the page asks before it goes anywhere", () => {
+    // A read lives in this page: a link, the back button or a reload
+    // takes the content script with it, and a hundred pages of reading
+    // goes silently with it.
+    const busy = body("busy");
+    expect(busy).toContain('addEventListener("beforeunload", hold)');
+    expect(busy).toContain('removeEventListener("beforeunload", hold)');
+  });
+
+  test("and only while it reads", () => {
+    // A beforeunload listener left attached keeps the page out of the
+    // browser's back/forward cache for as long as the tab lives, which
+    // would be this extension slowing down every Cardmarket page.
+    for (const name of ["install", "build", "handOff", "sendToBan"]) {
+      expect(body(name)).not.toContain("beforeunload");
+    }
+  });
+});

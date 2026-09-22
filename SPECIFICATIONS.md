@@ -518,6 +518,34 @@ another, which nothing here covers. What comes back says how many were
 read against how many the first page promised, so a walk that lost one can
 be seen to have lost it.
 
+### 6.7 Leaving while it reads
+
+The read lives in this page. Following a link, pressing back or forward,
+or reloading takes the content script with it, and a hundred pages of
+reading goes too — silently, because by then there is nothing left on
+screen to say anything.
+
+So while a read is running the page is held with a `beforeunload`
+listener, which covers all three at once. That is why it is this rather
+than watching for clicks on links: the back button is not a click on
+anything.
+
+**The wording is the browser's own.** Chrome, Firefox and Safari all
+stopped showing a page's own message years ago, so the prompt reads
+whatever that browser says — "Leave site?", or similar. Cancelling the
+event is what asks for the prompt at all.
+
+It is attached in `busy()` and taken off there, because "a read is
+running", "the buttons are away" and "leaving would throw it away" are
+one condition. It must not outlive the read: a page carrying a
+`beforeunload` listener is one the browser will not keep in its
+back/forward cache, and left attached this extension would slow down
+every Cardmarket page it sat on.
+
+Verified by dispatching the event: not cancelled before a read, cancelled
+during one, not cancelled after. Whether the browser then draws its
+dialog is the browser's half and is not covered.
+
 ## 7. Not verified
 
 Stated plainly so nobody takes them as tested:

@@ -14,6 +14,11 @@ On a seller's offers page — `cardmarket.com/<lang>/<Game>/Users/<seller>/Offer
 — a panel appears in the bottom right. It appears only for a game BAN prices; on any other there is nowhere to send the
 rows, so there is no panel either.
 
+While it is reading, the page asks before it goes anywhere — a link, the back
+button, a reload. The read lives in the page, so leaving throws it away, and
+after a minute of waiting that is worth a confirmation. The wording is your
+browser's own; pages have not been able to choose it for years.
+
 It sees the seller's **whole list**, not the twenty rows on screen. Cardmarket
 paginates at twenty, and the export follows the pager from the first page to
 the last, whichever page you happened to be looking at. That is one request per
