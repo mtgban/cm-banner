@@ -1,17 +1,43 @@
 import { test, expect, describe } from "bun:test";
 import { mount, OFFERS } from "./panel.js";
 
+// A game Cardmarket sells and BAN does not price. Its offers pages are the
+// same markup with a different word in the path - checked against the live
+// site, not against the fixture: one row, one expansion tooltip, one
+// item-count and a next-page link, all where Magic keeps them.
+const UNPRICED =
+  "https://www.cardmarket.com/en/Digimon/Users/Seller/Offers/Singles";
+
 describe("the panel", () => {
   test("it appears on a game BAN prices", () => {
     expect(mount().panel).not.toBeNull();
   });
 
-  test("and not on one it cannot send anywhere", () => {
-    // A panel whose main button can only apologise is worse than none.
-    const dead = mount({
-      url: "https://www.cardmarket.com/en/Digimon/Users/Seller/Offers/Singles",
-    });
-    expect(dead.panel).toBeNull();
+  test("and on one it cannot send anywhere, minus the sending", () => {
+    // Cardmarket sells about twenty games. The read and the file are the
+    // same work on every one of them, so the panel appears and writes a
+    // CSV; the send is the only part with no deployment to open, and it
+    // says why where the cursor already is.
+    const other = mount({ url: UNPRICED });
+    expect(other.panel).not.toBeNull();
+    expect(other.send().disabled).toBe(true);
+    expect(other.send().title).toBe(
+      "BAN doesn't price this game \u2014 the CSV still works"
+    );
+    expect(other.save().disabled).toBe(false);
+  });
+
+  test("and a read there never arms the button that cannot be clicked", async () => {
+    // The rows are real and the heading counts them, but READY on a
+    // disabled button offers something that is not there - and busy()
+    // putting the buttons back must not put that one back.
+    const other = mount({ url: UNPRICED });
+    other.save().click();
+    await other.settle();
+    expect(other.scope()).toBe("11 rows");
+    expect(other.send().textContent).toBe("Send to BAN");
+    expect(other.send().disabled).toBe(true);
+    expect(other.save().disabled).toBe(false);
   });
 
   test("the heading names the scope, and clicking it changes it", () => {

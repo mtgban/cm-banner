@@ -34,12 +34,24 @@ that is what a manifest's `content_scripts` list can load.
 ## 2. Where it runs
 
 ```
-https://www.cardmarket.com/*/<Game>/Users/*/Offers/*
+https://www.cardmarket.com/*/*/Users/*/Offers/*
 ```
 
-for the seven games Cardmarket sells that BAN prices: Magic, Pokemon,
-YuGiOh, Lorcana, OnePiece, FleshAndBlood, Riftbound. The path segment is
-the game, capitalised as Cardmarket writes it.
+on **every game Cardmarket sells** — twenty-two as of 2026-09-22, read
+off the site's own game menu, of which BAN prices seven. The second
+segment is the game, capitalised as Cardmarket writes it, and the pattern
+no longer names any of them: the offers table, the tooltips, the filters
+and the pager are one layout with a different word in the path, checked
+against a live Digimon seller's page, so the read and the CSV are the same
+work on all of them. That page's first row came back whole:
+
+```
+article 2150849449   Aegiochusmon: Holy (BT26-029) (V.2)   mcm_id 903976
+Promos: Timeless Bonds   Near Mint   English   7,00 €   33 available
+```
+
+— id, name, set, grade, language, price and quantity, every one of them
+from the selector Magic uses.
 
 **The `www` is not an oversight.** The bare `cardmarket.com` redirects to
 it before a page loads — navigating to `cardmarket.com/en/Magic/Users/…`
@@ -49,12 +61,22 @@ sends ever carries it. The site's `HandoffOrigins` leaves it off for the
 same reason, and adding it there would widen what is allowed to hand a
 list over for a host that only ever sends visitors somewhere else.
 
-A page that reaches the content script naming a game with no deployment
-behind it gets **no panel at all** — `install()` asks where the rows would
-go before drawing anything. A panel whose main button can only apologise is
-worse than no panel. `tests/csv.test.js` holds the manifest's game list
-against `HOSTS` in `content.js`, since those disagreeing is what that check
-exists to catch.
+A game with no deployment behind it gets the panel and the file, and a
+**Send to BAN button that is disabled** and says why in its tooltip. That
+is the only difference: `sendable()` answers off the path, `buttons()` is
+the one place that decides which of the two are live, and `arm()` declines
+to write READY on a button nobody can click.
+
+It used to get no panel at all, on the grounds that one whose main button
+can only apologise is worse than none. What that actually withheld was the
+CSV, which is most of what the extension does and is worth having on a
+game BAN has not got to yet.
+
+The gate that is left is the page, not the game: `label()` hides the panel
+where there are no offer rows to read. `tests/csv.test.js` pins that the
+manifest names no game — a second list to keep in step with `HOSTS` is a
+list that drifts — and `tests/panel.test.js` mounts an unpriced game and
+clicks through it.
 
 ## 3. Cardmarket's markup
 
@@ -475,6 +497,9 @@ worth pinning even loosely.
 | onepiece | `onepiece.mtgban.com` |
 | fleshandblood | `fleshandblood.mtgban.com` |
 | riftbound | `riftbound.mtgban.com` |
+
+A game absent from this table still gets the panel and the file; what it
+does not get is the send. See §2.
 
 **Magic is the default deployment and answers at the bare domain.**
 `magic.mtgban.com/upload` 308-redirects to `mtgban.com/upload`; the other

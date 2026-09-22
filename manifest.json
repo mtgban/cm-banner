@@ -18,13 +18,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.cardmarket.com/*/Magic/Users/*/Offers/*",
-        "https://www.cardmarket.com/*/Pokemon/Users/*/Offers/*",
-        "https://www.cardmarket.com/*/YuGiOh/Users/*/Offers/*",
-        "https://www.cardmarket.com/*/Lorcana/Users/*/Offers/*",
-        "https://www.cardmarket.com/*/OnePiece/Users/*/Offers/*",
-        "https://www.cardmarket.com/*/FleshAndBlood/Users/*/Offers/*",
-        "https://www.cardmarket.com/*/Riftbound/Users/*/Offers/*"
+        "https://www.cardmarket.com/*/*/Users/*/Offers/*"
       ],
       "js": [
         "src/rates.js",

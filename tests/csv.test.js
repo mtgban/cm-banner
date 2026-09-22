@@ -92,25 +92,31 @@ describe("where the extension runs", () => {
     expect(hosts.every((m) => m.includes("/Users/*/Offers/"))).toBe(true);
   });
 
-  test("the games it runs on are exactly the ones it can send to", () => {
-    // The panel refuses to appear where it has nowhere to send, so the two
-    // lists have to agree: a game in the manifest with no deployment behind
-    // it is a page the extension loads on and then does nothing on, and a
-    // deployment with no match never sees a card.
-    const content = readFileSync(
-      new URL("../src/content.js", import.meta.url),
-      "utf8"
-    );
-    const hosts = content
-      .slice(content.indexOf("var HOSTS = {"), content.indexOf("};", content.indexOf("var HOSTS = {")))
-      .match(/^\s{4}([a-z]+):/gm)
-      .map((line) => line.trim().replace(":", ""));
+  test("on every game Cardmarket sells, and naming none of them", () => {
+    // It used to name the seven BAN prices, and refuse to appear on any
+    // other. The read and the file are the same work on all of them, so
+    // the panel is worth having everywhere and only the send is held back
+    // - which `tests/panel.test.js` is where to see. Naming games here as
+    // well would be a second list to keep in step with `HOSTS`, and the
+    // two drifting is a page the extension silently never loads on.
+    const matches = manifest.content_scripts[0].matches;
+    expect(matches.length).toBe(1);
 
-    const matched = manifest.content_scripts[0].matches.map(
-      (m) => m.split("/")[4].toLowerCase()
+    const pattern = new RegExp(
+      "^" + matches[0].replace(/\./g, "\\.").replace(/\*/g, ".*") + "$"
     );
-
-    expect(matched.slice().sort()).toEqual(hosts.slice().sort());
+    const offers = (game) =>
+      "https://www.cardmarket.com/en/" + game + "/Users/Seller/Offers/Singles";
+    for (const game of ["Magic", "Pokemon", "Digimon", "StarWarsUnlimited"]) {
+      expect(pattern.test(offers(game))).toBe(true);
+    }
+    // Every game, still only the one kind of page.
+    expect(
+      pattern.test("https://www.cardmarket.com/en/Magic/Products/Singles/Sol-Ring")
+    ).toBe(false);
+    expect(pattern.test("https://www.cardmarket.com/en/Magic/Users/Seller")).toBe(
+      false
+    );
   });
 
   test("and asks for no permissions at all", () => {

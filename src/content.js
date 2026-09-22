@@ -34,6 +34,12 @@
   // Each game is served by its own deployment. Magic is the default one and
   // answers at the bare domain: magic.mtgban.com redirects there, which
   // changes the origin on the way, so it is named as it ends up.
+  //
+  // Cardmarket sells twenty-two games and these are the ones BAN prices.
+  // The other fifteen are not pages to stay off: the offers table, the
+  // tooltips and the paging are one layout with a different word in the
+  // path, so the read and the file are the same work on any of them. Only
+  // the send has nowhere to go.
   var HOSTS = {
     magic: "mtgban.com",
     pokemon: "pokemon.mtgban.com",
@@ -72,6 +78,13 @@
   function uploadURL(game) {
     var host = HOSTS[game];
     return host ? "https://" + host + "/upload/handoff" : "";
+  }
+
+  // sendable says whether this page's game has a deployment behind it. The
+  // path cannot change under a content script, so it answers the same
+  // thing for the life of the panel.
+  function sendable() {
+    return !!uploadURL(gameFromPath(location.pathname));
   }
 
   function today() {
@@ -140,6 +153,21 @@
     return "";
   }
 
+  // buttons puts the pair into the state the panel is in. Send has two
+  // reasons to be out of reach and one outlives the other, so they are
+  // decided together: a read ending must not hand back a button that was
+  // never clickable in the first place.
+  function buttons(panel, working) {
+    var send = panel.querySelector(".cm-banner-send");
+    var save = panel.querySelector(".cm-banner-save");
+    if (send) {
+      send.disabled = working || !sendable();
+    }
+    if (save) {
+      save.disabled = working;
+    }
+  }
+
   // busy turns the spinner on and takes the buttons away for as long as the
   // walk runs. A second click would start a second walk over the same
   // pages, and the export is slow enough to invite one.
@@ -154,10 +182,7 @@
     // The two that do something. The heading is left alone: it is holding
     // the count, and a disabled button is a dimmed one in every browser's
     // own stylesheet, so disabling it would dim the progress.
-    var buttons = panel.querySelectorAll(".cm-banner-send, .cm-banner-save");
-    for (var i = 0; i < buttons.length; i++) {
-      buttons[i].disabled = working;
-    }
+    buttons(panel, working);
     if (working) {
       window.addEventListener("beforeunload", hold);
     } else {
@@ -571,7 +596,10 @@
   function arm(panel, done) {
     armed = done;
     var send = panel.querySelector(".cm-banner-send");
-    if (send) {
+    // Not where there is nothing to send to. The rows are real and the
+    // count still goes up in the heading, but a button that cannot be
+    // clicked saying READY is an offer that is not there.
+    if (send && sendable()) {
       send.textContent = ARMED;
     }
     counting(panel, done.count + (done.count === 1 ? " row" : " rows"));
@@ -683,18 +711,20 @@
     panel.querySelector(".cm-banner-save").addEventListener("click", function () {
       exportOffers(panel);
     });
+    // A game BAN does not price gets the panel, the read and the file all
+    // the same; the send is the one part with no deployment to open. The
+    // reason goes on the button rather than on a line of its own, which
+    // would be a line the panel carried for ever.
+    if (!sendable()) {
+      panel.querySelector(".cm-banner-send").title =
+        "BAN doesn't price this game \u2014 the CSV still works";
+    }
+    buttons(panel, false);
     return panel;
   }
 
   function install() {
     if (document.getElementById(PANEL_ID)) {
-      return;
-    }
-    // A game this cannot send anywhere gets no panel at all. The matches in
-    // the manifest name the seven Cardmarket sells that BAN prices, but a
-    // path is not a promise: anything that reaches here naming a game with
-    // no deployment behind it is a page to stay off.
-    if (!uploadURL(gameFromPath(location.pathname))) {
       return;
     }
 
