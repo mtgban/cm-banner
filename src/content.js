@@ -88,73 +88,175 @@
 
   function say(panel, message) {
     var note = panel.querySelector(".cm-banner-note");
+    var text = panel.querySelector(".cm-banner-text");
+    if (text) {
+      text.textContent = message;
+    }
     if (note) {
-      note.textContent = message;
+      note.hidden = !message && !panel.classList.contains("cm-banner-busy");
     }
   }
 
-  // collect reads the page and converts what it found, answering with the
-  // CSV and what to say about it.
-  function collect(panel) {
-    var offers = MKM.parseOffers(document);
-    var total = MKM.countRows(document);
+  // busy turns the spinner on and takes the buttons away for as long as the
+  // walk runs. A second click would start a second walk over the same
+  // pages, and the export is slow enough to invite one.
+  function busy(panel, working) {
+    panel.classList.toggle("cm-banner-busy", working);
+    var buttons = panel.querySelectorAll("button");
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].disabled = working;
+    }
+  }
 
-    if (offers.length === 0) {
-      // Told apart deliberately: a page with rows that all refused is not a
-      // page with no rows, and only one of the two is worth reporting.
-      return {
-        csv: "",
-        note:
-          total === 0
-            ? "No offers on this page"
-            : "None of the " + total + " offers here could be read",
-      };
+  // progress is what the panel says while the pages are being read. The
+  // page number is counted here and the total is the one printed on the
+  // page, so neither is taken from "Page 5 of 13" - that sentence is
+  // written in whichever language the visitor reads.
+  function progress(at) {
+    var said = "Page " + at.pages + " \u00b7 " + at.offers;
+    if (at.expected) {
+      said += " of " + at.expected;
+    }
+    return said + " offers";
+  }
+
+  // hereOnly says whether the panel is set to take just the page on
+  // screen. The whole list is the useful default - a file holding a
+  // twentieth of a seller's stock looks exactly like a complete one - but
+  // fifty pages is a minute of waiting, and somebody who wants the page in
+  // front of them should not have to buy the other forty-nine to get it.
+  function hereOnly(panel) {
+    var box = panel.querySelector(".cm-banner-here");
+    return !!(box && box.checked);
+  }
+
+  // thisPage answers in the shape a walk answers in, so that everything
+  // downstream of it is the same code either way.
+  function thisPage() {
+    var offers = MKM.parseOffers(document);
+    return {
+      offers: offers,
+      pages: 1,
+      rows: MKM.countRows(document),
+      // What was on offer here, not what the seller has: nothing was
+      // promised beyond this page, so nothing can be short.
+      expected: offers.length,
+      stopped: "",
+    };
+  }
+
+  // collect reads what the panel is set to take and converts it,
+  // answering with the CSV and what to say about it.
+  //
+  // By default the whole list, not the page on screen: Cardmarket
+  // paginates at twenty and the export follows the pager to the end. That
+  // is a fetch per page, so it is slow enough to be worth narrating.
+  function collect(panel) {
+    if (MKM.countRows(document) === 0) {
+      return Promise.resolve({ csv: "", note: "No offers on this page" });
     }
 
-    return MKM.fetchRates().then(function (rates) {
-      var unpriced = 0;
-      offers.forEach(function (offer) {
-        offer.priceUSD = MKM.priceUSD(offer.price, offer.currency, rates);
-        if (!offer.priceUSD) {
-          unpriced++;
-        }
-      });
+    busy(panel, true);
 
-      var note = offers.length + " rows";
-      var skipped = total - offers.length;
-      if (skipped > 0) {
-        note += ", " + skipped + " skipped";
+    var reading;
+    if (hereOnly(panel)) {
+      reading = Promise.resolve(thisPage());
+    } else {
+      say(panel, "Reading page 1\u2026");
+      reading = MKM.walkPages(document, location.href, {
+        onProgress: function (at) {
+          say(panel, progress(at));
+        },
+      });
+    }
+
+    return reading
+      .then(function (walked) {
+        if (walked.offers.length === 0) {
+          // Told apart deliberately: a list whose rows all refused is not
+          // an empty list, and only one of the two is worth reporting.
+          return {
+            csv: "",
+            note: "None of the " + walked.rows + " offers here could be read",
+          };
+        }
+        say(panel, "Reading rates\u2026");
+        return MKM.fetchRates().then(function (rates) {
+          return priced(walked, rates);
+        });
+      })
+      .then(
+        function (done) {
+          busy(panel, false);
+          return done;
+        },
+        function (err) {
+          busy(panel, false);
+          throw err;
+        }
+      );
+  }
+
+  // priced puts a dollar price on every row and says what was taken.
+  function priced(walked, rates) {
+    var offers = walked.offers;
+    var unpriced = 0;
+    offers.forEach(function (offer) {
+      offer.priceUSD = MKM.priceUSD(offer.price, offer.currency, rates);
+      if (!offer.priceUSD) {
+        unpriced++;
       }
-      var foreign = MKM.foreignCount(offers);
-      if (foreign > 0) {
-        // Worth saying: the CSV has no language column and the upload has
-        // nothing to read one into, so these are valued as the English
-        // printing, at a price asked for a different card.
-        note += ", " + foreign + " non-English";
-      }
-      if (unpriced > 0) {
-        // Said out loud: a blank price is a row the upload values off its
-        // own prices rather than the seller's, which is a different answer.
-        note += ", " + unpriced + " unpriced";
-      }
-      return { csv: MKM.toCSV(offers), note: note, count: offers.length };
     });
+
+    var note = offers.length + " rows";
+    if (walked.pages > 1) {
+      note += " from " + walked.pages + " pages";
+    }
+    var skipped = walked.rows - offers.length;
+    if (skipped > 0) {
+      note += ", " + skipped + " skipped";
+    }
+    var foreign = MKM.foreignCount(offers);
+    if (foreign > 0) {
+      // Worth saying: the CSV has no language column and the upload has
+      // nothing to read one into, so these are valued as the English
+      // printing, at a price asked for a different card.
+      note += ", " + foreign + " non-English";
+    }
+    if (unpriced > 0) {
+      // Said out loud: a blank price is a row the upload values off its
+      // own prices rather than the seller's, which is a different answer.
+      note += ", " + unpriced + " unpriced";
+    }
+    if (walked.stopped) {
+      // A walk that gave up part way says so, rather than handing over a
+      // short list that reads like the whole inventory.
+      note += " \u2014 stopped early: " + walked.stopped;
+    }
+    return {
+      csv: MKM.toCSV(offers),
+      note: note,
+      count: offers.length,
+      partial: !!walked.stopped,
+    };
   }
 
   function withCollected(panel, andThen) {
-    var result = collect(panel);
-    if (!result.then) {
-      say(panel, result.note);
-      return;
-    }
-    say(panel, "Reading rates…");
-    result.then(function (done) {
-      if (!done.csv) {
-        say(panel, done.note);
-        return;
+    collect(panel).then(
+      function (done) {
+        if (!done.csv) {
+          say(panel, done.note);
+          return;
+        }
+        andThen(done);
+      },
+      function (err) {
+        // Nothing above rejects on purpose - a refused page stops the walk
+        // and a refused rate leaves the column empty. So this is a bug,
+        // and a panel that says which one beats a panel that went quiet.
+        say(panel, "Export failed: " + (err && err.message ? err.message : err));
       }
-      andThen(done);
-    });
+    );
   }
 
   function filename(game) {
@@ -201,9 +303,11 @@
           { type: ROWS, csv: done.csv, rows: done.count },
           event.origin
         );
-        // Nothing is said. The tab that just opened is the answer, and it
-        // says more than this could.
-        say(panel, "");
+        // Nothing is said of a whole list: the tab that just opened is
+        // the answer and says more than this could. A short one keeps its
+        // warning on screen, because the tab receiving it cannot tell
+        // that it is short and neither could anyone reading it there.
+        say(panel, done.partial ? done.note : "");
       }
 
       // No deadline. The upload page answers when it has loaded, and how
@@ -220,7 +324,12 @@
     var count = MKM.countRows(document);
     var text = panel.querySelector(".cm-banner-label");
     if (text) {
-      text.textContent = "Export " + count + " offers";
+      // What the export will actually take: the seller's whole list under
+      // the filter in force, or just the rows on screen when asked for
+      // that. Naming the wrong one of those is how a twentieth of a
+      // collection gets uploaded as all of it.
+      var taking = hereOnly(panel) ? count : MKM.totalCount(document) || count;
+      text.textContent = "Export " + taking + " offers";
     }
     panel.hidden = count === 0;
     shown = count;
@@ -232,12 +341,25 @@
     panel.id = PANEL_ID;
     panel.innerHTML =
       '<div class="cm-banner-label"></div>' +
+      '<label class="cm-banner-scope">' +
+      '<input type="checkbox" class="cm-banner-here">' +
+      "<span>This page only</span>" +
+      "</label>" +
       '<div class="cm-banner-actions">' +
       '<button type="button" class="cm-banner-send">Send to BAN</button>' +
       '<button type="button" class="cm-banner-save">CSV</button>' +
       "</div>" +
-      '<div class="cm-banner-note"></div>';
+      '<div class="cm-banner-note" hidden>' +
+      '<span class="cm-banner-spin" aria-hidden="true"></span>' +
+      '<span class="cm-banner-text"></span>' +
+      "</div>";
 
+    // Changing what will be taken changes what the button promises, and
+    // makes whatever the last export said about a different scope stale.
+    panel.querySelector(".cm-banner-here").addEventListener("change", function () {
+      say(panel, "");
+      label(panel);
+    });
     panel.querySelector(".cm-banner-send").addEventListener("click", function () {
       sendToBan(panel);
     });
@@ -277,6 +399,13 @@
       }
       pending = setTimeout(function () {
         pending = null;
+        // Not while the walk is running. The pages being read are parsed
+        // documents of their own and never touch this one, but Cardmarket
+        // keeps working on its own table, and reacting to that would wipe
+        // the line saying how far along the export is.
+        if (panel.classList.contains("cm-banner-busy")) {
+          return;
+        }
         if (MKM.countRows(document) === shown) {
           return;
         }
