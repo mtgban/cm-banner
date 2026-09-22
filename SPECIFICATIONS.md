@@ -194,7 +194,7 @@ mapping Cardmarket's ids onto `mtgmatcher.InputCard.Language`.
 ## 4. The CSV
 
 ```
-mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id,mkm_url
+mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id,mkm_notes
 10601,Thornwind Faeries,Urzas Legacy,MP,,1,0.06,2058737078
 565902,Adventures in the Forgotten Realms Set Booster,,,,8,11.48,2036785656
 ,Mirri's Guile,Zendikar,PO,,1,,2057222480
@@ -221,7 +221,7 @@ name.
 
 ### 4.1 The way back to the offer
 
-`mkm_url` is the seller's own list, narrowed by the offers page's own
+`mkm_notes` is the seller's own list, narrowed by the offers page's own
 filters to the one offer:
 
 ```
@@ -259,6 +259,20 @@ language is the case in point — see §4.5.
 
 `base` is the offers page's own path, so a link returns to the list it
 came from: the same seller, the same category, singles or sealed.
+
+**The column is named for where it has to land.** The upload's header
+matcher reads a column whose name contains `notes` or `data` into
+`Entry.Notes`, which is the one field the results already carry through a
+round trip — and the site renders the loaded price as a link to it. A
+column called `mkm_url` reaches nothing at all, which is what it did
+before this: verified by running the site's own `ParseHeader` over both
+names, where `mkm_url` produced no notes key and `mkm_notes` produced
+`notes: 8`.
+
+Nothing in that matcher was widened to allow a nicer name. A case matching
+`url` would also swallow the image-url columns other exports carry, and
+turn a thumbnail into the link on somebody's price. The join is pinned
+from the other side too, in the site's `TestBannerHeaderReachesNotes`.
 
 ### 4.2 Conditions fold seven grades onto five
 

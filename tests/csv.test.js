@@ -9,7 +9,7 @@ describe("the columns", () => {
   // and mkm_url reach nothing, which is why they are safe to carry.
   test("the header is the contract", () => {
     expect(MKM.csvColumns().join(",")).toBe(
-      "mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id,mkm_url"
+      "mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id,mkm_notes"
     );
   });
 
