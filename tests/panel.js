@@ -21,10 +21,19 @@ function fixture(name) {
   return readFileSync(new URL("./fixtures/" + name, import.meta.url), "utf8");
 }
 
-export function mount({ pager = "pager-last.html", url = OFFERS, total = 14 } = {}) {
+export function mount({
+  pager = "pager-last.html",
+  url = OFFERS,
+  total = 14,
+  loggedOut = false,
+} = {}) {
   const window = new Window({ url });
+  // Cardmarket puts a login form on every page it serves to somebody it
+  // has not signed in. The rest of the page is the same.
   window.document.body.innerHTML =
-    fixture(pager).replace(">1093<", ">" + total + "<") + fixture("offers.html");
+    (loggedOut ? '<form id="header-login"></form>' : "") +
+    fixture(pager).replace(">1093<", ">" + total + "<") +
+    fixture("offers.html");
 
   // Everything that leaves the page is recorded instead of happening.
   const opened = [];
@@ -87,6 +96,7 @@ export function mount({ pager = "pager-last.html", url = OFFERS, total = 14 } = 
     hint: () => at(".cm-banner-label").getAttribute("title"),
     noteShown: () => !at(".cm-banner-note").hidden,
     busy: () => panel.classList.contains("cm-banner-busy"),
+    locked: () => panel.classList.contains("cm-banner-locked"),
     toggleScope: () => at(".cm-banner-label").click(),
     escape: () =>
       window.document.dispatchEvent(

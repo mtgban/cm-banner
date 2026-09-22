@@ -679,6 +679,21 @@ The whole list is the default: a file holding one page of a seller's stock
 is indistinguishable from a complete one once it has left here. One page is
 the escape hatch, and it costs no requests at all.
 
+**Unless nobody is signed in.** Cardmarket serves a visitor it has not
+signed in page one and then, where page two should be, a page with no rows
+on it — so the whole list is not something it will give them, and offering
+it would be offering a walk that can only fail (§6.5). The panel opens on
+the page in front of it instead, and the heading stops being a control and
+says why on its hover.
+
+Signed-out is read off the login forms Cardmarket puts in the markup of
+every page it serves to one. They are markup rather than words, so this
+holds in every language the site serves. The signed-in side of it is not
+something this repository can check without somebody's session, so the
+check is written to be wrong in the safe direction — it says nothing
+unless the forms are there — and a walk that gets past it anyway is still
+caught by §6.5.
+
 Taking one page answers in the same shape a walk answers in, so everything
 downstream of it — the pricing, the counting, the CSV, the handoff — is the
 same code either way.

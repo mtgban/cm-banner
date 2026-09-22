@@ -240,10 +240,12 @@
 /* The heading takes no click while a read is running, since the line it
    would write the scope into is the line showing the count. It says so by
    dropping the affordance rather than by going grey. */
-#cm-banner.cm-banner-busy .cm-banner-label {
+#cm-banner.cm-banner-busy .cm-banner-label,
+#cm-banner.cm-banner-locked .cm-banner-label {
   cursor: default;
 }
 
-#cm-banner.cm-banner-busy .cm-banner-label:hover .cm-banner-scope {
+#cm-banner.cm-banner-busy .cm-banner-label:hover .cm-banner-scope,
+#cm-banner.cm-banner-locked .cm-banner-label:hover .cm-banner-scope {
   text-decoration: none;
 }

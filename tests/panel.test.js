@@ -281,6 +281,36 @@ describe("Escape", () => {
   });
 });
 
+describe("signed out", () => {
+  test("the whole list is not on offer", () => {
+    // Cardmarket answers a visitor it has not signed in with page one and
+    // then a page holding no rows. A link leading to nothing is where a
+    // pager stops, so a walk would finish without ever knowing it had
+    // been cut off, and hand back page one shaped like an inventory.
+    const it = mount({ loggedOut: true });
+
+    expect(it.locked()).toBe(true);
+    expect(it.scope()).toBe("this page only");
+    expect(it.hint()).toBe(
+      "Signed out — Cardmarket shows a visitor this page and no more"
+    );
+  });
+
+  test("and the heading stops being a control", () => {
+    const it = mount({ loggedOut: true });
+    it.toggleScope();
+    expect(it.scope()).toBe("this page only");
+    it.toggleScope();
+    expect(it.scope()).toBe("this page only");
+  });
+
+  test("while a signed-in page opens on the whole list as before", () => {
+    const it = mount();
+    expect(it.locked()).toBe(false);
+    expect(it.scope()).toBe("all offers");
+  });
+});
+
 describe("a walk that ended before the pages did", () => {
   // What a signed-out visitor is served past page one, and what anything
   // else serving an empty page would look like: the pager leads to a page

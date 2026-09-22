@@ -407,5 +407,23 @@ globalThis.MKM = globalThis.MKM || {};
     return base + "?" + query.join("&");
   };
 
+  // loggedOut says whether Cardmarket is showing this page to a visitor it
+  // has not signed in.
+  //
+  // It matters because of what such a visitor is shown: page one, and then
+  // a page with no rows on it where page two should be. The walk ends
+  // there - a link leading to nothing is where a pager stops - and what
+  // comes out is one page wearing the shape of a whole inventory.
+  //
+  // The login forms are markup rather than words, so this reads the same
+  // whichever of Cardmarket's languages the visitor is on. Verified on a
+  // signed-out page; the other side of it cannot be checked here without
+  // somebody's session, so it is written to be wrong in the safe
+  // direction - it says nothing unless the forms are actually there, and
+  // a walk that gets past this anyway is still caught by the shortfall.
+  MKM.loggedOut = function (root) {
+    return !!root.querySelector("#header-login, #offcanvas-login");
+  };
+
   MKM.slugToName = slugToName;
 })(globalThis.MKM);

@@ -286,8 +286,26 @@
 
   var scope = 0;
 
+  // locked is a panel with nowhere to move between. Cardmarket shows a
+  // signed-out visitor page one and then a page with no rows on it, so
+  // the whole list is not on offer to them and the heading stops being a
+  // control. Set once, in install(), because a page does not sign in
+  // under a content script.
+  var locked = false;
+
   function hereOnly() {
     return SCOPES[scope].here;
+  }
+
+  // hereScope is the scope that takes the page in front of us, found
+  // rather than written down so that the two cannot disagree.
+  function hereScope() {
+    for (var i = 0; i < SCOPES.length; i++) {
+      if (SCOPES[i].here) {
+        return i;
+      }
+    }
+    return 0;
   }
 
   // thisPage answers in the shape a walk answers in, so that everything
@@ -759,9 +777,11 @@
       // it: a seller past the paging limit reads "2000+", and rounding
       // that to 2000 promises an exact figure that is not one.
       var listed = MKM.totalSaid(document) || String(count);
-      button.title = hereOnly()
-        ? count + " offers on this page \u2014 click for the whole list"
-        : listed + " offers listed \u2014 click for this page";
+      button.title = locked
+        ? "Signed out \u2014 Cardmarket shows a visitor this page and no more"
+        : hereOnly()
+          ? count + " offers on this page \u2014 click for the whole list"
+          : listed + " offers listed \u2014 click for this page";
     }
     recap(panel, "");
     panel.hidden = count === 0;
@@ -792,6 +812,10 @@
       // switching scope would write over it and abandon a read that was
       // asked for under the other one.
       if (panel.classList.contains("cm-banner-busy")) {
+        return;
+      }
+      // Nowhere to move between; the heading says why on its hover.
+      if (locked) {
         return;
       }
       scope = (scope + 1) % SCOPES.length;
@@ -825,7 +849,16 @@
       return;
     }
 
+    // Asked before the panel is drawn, since it decides what the panel
+    // opens on: a signed-out visitor is shown page one and a page with no
+    // rows after it, so the whole list is not something to offer them.
+    locked = MKM.loggedOut(document);
+    if (locked) {
+      scope = hereScope();
+    }
+
     var panel = build();
+    panel.classList.toggle("cm-banner-locked", locked);
     document.body.appendChild(panel);
     label(panel);
 
