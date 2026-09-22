@@ -40,6 +40,19 @@ describe("the panel", () => {
     expect(other.save().disabled).toBe(false);
   });
 
+  test("and sends from a game Cardmarket added after this was written", () => {
+    // Gundam reached Cardmarket after the first seven were wired up, and
+    // BAN prices it. What can send is the overlap of the two lists, and
+    // only Cardmarket's moves.
+    const it = mount({
+      url: "https://www.cardmarket.com/en/Gundam/Users/Seller/Offers/Singles",
+    });
+    expect(it.send().disabled).toBe(false);
+    it.toggleScope();
+    it.send().click();
+    expect(it.opened[0]).toBe("https://gundam.mtgban.com/upload/handoff");
+  });
+
   test("the heading names the scope, and clicking it changes it", () => {
     const it = mount();
     expect(it.heading()).toBe("CM BANNER - all offers");

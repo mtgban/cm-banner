@@ -38,7 +38,7 @@ https://www.cardmarket.com/*/*/Users/*/Offers/*
 ```
 
 on **every game Cardmarket sells** — twenty-two as of 2026-09-22, read
-off the site's own game menu, of which BAN prices seven. The second
+off the site's own game menu, of which BAN prices eight. The second
 segment is the game, capitalised as Cardmarket writes it, and the pattern
 no longer names any of them: the offers table, the tooltips, the filters
 and the pager are one layout with a different word in the path, checked
@@ -497,9 +497,25 @@ worth pinning even loosely.
 | onepiece | `onepiece.mtgban.com` |
 | fleshandblood | `fleshandblood.mtgban.com` |
 | riftbound | `riftbound.mtgban.com` |
+| gundam | `gundam.mtgban.com` |
+| palworld | `palworld.mtgban.com` |
 
-A game absent from this table still gets the panel and the file; what it
-does not get is the send. See §2.
+All nine games BAN prices, each verified answering `/upload/handoff`:
+`curl` gets the same `Unauthorized` page from every one of them, which is
+what a request carrying no session is owed. **Palworld is in the table and
+unreachable** — Cardmarket does not sell it, so no path can name it. It
+is listed because the list that moves is Cardmarket's: Gundam arrived
+there after the first seven were wired up, and an entry costs less than a
+dead button on the day the next one does.
+
+What can be sent is the overlap, which is **eight** games. A game outside
+it still gets the panel and the file; see §2.
+
+**The rows reach a deployment that does not scrape Cardmarket.**
+go-mtgban's own Cardmarket scrapers price seven games (`mkmGames`), Gundam
+not among them, so nothing there holds a Cardmarket id to resolve
+`mcm_id` against and the upload matches on name, edition and number —
+which is the path an unrecognised id takes anyway.
 
 **Magic is the default deployment and answers at the bare domain.**
 `magic.mtgban.com/upload` 308-redirects to `mtgban.com/upload`; the other

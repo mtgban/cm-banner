@@ -35,11 +35,15 @@
   // answers at the bare domain: magic.mtgban.com redirects there, which
   // changes the origin on the way, so it is named as it ends up.
   //
-  // Cardmarket sells twenty-two games and these are the ones BAN prices.
-  // The other fifteen are not pages to stay off: the offers table, the
-  // tooltips and the paging are one layout with a different word in the
-  // path, so the read and the file are the same work on any of them. Only
-  // the send has nowhere to go.
+  // All nine BAN prices are here, including the one Cardmarket does not
+  // sell: what can be sent is the overlap of two lists, and the one that
+  // moves is Cardmarket's - Gundam arrived there after the first seven
+  // were wired up.
+  //
+  // Cardmarket's other fourteen games are not pages to stay off: the
+  // offers table, the tooltips and the paging are one layout with a
+  // different word in the path, so the read and the file are the same
+  // work on any of them. Only the send has nowhere to go.
   var HOSTS = {
     magic: "mtgban.com",
     pokemon: "pokemon.mtgban.com",
@@ -48,6 +52,11 @@
     onepiece: "onepiece.mtgban.com",
     fleshandblood: "fleshandblood.mtgban.com",
     riftbound: "riftbound.mtgban.com",
+    gundam: "gundam.mtgban.com",
+    // No Cardmarket path names it yet, so this one waits rather than
+    // works. It costs an entry; leaving it out costs a dead button on the
+    // day it appears.
+    palworld: "palworld.mtgban.com",
   };
 
   // isBanHost says whether an origin is one of ours. The window that answers
