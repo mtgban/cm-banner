@@ -19,6 +19,12 @@
   // What the two halves of the handoff say to each other.
   // The protocol the site's handoff page speaks.
   var SEND = "Send to BAN";
+  // What the file button says. It is the quieter of the two while there
+  // are two, and says the whole thing when it is alone - the panel is a
+  // fixed width, so the longer word is what keeps the row from shrinking
+  // to the size of one small button.
+  var SAVE = "CSV";
+  var SAVE_ALONE = "Download CSV";
   // What the button says once the rows are read and waiting for the click
   // that sends them. The count is not on it: it goes in the heading, which
   // has room and is otherwise repeating a scope that was chosen before the
@@ -694,7 +700,7 @@
       "</button>" +
       '<div class="cm-banner-actions">' +
       '<button type="button" class="cm-banner-send">' + SEND + "</button>" +
-      '<button type="button" class="cm-banner-save">CSV</button>' +
+      '<button type="button" class="cm-banner-save">' + SAVE + "</button>" +
       "</div>" +
       '<div class="cm-banner-note" hidden></div>';
 
@@ -721,12 +727,13 @@
       exportOffers(panel);
     });
     // A game BAN does not price gets the panel, the read and the file all
-    // the same; the send is the one part with no deployment to open. The
-    // reason goes on the button rather than on a line of its own, which
-    // would be a line the panel carried for ever.
+    // the same. What it does not get is the send button: there is no
+    // deployment to open, and a button that says so is a button explaining
+    // itself for ever in a panel three words wide. The file button takes
+    // the row and says what it does instead.
     if (!sendable()) {
-      panel.querySelector(".cm-banner-send").title =
-        "BAN doesn't price this game \u2014 the CSV still works";
+      panel.querySelector(".cm-banner-send").hidden = true;
+      panel.querySelector(".cm-banner-save").textContent = SAVE_ALONE;
     }
     buttons(panel, false);
     return panel;

@@ -61,11 +61,17 @@ sends ever carries it. The site's `HandoffOrigins` leaves it off for the
 same reason, and adding it there would widen what is allowed to hand a
 list over for a host that only ever sends visitors somewhere else.
 
-A game with no deployment behind it gets the panel and the file, and a
-**Send to BAN button that is disabled** and says why in its tooltip. That
-is the only difference: `sendable()` answers off the path, `buttons()` is
-the one place that decides which of the two are live, and `arm()` declines
-to write READY on a button nobody can click.
+A game with no deployment behind it gets the panel and the file, and **no
+Send to BAN button at all**. It was there and disabled at first, with the
+reason in its tooltip; a panel three words wide is no place for a button
+that exists to explain itself. The file button takes the room it leaves
+and says **Download CSV** rather than **CSV**, which is both what it does
+and enough of a word to hold the row at the width it has in the other
+state — the panel is a fixed 15rem and must not resize between games.
+
+`sendable()` answers off the path, `buttons()` is the one place deciding
+which are live, and `arm()` declines to write READY on a button nobody can
+see.
 
 It used to get no panel at all, on the grounds that one whose main button
 can only apologise is worse than none. What that actually withheld was the

@@ -135,6 +135,12 @@
   background: #3f5f92;
 }
 
+/* Alone on the row, it takes the room the send button was using. The panel
+   is a fixed width and the button carries a longer word to suit. */
+#cm-banner .cm-banner-send[hidden] + .cm-banner-save {
+  flex: 1;
+}
+
 #cm-banner .cm-banner-send:focus-visible,
 #cm-banner .cm-banner-save:focus-visible {
   outline: 2px solid #8ab4f8;
