@@ -180,6 +180,14 @@ whatever it had read, and says so — reload the page, clear the check the way y
 would any other, and run it again. Nothing here tries to answer that check for
 you.
 
+**Cardmarket itself stops at 100 pages.** Two thousand offers is as far as a
+seller's listing will page, however much they have; the site says so by writing
+`2000+ Hits` and `Page 100 of 100+`, and page 100 then ends exactly like a real
+last page. The panel passes that on rather than reporting 2000 as if it were
+the lot. To get at the rest, filter the seller's page — by set, by language, by
+whatever — and export each slice; the walk follows whatever filter is in force.
+A full hundred pages is also about two minutes of waiting.
+
 Because the walk takes seconds, it is **not a snapshot**. If something sells
 while it is running, every later offer shifts up a place: a row can be listed
 twice, which is deduplicated, or missed, which cannot be. The count it reports

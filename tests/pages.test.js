@@ -77,6 +77,48 @@ describe("the hit count", () => {
 
   test("a page that does not say is not guessed at", () => {
     expect(MKM.totalCount(load("offers.html"))).toBe(0);
+    expect(MKM.totalSaid(load("offers.html"))).toBe("");
+  });
+});
+
+describe("Cardmarket's paging ceiling", () => {
+  // It pages a seller's offers to 100 pages of twenty and no further,
+  // saying so with a plus on both numbers: "2000+ Hits", "Page 100 of
+  // 100+". Page 100's next-page control is disabled exactly as a real
+  // last page's is, so the walk ends there tidily either way.
+  const ceiling = () => docOf(text("pager-capped.html"));
+
+  test("the plus is carried, not rounded away", () => {
+    // "Export 2000 offers" off a ten-thousand-offer seller is a promise
+    // of an exact figure that is not one.
+    expect(MKM.totalSaid(ceiling())).toBe("2000+");
+    expect(MKM.capped(ceiling())).toBe(true);
+  });
+
+  test("the number behind it is still usable for counting up to", () => {
+    expect(MKM.totalCount(ceiling())).toBe(2000);
+  });
+
+  test("an ordinary last page is not capped", () => {
+    expect(MKM.capped(docOf(text("pager-last.html")))).toBe(false);
+    expect(MKM.capped(docOf(text("pager-next.html")))).toBe(false);
+  });
+
+  test("a capped listing ends the walk and says it was capped", async () => {
+    // Nothing in the rows says a fifth of the seller is all that came
+    // back. Only the plus says it, so the walk has to carry it out.
+    const walked = await MKM.walkPages(pageOf({ pager: "pager-capped.html" }), BASE, {
+      fetchPage: () => Promise.reject(new Error("should not be asked")),
+      pace: 0,
+    });
+    expect(walked.pages).toBe(1);
+    expect(walked.capped).toBe(true);
+    expect(walked.stopped).toBe("");
+  });
+
+  test("a walk that reached the true end is not capped", async () => {
+    const walked = await MKM.walkPages(pageOf({ total: 11 }), BASE, { pace: 0 });
+    expect(walked.capped).toBe(false);
   });
 });
 
