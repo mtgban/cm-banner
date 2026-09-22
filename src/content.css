@@ -33,15 +33,18 @@
   display: none;
 }
 
-/* Kept inside the widest part of the circle: a chord this far from the
-   middle is about 117px across, so the buttons stop short of it. */
+/* Kept inside the widest part of the circle: the chord where these sit is
+   about 118px across, so they stop short of it. Wide enough that "Send to
+   BAN" stays on one line - a button that wrapped would be taller, and the
+   pair of them would no longer fit the round. */
 #cm-banner .cm-banner-send,
 #cm-banner .cm-banner-save {
   box-sizing: border-box;
-  width: 88px;
+  width: 104px;
 
   margin: 0;
   padding: 6px 0;
+  white-space: nowrap;
   border: 0;
   border-radius: 999px;
 

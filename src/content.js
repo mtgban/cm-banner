@@ -232,7 +232,7 @@
     var panel = document.createElement("div");
     panel.id = PANEL_ID;
     panel.innerHTML =
-      '<button type="button" class="cm-banner-send">Send</button>' +
+      '<button type="button" class="cm-banner-send">Send to BAN</button>' +
       '<button type="button" class="cm-banner-save">CSV</button>';
 
     panel.querySelector(".cm-banner-send").addEventListener("click", function () {
