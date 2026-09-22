@@ -119,3 +119,32 @@ describe("staying put while it reads", () => {
     }
   });
 });
+
+describe("stopping", () => {
+  test("Escape puts the panel back and drops the rows", () => {
+    // A read stopped part way is not a shorter export. Keeping its rows
+    // would be offering a fraction of a collection as the collection.
+    const stop = body("stopReading");
+    expect(stop).toContain("generation++");
+    expect(stop).toContain("busy(panel, false)");
+    expect(stop).toContain("disarm(panel)");
+  });
+
+  test("it is inert unless there is something of ours to stop", () => {
+    // Cardmarket uses the key too, and a panel in the corner of someone
+    // else's page does not get to swallow it.
+    const install = body("install");
+    const handler = install.slice(install.indexOf('event.key !== "Escape"'));
+    expect(handler).toContain("cm-banner-busy");
+    expect(handler).toContain("armed");
+    expect(handler).not.toContain("preventDefault");
+  });
+
+  test("a read that was abandoned cannot turn the spinner off later", () => {
+    // The stopped read resolves after the next one has started, and
+    // busy(false) from the old one would strand the new one.
+    const read = body("read");
+    expect(read).toContain("mine !== generation");
+    expect(read.indexOf("stale()")).toBeLessThan(read.indexOf("busy(panel, false)"));
+  });
+});

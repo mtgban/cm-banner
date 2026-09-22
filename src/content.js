@@ -195,7 +195,7 @@
   // By default the whole list, not the page on screen: Cardmarket
   // paginates at twenty and the export follows the pager to the end. That
   // is a fetch per page, so it is slow enough to be worth narrating.
-  function collect(panel) {
+  function collect(panel, stale) {
     if (MKM.countRows(document) === 0) {
       return Promise.resolve({ csv: "", note: "No offers on this page" });
     }
@@ -208,7 +208,11 @@
     } else {
       say(panel, "Reading page 1\u2026");
       reading = MKM.walkPages(document, location.href, {
+        cancelled: stale,
         onProgress: function (at) {
+          if (stale()) {
+            return;
+          }
           say(panel, progress(at));
         },
       });
@@ -216,6 +220,11 @@
 
     return reading
       .then(function (walked) {
+        if (stale()) {
+          // Abandoned while it ran. Nothing is said, and no rate is
+          // fetched for rows that are about to be dropped.
+          return { csv: "", note: "" };
+        }
         if (walked.offers.length === 0) {
           // Told apart deliberately: a list whose rows all refused is not
           // an empty list, and only one of the two is worth reporting.
@@ -228,17 +237,7 @@
         return MKM.fetchRates().then(function (rates) {
           return priced(walked, rates);
         });
-      })
-      .then(
-        function (done) {
-          busy(panel, false);
-          return done;
-        },
-        function (err) {
-          busy(panel, false);
-          throw err;
-        }
-      );
+      });
   }
 
   // priced puts a dollar price on every row and says what was taken.
@@ -297,12 +296,31 @@
     };
   }
 
+  // generation counts the reads, and bumping it is how one is abandoned.
+  //
+  // A fetch in flight cannot be recalled, so the read is not stopped so
+  // much as disowned: the walk asks between pages whether anyone still
+  // wants it, and everything that comes back late finds it is no longer
+  // the current read and says nothing. That is also what keeps a stopped
+  // read from turning the spinner off underneath the one after it.
+  var generation = 0;
+
   // read answers with the rows, or with null having already said why there
-  // are none. It returns its promise synchronously, which is what lets a
-  // caller open a window in the same breath as asking for it.
+  // are none - or silently, if it was abandoned while it ran. It returns
+  // its promise synchronously, which is what lets a caller open a window
+  // in the same breath as asking for it.
   function read(panel) {
-    return collect(panel).then(
+    var mine = ++generation;
+    function stale() {
+      return mine !== generation;
+    }
+
+    return collect(panel, stale).then(
       function (done) {
+        if (stale()) {
+          return null;
+        }
+        busy(panel, false);
         if (!done.csv) {
           say(panel, done.note);
           return null;
@@ -310,6 +328,10 @@
         return done;
       },
       function (err) {
+        if (stale()) {
+          return null;
+        }
+        busy(panel, false);
         // Nothing above rejects on purpose - a refused page stops the walk
         // and a refused rate leaves the column empty. So this is a bug,
         // and a panel that says which one beats a panel that went quiet.
@@ -492,6 +514,21 @@
     }
   }
 
+  // stopReading abandons whatever is running and puts the panel back as
+  // it was.
+  //
+  // The rows go with it. A read that was stopped part way is not a
+  // shorter export - offering one would be offering a fraction of a
+  // collection as though it were the collection, which is the thing this
+  // whole file is most careful about.
+  function stopReading(panel) {
+    generation++;
+    busy(panel, false);
+    disarm(panel);
+    say(panel, "");
+    label(panel);
+  }
+
   // shown is the row count the panel last named, so a change in the page can
   // be told from the page merely being touched.
   var shown = -1;
@@ -570,6 +607,26 @@
     var panel = build();
     document.body.appendChild(panel);
     label(panel);
+
+    // Escape stops a read and puts the panel back.
+    //
+    // On the document, because the panel holds no focus worth speaking of
+    // - it is a box in the corner of somebody else's page, and the key has
+    // to work wherever that page has left the cursor.
+    //
+    // It does nothing unless there is something of ours to stop, so
+    // Cardmarket's own use of the key is untouched the rest of the time.
+    // It does not preventDefault even then: closing a dialog of theirs and
+    // stopping a read of ours are not in conflict.
+    document.addEventListener("keydown", function (event) {
+      if (event.key !== "Escape") {
+        return;
+      }
+      if (!panel.classList.contains("cm-banner-busy") && !armed) {
+        return;
+      }
+      stopReading(panel);
+    });
 
     // The page fills its table after load and refills it on every filter, so
     // the count follows the table rather than the moment this ran.

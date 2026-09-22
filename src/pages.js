@@ -190,6 +190,12 @@ globalThis.MKM = globalThis.MKM || {};
     var get = opts.fetchPage || fetchPage;
     var onProgress = opts.onProgress || function () {};
     var pace = opts.pace === undefined ? PACE : opts.pace;
+    // Asked before every page, because a walk cannot be interrupted in
+    // the middle of a fetch - only between them, and on the way out of
+    // one that is already in flight.
+    var cancelled = opts.cancelled || function () {
+      return false;
+    };
 
     var expected = totalCount(doc);
     var ceiling = capped(doc);
@@ -215,6 +221,9 @@ globalThis.MKM = globalThis.MKM || {};
     }
 
     function step(page, at) {
+      if (cancelled()) {
+        return Promise.resolve();
+      }
       var next = nextPageURL(page, at);
       // A page already read is the end of the walk as surely as no link at
       // all: Cardmarket does not loop, so a link back to somewhere visited
@@ -227,10 +236,18 @@ globalThis.MKM = globalThis.MKM || {};
       // does not cost one.
       return after(pace)
         .then(function () {
-          return get(next);
+          // Asked again on the far side of the wait. A second is a long
+          // time to keep somebody waiting who has already said stop, and
+          // it is a request to Cardmarket that nobody wants the answer to.
+          return cancelled() ? null : get(next);
         })
         .then(
           function (fetched) {
+            // Dropped rather than kept: rows nobody asked for any more
+            // are not a shorter export, they are somebody else's.
+            if (!fetched || cancelled()) {
+              return;
+            }
             // A page holding no rows ends it too. A link leading nowhere
             // is what a redesign looks like from here, and carrying on
             // past it asks Cardmarket for pages nobody is reading.
@@ -258,6 +275,7 @@ globalThis.MKM = globalThis.MKM || {};
         // Not "how many were read" but "was there more that Cardmarket
         // would not show", which is a different kind of short.
         capped: ceiling,
+        cancelled: cancelled(),
         stopped: stopped,
       };
     }
@@ -274,6 +292,9 @@ globalThis.MKM = globalThis.MKM || {};
     visited[first] = true;
     return get(first)
       .then(function (fetched) {
+        if (cancelled()) {
+          return;
+        }
         take(fetched);
         return step(fetched, first);
       })

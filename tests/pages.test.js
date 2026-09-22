@@ -311,3 +311,61 @@ describe("not looking like a bot", () => {
     }
   });
 });
+
+describe("being told to stop", () => {
+  const three = () => ({
+    [BASE]: pageOf({ offset: 0, next: BASE + "?site=2", total: 42 }),
+    [BASE + "?site=2"]: pageOf({ offset: 100, next: BASE + "?site=3", total: 42 }),
+    [BASE + "?site=3"]: pageOf({ offset: 200, total: 42 }),
+  });
+
+  test("a page already in flight is dropped, not counted", async () => {
+    // A fetch cannot be recalled. What can be done is refuse to keep
+    // what it brought back, because rows nobody asked for any more are
+    // not a shorter export - they are somebody else's.
+    const pages = three();
+    let stop = false;
+    const walked = await MKM.walkPages(pages[BASE], BASE, {
+      pace: 0,
+      cancelled: () => stop,
+      fetchPage: (url) => {
+        stop = true;
+        return Promise.resolve(pages[url]);
+      },
+    });
+    expect(walked.pages).toBe(1);
+    expect(walked.cancelled).toBe(true);
+  });
+
+  test("no page is asked for once nobody is waiting for it", async () => {
+    // Cardmarket is behind a request budget worth not spending on an
+    // answer that will be thrown away.
+    const asked = [];
+    const walked = await MKM.walkPages(
+      pageOf({ next: BASE + "?site=2", total: 42 }),
+      BASE,
+      {
+        pace: 0,
+        cancelled: () => true,
+        fetchPage: (url) => {
+          asked.push(url);
+          return Promise.resolve(pageOf({ total: 42 }));
+        },
+      }
+    );
+    expect(asked).toEqual([]);
+    // The page already on screen is read before anything could be
+    // stopped, and cost nothing to read.
+    expect(walked.pages).toBe(1);
+  });
+
+  test("a walk nobody stopped says so", async () => {
+    const pages = three();
+    const walked = await MKM.walkPages(pages[BASE], BASE, {
+      pace: 0,
+      fetchPage: (url) => Promise.resolve(pages[url]),
+    });
+    expect(walked.cancelled).toBe(false);
+    expect(walked.pages).toBe(3);
+  });
+});

@@ -518,7 +518,38 @@ another, which nothing here covers. What comes back says how many were
 read against how many the first page promised, so a walk that lost one can
 be seen to have lost it.
 
-### 6.7 Leaving while it reads
+### 6.7 Stopping
+
+**Escape** abandons whatever is running and puts the panel back: spinner
+off, buttons back, note cleared, rows dropped. The scope stays where it
+was set, since that was chosen rather than produced.
+
+The rows are dropped rather than offered. A read stopped part way is not
+a shorter export — keeping it would be offering a fraction of a
+collection as though it were the collection.
+
+A fetch already in flight cannot be recalled, so a read is not so much
+stopped as **disowned**. Each read takes a number; Escape bumps it; the
+walk asks between pages whether anyone still wants it, and everything
+that comes back late finds it is no longer the current read and says
+nothing. Two things follow:
+
+- **No page is asked for once nobody is waiting for it** — the check is
+  on the far side of `PACE`'s wait as well as before it, because a second
+  is a long time to hold somebody who has said stop, and because it is a
+  request to Cardmarket nobody wants the answer to (§6.3).
+- **An abandoned read cannot turn the spinner off underneath the read
+  after it.** `busy(false)` is behind the same staleness test as
+  everything else, which is what keeps a quick Escape-then-click from
+  stranding the second read with no spinner.
+
+The key is taken on the document, because the panel holds no focus worth
+speaking of — it is a box in the corner of somebody else's page. It does
+nothing unless there is something of ours to stop, and it does not
+`preventDefault` even then: closing a dialog of Cardmarket's and stopping
+a read of ours are not in conflict.
+
+### 6.8 Leaving while it reads
 
 The read lives in this page. Following a link, pressing back or forward,
 or reloading takes the content script with it, and a hundred pages of
