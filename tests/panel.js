@@ -95,6 +95,8 @@ export function mount({
     // The heading's own tooltip, which says what clicking it does.
     hint: () => at(".cm-banner-label").getAttribute("title"),
     noteShown: () => !at(".cm-banner-note").hidden,
+    noteIsSignIn: () =>
+      at(".cm-banner-note").classList.contains("cm-banner-signin"),
     busy: () => panel.classList.contains("cm-banner-busy"),
     locked: () => panel.classList.contains("cm-banner-locked"),
     toggleScope: () => at(".cm-banner-label").click(),

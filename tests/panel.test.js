@@ -292,8 +292,36 @@ describe("signed out", () => {
     expect(it.locked()).toBe(true);
     expect(it.scope()).toBe("this page only");
     expect(it.hint()).toBe(
-      "Signed out — Cardmarket shows a visitor this page and no more"
+      "Sign in to Cardmarket to read the whole list — it shows a visitor this page and no more"
     );
+  });
+
+  test("and says so where it cannot be missed", async () => {
+    // A hover is a poor place for the one thing the panel needs the
+    // reader to do. This is not an event that passed, it is the state the
+    // panel is in, so it is on the line from the moment it is drawn.
+    const it = mount({ loggedOut: true });
+
+    expect(it.noteShown()).toBe(true);
+    expect(it.note()).toBe("Sign in to Cardmarket to read the whole list");
+    expect(it.noteIsSignIn()).toBe(true);
+
+    // And it survives the things that clear that line: a read of the page
+    // in front of it, and the table moving underneath.
+    it.save().click();
+    await it.settle();
+    expect(it.note()).toBe("Sign in to Cardmarket to read the whole list");
+
+    const rows = [...it.window.document.querySelectorAll('[id^="stockRow"]')];
+    rows[0].parentNode.insertBefore(rows[rows.length - 1], rows[0]);
+    await it.settle(400);
+    expect(it.note()).toBe("Sign in to Cardmarket to read the whole list");
+  });
+
+  test("while a signed-in panel keeps that line to itself", () => {
+    const it = mount();
+    expect(it.noteShown()).toBe(false);
+    expect(it.noteIsSignIn()).toBe(false);
   });
 
   test("and the heading stops being a control", () => {

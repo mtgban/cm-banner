@@ -683,8 +683,15 @@ the escape hatch, and it costs no requests at all.
 signed in page one and then, where page two should be, a page with no rows
 on it — so the whole list is not something it will give them, and offering
 it would be offering a walk that can only fail (§6.5). The panel opens on
-the page in front of it instead, and the heading stops being a control and
-says why on its hover.
+the page in front of it instead, and the heading stops being a control.
+
+**And it says so on the line, not only on the hover.** `Sign in to
+Cardmarket to read the whole list`, in amber, from the moment the panel is
+drawn. This is the one message that is a standing condition rather than
+something that just happened, so it is also the one the line keeps through
+everything that clears it — a read, the table moving underneath, a
+hand-over — and it goes only when the page is reloaded signed in. A hover
+is a poor place for the single thing the panel needs the reader to do.
 
 Signed-out is read off the login forms Cardmarket puts in the markup of
 every page it serves to one. They are markup rather than words, so this
@@ -773,7 +780,8 @@ this runs on, for the sake of three kilobytes.
 The line under the buttons is therefore only ever for **what asks for
 something**, and it is not there when there is nothing: a read Cloudflare
 refused, a pop-up the browser blocked, a list handed over that was short
-of what the seller advertised. What a finished read merely has to report
+of what the seller advertised, a visitor who is not signed in (§6.4 — the
+one of these that is there from the start and stays). What a finished read merely has to report
 — what was skipped, what will be valued as something it is not, what is
 missing from the list — is on the hover over the count, where it costs no
 room at all.
