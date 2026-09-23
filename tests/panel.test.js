@@ -37,6 +37,9 @@ describe("the panel", () => {
     expect(other.scope()).toBe("11 rows");
     expect(other.send().hidden).toBe(true);
     expect(other.send().textContent).toBe("Send to BAN");
+    // Nor the pulse, which would be a ring drawn around a button that is
+    // not on the panel.
+    expect(other.armed()).toBe(false);
     expect(other.save().textContent).toBe("Download CSV");
     expect(other.save().disabled).toBe(false);
   });
@@ -91,6 +94,9 @@ describe("clicking send", () => {
     // The button becomes the second click, and the heading keeps the
     // count rather than going back to repeating the scope.
     expect(it.send().textContent).toBe("READY");
+    // And it says so in the one way a panel in the corner of a page can
+    // say anything without being read: it pulses.
+    expect(it.armed()).toBe(true);
     expect(it.scope()).toBe("11 rows");
     expect(it.busy()).toBe(false);
     expect(it.send().disabled).toBe(false);
@@ -253,6 +259,7 @@ describe("clicking send", () => {
     expect(it.send().textContent).toBe("READY");
     it.toggleScope();
     expect(it.send().textContent).toBe("Send to BAN");
+    expect(it.armed()).toBe(false);
     // And the heading stops claiming rows nobody is asking for now.
     expect(it.scope()).toBe("this page only");
   });
@@ -410,6 +417,7 @@ describe("a tab that never answers", () => {
     // nothing about them went wrong and walking the seller again would
     // cost minutes.
     expect(it.send().textContent).toBe("READY");
+    expect(it.armed()).toBe(true);
   });
 
   test("and one that does answer is never accused of it", async () => {
@@ -425,5 +433,6 @@ describe("a tab that never answers", () => {
     expect(it.note()).not.toBe("The upload page did not answer; is it signed in?");
     // It answered, so the rows went over and the panel is itself again.
     expect(it.send().textContent).toBe("Send to BAN");
+    expect(it.armed()).toBe(false);
   });
 });

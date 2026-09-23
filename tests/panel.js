@@ -98,6 +98,7 @@ export function mount({
     noteIsSignIn: () =>
       at(".cm-banner-note").classList.contains("cm-banner-signin"),
     busy: () => panel.classList.contains("cm-banner-busy"),
+    armed: () => panel.classList.contains("cm-banner-armed"),
     locked: () => panel.classList.contains("cm-banner-locked"),
     toggleScope: () => at(".cm-banner-label").click(),
     escape: () =>

@@ -762,6 +762,10 @@
     // clicked saying READY is an offer that is not there.
     if (send && sendable()) {
       send.textContent = ARMED;
+      // The pulse goes on with the word and for the same reason: both of
+      // them are the offer, and there is no offer where nothing can take
+      // the rows.
+      panel.classList.add("cm-banner-armed");
     }
     counting(panel, done.count + (done.count === 1 ? " row" : " rows"));
     recap(panel, done.note);
@@ -773,6 +777,7 @@
   function disarm(panel) {
     armed = null;
     mark(panel, "");
+    panel.classList.remove("cm-banner-armed");
     var send = panel.querySelector(".cm-banner-send");
     if (send) {
       send.textContent = SEND;

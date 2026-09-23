@@ -124,12 +124,74 @@
 }
 
 #cm-banner .cm-banner-send {
+  /* Carries the ring below, which is drawn outside its own box. */
+  position: relative;
+
   flex: 1;
   background: #2d67c4;
 }
 
 #cm-banner .cm-banner-send:hover {
   background: #3a78d8;
+}
+
+/* Armed: the rows are read and the tab is one press away. It is the one
+   moment the panel is asking for a click rather than offering one, and
+   the only thing that said so until now was the word on the button.
+
+   Green because the panel already has a word for good - the tick beside
+   the count wears it - though not the tick's own #7bd88f, which is a
+   colour for a glyph on navy rather than a ground for white text. */
+#cm-banner.cm-banner-armed .cm-banner-send {
+  background: #30915a;
+}
+
+#cm-banner.cm-banner-armed .cm-banner-send:hover {
+  background: #38a869;
+}
+
+/* Outside the button rather than on it, so a pulse costs a composited
+   transform and opacity and never the button's own paint - which is
+   worth caring about for the one animation here that does not stop. */
+#cm-banner .cm-banner-send::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 8px;
+  border: 2px solid #7bd88f;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* One ring, then most of the cycle at rest. Rings back to back read as a
+   strobe in the corner of somebody else's page; a gap between them reads
+   as a heartbeat, which is the thing that can be left running until the
+   rows are spent.
+
+   Unlike the spinner below, this one simply stops when less motion is
+   asked for: the green underneath says the same thing standing still,
+   and an animation with no end is the kind that request is about. */
+@media (prefers-reduced-motion: no-preference) {
+  #cm-banner.cm-banner-armed .cm-banner-send::before {
+    animation: cm-banner-pulse 2.4s ease-out infinite;
+  }
+}
+
+@keyframes cm-banner-pulse {
+  0% {
+    opacity: 0.85;
+    transform: scale(0.97);
+  }
+
+  34% {
+    opacity: 0;
+    transform: scale(1.09);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.09);
+  }
 }
 
 /* The quieter of the two: the file is the fallback, not the point. */

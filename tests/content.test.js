@@ -200,6 +200,32 @@ describe("the mark", () => {
   });
 });
 
+describe("the armed pulse", () => {
+  test("the ring is measured against the button and not the panel", () => {
+    // It is absolutely positioned, so without a containing block on the
+    // button itself the nearest one is the panel - which is fixed - and
+    // the ring gets drawn around the whole box rather than around the
+    // one button inside it that it is about.
+    const at = css.indexOf("#cm-banner .cm-banner-send {");
+    expect(at).toBeGreaterThan(-1);
+    expect(css.slice(at, css.indexOf("}", at))).toContain("position: relative");
+  });
+
+  test("it stops where less motion is asked for", () => {
+    // The spinner keeps turning under that request, because a still
+    // spinner says the opposite of what it is there to say. This one has
+    // the green underneath saying the same thing standing still, and it
+    // is the only animation here that never ends - so it goes.
+    const at = css.indexOf("animation: cm-banner-pulse");
+    expect(at).toBeGreaterThan(-1);
+    const opener = css.lastIndexOf("@media (prefers-reduced-motion", at);
+    expect(opener).toBeGreaterThan(-1);
+    expect(css.slice(opener, css.indexOf("{", opener))).toContain(
+      "no-preference"
+    );
+  });
+});
+
 describe("the handoff listener", () => {
   test("a second handoff retires the first one's listener", () => {
     // The page it opens has no deadline on purpose. A tab that never
