@@ -388,3 +388,42 @@ describe("a walk that ended before the pages did", () => {
     expect(it.markRecap()).toContain("15 were listed");
   });
 });
+
+describe("a tab that never answers", () => {
+  // The page announces itself as it loads and is given no deadline to do
+  // it in. What this is about is the other silence: a page that has
+  // decided it cannot take the list says nothing at all, on purpose, and
+  // from the panel's side that is indistinguishable from a slow one -
+  // except that it never ends.
+  test("says so instead of sitting on READY for ever", async () => {
+    const it = mount();
+    it.send().click();
+    await it.settle();
+    expect(it.send().textContent).toBe("READY");
+
+    it.hurry();
+    it.send().click();
+    await it.settle(60);
+
+    expect(it.note()).toBe("The upload page did not answer; is it signed in?");
+    // The rows are still in hand and the button is still the retry, since
+    // nothing about them went wrong and walking the seller again would
+    // cost minutes.
+    expect(it.send().textContent).toBe("READY");
+  });
+
+  test("and one that does answer is never accused of it", async () => {
+    const it = mount();
+    it.send().click();
+    await it.settle();
+
+    it.hurry();
+    it.send().click();
+    it.ready();
+    await it.settle(60);
+
+    expect(it.note()).not.toBe("The upload page did not answer; is it signed in?");
+    // It answered, so the rows went over and the panel is itself again.
+    expect(it.send().textContent).toBe("Send to BAN");
+  });
+});

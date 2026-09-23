@@ -113,6 +113,13 @@ export function mount({
           data: { type: "mtgban-handoff-ready" },
         })
       ),
+    // Shrinks the panel's long waits so a test can watch one end. The
+    // short ones - the observer's debounce - are left where they are,
+    // since those are what the panel's own timing is made of.
+    hurry: () => {
+      const real = window.setTimeout;
+      window.setTimeout = (fn, ms, ...rest) => real(fn, ms > 1000 ? 5 : ms, ...rest);
+    },
     settle: (ms = 50) => new Promise((done) => setTimeout(done, ms)),
   };
 }
