@@ -184,7 +184,7 @@ describe("clicking send", () => {
 
   test("and the hover over it says the results and nothing else", async () => {
     const it = mount();
-    expect(it.tip()).toBe("14 offers listed - click for this page");
+    expect(it.tip()).toBe("14 offers listed - click for this page only");
 
     it.save().click();
     await it.settle();
