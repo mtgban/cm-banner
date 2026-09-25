@@ -105,6 +105,54 @@
   border-radius: 3px;
 }
 
+/* The heading's tooltip, above the panel and as wide as it, so it never
+   runs off the right edge the panel is anchored to. It shows a beat after
+   the cursor arrives, which is soon enough to read as a response and late
+   enough not to flash while the cursor passes over. */
+#cm-banner .cm-banner-tip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 6px);
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border-radius: 6px;
+
+  background: #0f1c30;
+  color: #fff;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 35%);
+
+  font-size: 12px;
+  line-height: 1.35;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#cm-banner .cm-banner-tip:empty {
+  display: none;
+}
+
+#cm-banner .cm-banner-label:hover + .cm-banner-tip,
+#cm-banner .cm-banner-label:focus-visible + .cm-banner-tip {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  #cm-banner .cm-banner-tip {
+    transform: translateY(3px);
+    transition: opacity 120ms ease, transform 120ms ease, visibility 0s linear 120ms;
+  }
+
+  #cm-banner .cm-banner-label:hover + .cm-banner-tip,
+  #cm-banner .cm-banner-label:focus-visible + .cm-banner-tip {
+    transform: none;
+    transition-delay: 80ms, 80ms, 0s;
+  }
+}
+
 #cm-banner .cm-banner-actions {
   display: flex;
   gap: 6px;

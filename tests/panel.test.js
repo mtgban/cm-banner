@@ -162,7 +162,7 @@ describe("clicking send", () => {
     it.send().click();
     await it.settle();
     expect(it.scope()).toBe("11 rows");
-    expect(it.recap()).toBe("3 skipped, 1 non-English, 11 unpriced");
+    expect(it.tip()).toBe("3 skipped, 1 non-English, 11 unpriced");
     // The line under the buttons stays shut. It is for the things that
     // ask for something - a refused read, a blocked pop-up.
     expect(it.noteShown()).toBe(false);
@@ -176,28 +176,35 @@ describe("clicking send", () => {
 
     expect(it.markShown()).toBe(true);
     expect(it.scope()).toBe("11 rows");
-    expect(it.recap()).toBe("saved, 3 skipped, 1 non-English, 11 unpriced");
+    expect(it.tip()).toBe("saved, 3 skipped, 1 non-English, 11 unpriced");
     expect(it.noteShown()).toBe(false);
     expect(it.heading()).toBe("CM BANner - 11 rows\u2713");
   });
 
   test("and the hover over it says the results and nothing else", async () => {
-    // The heading is one button with the count inside it. A tooltip on
-    // the button as well as on the mark is two tooltips over the same few
-    // words, and which one a reader gets depends on where the cursor
-    // crossed in - so there is one at a time.
     const it = mount();
-    expect(it.hint()).toBe("14 offers listed \u2014 click for this page");
+    expect(it.tip()).toBe("14 offers listed \u2014 click for this page");
 
     it.save().click();
     await it.settle();
 
-    expect(it.markRecap()).toBe("saved, 3 skipped, 1 non-English, 11 unpriced");
-    expect(it.hint()).toBe(null);
+    expect(it.tip()).toBe("saved, 3 skipped, 1 non-English, 11 unpriced");
 
     // And the heading gets its own back when the rows are dropped.
     it.toggleScope();
-    expect(it.hint()).toBe("14 offers on this page \u2014 click for the whole list");
+    expect(it.tip()).toBe("14 offers on this page \u2014 click for the whole list");
+  });
+
+  test("the tooltip is the panel's own, and the only one", async () => {
+    // A title is shown by the browser a second or so after the cursor
+    // stops, and would come up on top of the panel's own tooltip.
+    const it = mount();
+    expect(it.titled()).toBe(0);
+    expect(it.label().getAttribute("aria-describedby")).toBe("cm-banner-tip");
+    it.save().click();
+    await it.settle();
+    expect(it.titled()).toBe(0);
+    expect(mount({ loggedOut: true }).titled()).toBe(0);
   });
 
   test("the mark goes when the rows it stood for do", async () => {
@@ -208,7 +215,7 @@ describe("clicking send", () => {
 
     it.toggleScope();
     expect(it.markShown()).toBe(false);
-    expect(it.recap()).toBe(null);
+    expect(it.tip()).not.toContain("saved");
   });
 
   test("and the second click hands them over", async () => {
@@ -298,7 +305,7 @@ describe("signed out", () => {
 
     expect(it.locked()).toBe(true);
     expect(it.scope()).toBe("this page only");
-    expect(it.hint()).toBe(
+    expect(it.tip()).toBe(
       "Sign in to Cardmarket to read the whole list — it shows a visitor this page and no more"
     );
   });
@@ -375,7 +382,7 @@ describe("a walk that ended before the pages did", () => {
     expect(it.markShown()).toBe(true);
     expect(it.mark()).toBe("✓");
     expect(it.markFailed()).toBe(false);
-    expect(it.markRecap()).toContain("15 were listed");
+    expect(it.tip()).toContain("15 were listed");
   });
 });
 

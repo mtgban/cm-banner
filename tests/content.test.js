@@ -185,6 +185,24 @@ describe("the panel does not move", () => {
   });
 });
 
+describe("the heading's tooltip", () => {
+  test("it is hidden until the heading is hovered or focused", () => {
+    // Keyboard focus as well as the cursor: the hint says what the heading
+    // does, and somebody tabbing to it needs that as much.
+    const at = css.indexOf("#cm-banner .cm-banner-tip {");
+    expect(at).toBeGreaterThan(-1);
+    const rest = css.slice(at, css.indexOf("}", at));
+    expect(rest).toContain("visibility: hidden");
+    expect(rest).toContain("pointer-events: none");
+    const shows = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)]
+      .filter((rule) => rule[2].includes("visibility: visible"))
+      .map((rule) => rule[1]);
+    expect(shows.length).toBe(1);
+    expect(shows[0]).toContain(".cm-banner-label:hover + .cm-banner-tip");
+    expect(shows[0]).toContain(".cm-banner-label:focus-visible + .cm-banner-tip");
+  });
+});
+
 describe("the mark", () => {
   test("it is inlined rather than referenced", () => {
     // A relative url() in an injected stylesheet resolves against the

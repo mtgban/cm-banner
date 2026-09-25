@@ -88,12 +88,12 @@ export function mount({
     mark: () => at(".cm-banner-mark").textContent,
     markFailed: () =>
       at(".cm-banner-mark").classList.contains("cm-banner-failed"),
-    // The footnote, which lives on the hover. Said on both the count and
-    // the mark, so either answers.
-    recap: () => at(".cm-banner-scope").getAttribute("title"),
-    markRecap: () => at(".cm-banner-mark").getAttribute("title"),
-    // The heading's own tooltip, which says what clicking it does.
-    hint: () => at(".cm-banner-label").getAttribute("title"),
+    // The heading's tooltip: what clicking it does, or what the last read
+    // had to say about itself while that is up.
+    tip: () => at(".cm-banner-tip").textContent,
+    // Anything still wearing a title, which the browser would draw a second
+    // later on top of the panel's own.
+    titled: () => panel.querySelectorAll("[title]").length,
     noteShown: () => !at(".cm-banner-note").hidden,
     busy: () => panel.classList.contains("cm-banner-busy"),
     armed: () => panel.classList.contains("cm-banner-armed"),

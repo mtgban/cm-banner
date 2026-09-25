@@ -148,28 +148,24 @@
   // way. The lines it does keep are the ones that ask for something - a
   // read that was refused, a pop-up that was blocked.
   //
-  // Said on both the count and the mark beside it, so it answers whichever
-  // of the two the cursor stopped on - and while it is up, the heading
-  // itself says nothing.
-  //
-  // The heading is one button with the count inside it. A title there as
-  // well is a second tooltip over the same few words, and which of the two
-  // a reader gets depends on where the cursor crossed in: one already on
-  // screen does not swap for the other until the pointer moves again. So
-  // there is one at a time. `label()` puts the heading's own back when it
-  // clears this.
+  // It takes the heading's tooltip while it is up, and `label()` puts the
+  // heading's own hint back when it clears this.
   function recap(panel, text) {
-    var parts = panel.querySelectorAll(".cm-banner-scope, .cm-banner-mark");
-    for (var i = 0; i < parts.length; i++) {
-      if (text) {
-        parts[i].title = text;
-      } else {
-        parts[i].removeAttribute("title");
-      }
-    }
-    var button = panel.querySelector(".cm-banner-label");
-    if (button && text) {
-      button.removeAttribute("title");
+    recapped = text;
+    tip(panel);
+  }
+
+  // The heading's tooltip is drawn by the panel rather than left to a title,
+  // which the browser shows only after a second or so. One element, so
+  // there is only ever one thing on it: the recap while there is one, the
+  // hint otherwise.
+  var hinted = "";
+  var recapped = "";
+
+  function tip(panel) {
+    var box = panel.querySelector(".cm-banner-tip");
+    if (box) {
+      box.textContent = recapped || hinted;
     }
   }
 
@@ -784,7 +780,7 @@
       // it: a seller past the paging limit reads "2000+", and rounding
       // that to 2000 promises an exact figure that is not one.
       var listed = MKM.totalSaid(document) || String(count);
-      button.title = locked
+      hinted = locked
         ? SIGN_IN + " \u2014 it shows a visitor this page and no more"
         : hereOnly()
           ? count + " offers on this page \u2014 click for the whole list"
@@ -800,12 +796,13 @@
     var panel = document.createElement("div");
     panel.id = PANEL_ID;
     panel.innerHTML =
-      '<button type="button" class="cm-banner-label">' +
+      '<button type="button" class="cm-banner-label" aria-describedby="cm-banner-tip">' +
       'CM BAN<i class="cm-banner-ner">ner</i> - ' +
       '<span class="cm-banner-spin" aria-hidden="true"></span>' +
       '<b class="cm-banner-scope"></b>' +
       '<span class="cm-banner-mark" aria-hidden="true" hidden>\u2713</span>' +
       "</button>" +
+      '<span class="cm-banner-tip" id="cm-banner-tip" role="tooltip"></span>' +
       '<div class="cm-banner-actions">' +
       '<button type="button" class="cm-banner-send">' + SEND + "</button>" +
       '<button type="button" class="cm-banner-save">' + SAVE + "</button>" +
