@@ -203,8 +203,9 @@ price comes first in DOM order.
 
 ### 3.7 Language
 
-`?language=1` is English, `?language=7` Japanese. The language is also an
-`English` tooltip, but the query parameter is what is read.
+A listing names its language in the tooltip on its flag, and that is what
+is read (§4.5). A product link's `?language=1` is only the fallback: it can
+say English on a Japanese listing.
 
 Every listing is exported whatever its language, and the panel reports how
 many are not English. It is **reported rather than filtered on** because
@@ -348,32 +349,31 @@ many.
 
 ### 4.5 The language comes from the page's own filter
 
-`?language=N` is on a product link only once the page has been **filtered
-by language**, which is not the ordinary case. Every unfiltered page
-therefore parsed as language-less, and the panel reported no foreign
-printings at all — on a seller whose own filter counts 828 Italian against
-251 English.
+A product link's `?language=N` does not say what the listing is in. On an
+unfiltered page it was once absent, so every row parsed as language-less and
+a seller with 828 Italian listings reported none; on 2026-09-25 every link on
+a seller's first page said `language=1`, a Japanese listing's included, and
+all 177 rows exported as English.
 
 A row does name its language, in a tooltip beside a flag. What it does not
 do is say that is what the tooltip is: the expansion, the rarity and the
 condition are tooltips too, and nothing in the markup tells them apart.
 Guessing by position or by class would be guessing.
 
-So the page's own language filter decides. `select[name="idLanguages[]"]`
-lists exactly the languages the seller has, with the ids the offers page
-filters on, and a tooltip is a language when that list names it. The same
-reading as §4.1's expansion id, and the same authority.
+So the page's own language filter decides. It lists exactly the languages
+the seller has, with the ids the offers page filters on, and a tooltip is a
+language when that list names it. The same reading as §4.1's expansion id,
+and the same authority. It is read from `select[name="idLanguages[]"]` where
+that has been drawn, and otherwise from `options.languageOptions` in the
+`data-props` JSON of the `CategoryOffersFilterComponent` the dropdown is drawn
+from.
 
 Two things follow from where the filters live:
 
-- **They are read from the live page, never from a fetched one.** The
-  server sends the table and builds the filter dropdowns in script
-  afterwards, so a page fetched during a walk has no `<select>` at all.
-  The maps are read once, from the page being looked at, and travel with
+- **They are read once, from the page being looked at,** and travel with
   the walk.
-- **A link still wins where there is one.** Where Cardmarket says the
-  language outright, that is what is used; the filter is the fallback, not
-  the override.
+- **The flag wins over the link.** The link is used only where no tooltip
+  is one the filter names.
 
 A language the filter does not list resolves to nothing rather than to
 something near it, which is the same answer the row had before and leaves

@@ -92,7 +92,7 @@ carried so a row can be traced back to the listing it came from.
 
 `mkm_notes` is the way back to it: the seller's own list, narrowed by the offers
 page's own filters to that one card — by name, by expansion, by foil. The
-expansion id is read off the filter dropdown beside the table, since the row
+expansion id is read off the filter beside the table, since the row
 itself only names the set in words. Each filter is added only when it is known,
 because one left off widens the list by a step while one guessed at hides the
 offer the link exists to reach.

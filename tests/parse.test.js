@@ -328,3 +328,25 @@ describe("the language a listing is in", () => {
     expect(offers.some((o) => o.language === "7")).toBe(true);
   });
 });
+
+describe("a page whose filters arrive as JSON", () => {
+  // Cardmarket writes its filters onto the component that draws them, with
+  // no dropdown until its script runs. Every product link here says
+  // ?language=1, the Japanese listing's included.
+  const page = load("offers-props.html");
+  const languages = MKM.languageIDs(page);
+  const listed = Object.fromEntries(
+    MKM.parseOffers(page, languages).map((o) => [o.articleID, o])
+  );
+
+  test("the filters are read from the component's props", () => {
+    expect({ ...languages }).toEqual({ All: "0", English: "1", German: "3", Japanese: "7" });
+    expect(MKM.expansionIDs(page)["FINAL FANTASY"]).toBe("6057");
+  });
+
+  test("a listing's flag beats its link's ?language=", () => {
+    expect(listed["1872728089"].language).toBe("7");
+    expect(listed["1872728089"].languageName).toBe("Japanese");
+    expect(listed["1838883875"].language).toBe("1");
+  });
+});

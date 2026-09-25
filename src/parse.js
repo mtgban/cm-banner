@@ -150,30 +150,19 @@ globalThis.MKM = globalThis.MKM || {};
 
   // languageOf is Cardmarket's own id for the language a listing is in.
   //
-  // The product link carries one, but only on a page that has already been
-  // filtered by language - which is not the ordinary case, and the reason
-  // this used to answer "" for every row on an unfiltered page and the
-  // panel used to report no foreign printings on a seller with eight
-  // hundred Italian ones.
-  //
-  // So where the link says nothing, the row's tooltips are offered to the
-  // page's language filter, and the one it names is the language. The
-  // filter is the authority on which word that is; nothing else in the row
-  // distinguishes the language from the set or the rarity.
+  // The listing says it in the tooltip on its flag, and the page's language
+  // filter says which tooltip that is. The product link's ?language= is only
+  // the fallback: it can say 1 on a Japanese listing.
   function languageOf(row, href, titles, languages) {
-    var linked = LANGUAGE_RE.exec(href);
-    if (linked) {
-      return linked[1];
-    }
-    if (!languages) {
-      return "";
-    }
-    for (var i = 0; i < titles.length; i++) {
-      if (languages[titles[i]]) {
-        return languages[titles[i]];
+    if (languages) {
+      for (var i = 0; i < titles.length; i++) {
+        if (languages[titles[i]]) {
+          return languages[titles[i]];
+        }
       }
     }
-    return "";
+    var linked = LANGUAGE_RE.exec(href);
+    return linked ? linked[1] : "";
   }
 
   // languageName is a listing's language for a person to read: English
@@ -330,29 +319,60 @@ globalThis.MKM = globalThis.MKM || {};
   // is taken off - a set whose name ends in a bracketed number keeps it.
   var COUNT_RE = /\s*\(\d+\)\s*$/;
 
-  // filterIDs reads one of the page's own filter dropdowns into the names
-  // it is keyed by.
-  //
-  // Only the live page has these. The server sends the table and builds
-  // the filters in script afterwards, so a page fetched during a walk has
-  // no dropdown at all - which is why the maps are read once, from the
-  // page being looked at, and handed to the parse.
-  function filterIDs(root, name) {
+  // First wins: a name is listed twice, once with the seller's count and
+  // once without, and both carry the same id.
+  function addID(ids, value, label) {
+    var id = value === undefined || value === null ? "" : String(value);
+    var named = String(label || "").trim().replace(COUNT_RE, "");
+    if (id && named && !ids[named]) {
+      ids[named] = id;
+    }
+  }
+
+  // The filters as the server writes them, onto the component that draws
+  // them: {"options": {"languageOptions": [{"label": "Japanese (23)",
+  // "value": "7"}, ...]}}.
+  var PROPS_OPTIONS = {
+    "idExpansions[]": "expansionOptions",
+    "idLanguages[]": "languageOptions",
+  };
+
+  function propsIDs(root, name) {
     var ids = Object.create(null);
-    var select = root.querySelector('select[name="' + name + '"]');
-    if (!select) {
+    var holder = root.querySelector('[data-component-name="CategoryOffersFilterComponent"]');
+    if (!holder) {
       return ids;
     }
+    var options;
+    try {
+      options = JSON.parse(holder.getAttribute("data-props")).options[PROPS_OPTIONS[name]];
+    } catch (err) {
+      return ids;
+    }
+    if (!Array.isArray(options)) {
+      return ids;
+    }
+    for (var i = 0; i < options.length; i++) {
+      if (options[i]) {
+        addID(ids, options[i].value, options[i].label);
+      }
+    }
+    return ids;
+  }
 
+  // filterIDs reads one of the page's own filters into the names it is
+  // keyed by: from its dropdown where one has been drawn, and from the
+  // component's props where not. Read once, from the page being looked at,
+  // and handed to the parse of every page walked.
+  function filterIDs(root, name) {
+    var select = root.querySelector('select[name="' + name + '"]');
+    if (!select) {
+      return propsIDs(root, name);
+    }
+    var ids = Object.create(null);
     var options = select.querySelectorAll("option");
     for (var i = 0; i < options.length; i++) {
-      var value = options[i].getAttribute("value");
-      var label = (options[i].textContent || "").trim().replace(COUNT_RE, "");
-      // First wins: a name is listed twice, once with the seller's count
-      // and once without, and both carry the same id.
-      if (value && label && !ids[label]) {
-        ids[label] = value;
-      }
+      addID(ids, options[i].getAttribute("value"), options[i].textContent);
     }
     return ids;
   }
