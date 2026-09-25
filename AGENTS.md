@@ -33,7 +33,7 @@ visible without one. When you change the parser, ask for a saved page
 ## Layout
 
 ```
-manifest.json    MV3; two things matter — the host list and no permissions
+manifest.json    MV3; two things matter - the host list and no permissions
 src/rates.js     the currency feed, and the inversion it needs
 src/parse.js     DOM → offers. The volatile half; see SPECIFICATIONS.md §3
 src/pages.js     one page → every page, at Cloudflare's pace; see §6
@@ -52,7 +52,7 @@ bun test tests/
 ```
 
 That is the whole suite and it runs in CI on every push. It loads the real
-`src/*.js` against a DOM and the fixture — no mocking of the code under
+`src/*.js` against a DOM and the fixture - no mocking of the code under
 test.
 
 There is no linter and no build step. The scripts are plain ES5-ish so they
@@ -67,7 +67,7 @@ demo arranging to look like the thing rather than being it.
 
 **The browser caches `src/*.js` across reloads.** A fix can look like it did
 not work when it is simply not loaded. A query string on the HTML does not
-help — the `<script src>` is what is cached. Serve from a **fresh port** to
+help - the `<script src>` is what is cached. Serve from a **fresh port** to
 get a clean origin. This produced two rounds of "the fix didn't work" on a
 fix that was already correct.
 
@@ -82,13 +82,13 @@ took a user to notice.
 `tests/panel.js` exists because of that: it evaluates the content scripts in a
 happy-dom window, so a click is a click and the button's own text is the
 assertion. Put anything the panel *does* there. Keep `content.test.js` for
-orderings that have no visible result — opening a window before a read rather
+orderings that have no visible result - opening a window before a read rather
 than after it looks identical afterwards, and only a browser can tell you which
 one it was.
 
 **Reloading the extension is not enough.** A content script already injected
 into an open tab keeps running the old code, so the Cardmarket tab needs
-reloading too. And a `manifest.json` change — a new host, a permission —
+reloading too. And a `manifest.json` change - a new host, a permission -
 needs the extension reloaded, not just the page. Icons are cached harder
 still: removing and re-adding the extension is the reliable way to see a new
 one.
@@ -97,7 +97,7 @@ one.
 this works.** A `curl` gets a flat 403; three `fetch`es inside a second get a
 challenge and then a "Verify you are human" checkbox on the next ordinary
 page load. Treat that budget as the real constraint on anything that adds a
-request, and never try to answer the challenge in code — it is meant for the
+request, and never try to answer the challenge in code - it is meant for the
 person at the keyboard, it is theirs to clear, and code that got around it
 would be the worst thing in this repository. `PACE` in `src/pages.js` is a
 guess at politeness, not a measured limit; if you change it, say in the commit
@@ -115,10 +115,10 @@ again; see SPECIFICATIONS.md §5.
 
 **Do not add a permission, or declare a file web-accessible.** The extension
 asks for none, runs on one host, and hands the pages it runs on nothing of its
-own — the panel's stroopwafel is base64 in the stylesheet rather than a
+own - the panel's stroopwafel is base64 in the stylesheet rather than a
 relative `url()`, because that url resolves to the extension's origin and
 serving it wants a manifest entry. `storage` was added once to carry a CSV between two tabs and removed
-again when `postMessage` turned out to do it — the two windows can already
+again when `postMessage` turned out to do it - the two windows can already
 speak, because one opened the other. If something seems to need a
 permission, check whether the web platform already offers it.
 
@@ -153,6 +153,6 @@ person using it cannot fix.
 ## Commits
 
 One topic per commit, wrapped at 80 columns, with the reasoning in the body
-rather than the diff. Say what was measured and what it came to — the
+rather than the diff. Say what was measured and what it came to - the
 numbers in `SPECIFICATIONS.md` came out of commit messages, not the other
 way round. No `Co-Authored-By` lines.

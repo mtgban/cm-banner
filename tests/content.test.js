@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { readFileSync } from "fs";
+import { readFileSync, readdirSync } from "fs";
 
 // Orderings that are cheaper to assert in the source than to provoke: the
 // difference between opening a window before a read and after it is not
@@ -255,5 +255,17 @@ describe("the handoff listener", () => {
       handOff.indexOf("window.open(")
     );
     expect(handOff).toContain("awaiting = onMessage");
+  });
+});
+
+describe("punctuation", () => {
+  test("no em dash in what the panel says, or in the docs", () => {
+    const names = readdirSync(new URL("../src/", import.meta.url)).map((name) => "src/" + name);
+    names.push("README.md", "SPECIFICATIONS.md", "AGENTS.md");
+    const dashed = names.filter((name) => {
+      const text = readFileSync(new URL("../" + name, import.meta.url), "utf8");
+      return text.includes("\u2014") || text.includes("\\u2014");
+    });
+    expect(dashed).toEqual([]);
   });
 });

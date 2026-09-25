@@ -183,7 +183,7 @@ describe("clicking send", () => {
 
   test("and the hover over it says the results and nothing else", async () => {
     const it = mount();
-    expect(it.tip()).toBe("14 offers listed \u2014 click for this page");
+    expect(it.tip()).toBe("14 offers listed - click for this page");
 
     it.save().click();
     await it.settle();
@@ -192,7 +192,7 @@ describe("clicking send", () => {
 
     // And the heading gets its own back when the rows are dropped.
     it.toggleScope();
-    expect(it.tip()).toBe("14 offers on this page \u2014 click for the whole list");
+    expect(it.tip()).toBe("14 offers on this page - click for the whole list");
   });
 
   test("the tooltip is the panel's own, and the only one", async () => {
@@ -306,7 +306,7 @@ describe("signed out", () => {
     expect(it.locked()).toBe(true);
     expect(it.scope()).toBe("this page only");
     expect(it.tip()).toBe(
-      "Sign in to Cardmarket to read the whole list — it shows a visitor this page and no more"
+      "Sign in to Cardmarket to read the whole list - it shows a visitor this page and no more"
     );
   });
 

@@ -781,10 +781,10 @@
       // that to 2000 promises an exact figure that is not one.
       var listed = MKM.totalSaid(document) || String(count);
       hinted = locked
-        ? SIGN_IN + " \u2014 it shows a visitor this page and no more"
+        ? SIGN_IN + " - it shows a visitor this page and no more"
         : hereOnly()
-          ? count + " offers on this page \u2014 click for the whole list"
-          : listed + " offers listed \u2014 click for this page";
+          ? count + " offers on this page - click for the whole list"
+          : listed + " offers listed - click for this page";
     }
     recap(panel, "");
     panel.hidden = count === 0;

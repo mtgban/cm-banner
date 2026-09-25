@@ -1,9 +1,9 @@
-# cm-banner — Specification
+# cm-banner - Specification
 
 > Written 2026-09-22, from the work that built the extension. Every fact
 > about Cardmarket's markup below was read off real pages rather than
 > inferred: fourteen consecutive saved singles pages and one sealed one,
-> and — for §6 — the responses cardmarket.com's own server gave to a
+> and - for §6 - the responses cardmarket.com's own server gave to a
 > browser asking for the next page. Where something is unverified it says
 > so.
 
@@ -37,7 +37,7 @@ that is what a manifest's `content_scripts` list can load.
 https://www.cardmarket.com/*/*/Users/*/Offers/*
 ```
 
-on **every game Cardmarket sells** — twenty-two as of 2026-09-22, read
+on **every game Cardmarket sells** - twenty-two as of 2026-09-22, read
 off the site's own game menu, of which BAN prices eight. The second
 segment is the game, capitalised as Cardmarket writes it, and the pattern
 no longer names any of them: the offers table, the tooltips, the filters
@@ -49,14 +49,14 @@ work on all of them. That page's first row came back whole:
 article 2150849449   Aegiochusmon: Holy (BT26-029) (V.2)   mcm_id 903976
 Promos: Timeless Bonds   Near Mint   English   7,00 €   33 available
 ```
-
-— id, name, set, grade, language, price and quantity, every one of them
+ -
+id, name, set, grade, language, price and quantity, every one of them
 from the selector Magic uses.
 
 **The `www` is not an oversight.** The bare `cardmarket.com` redirects to
-it before a page loads — navigating to `cardmarket.com/en/Magic/Users/…`
+it before a page loads - navigating to `cardmarket.com/en/Magic/Users/…`
 lands on `www.cardmarket.com/…`, with `location.origin` reporting the www
-host — so a content script never runs on the bare domain and nothing this
+host - so a content script never runs on the bare domain and nothing this
 sends ever carries it. The site's `HandoffOrigins` leaves it off for the
 same reason, and adding it there would widen what is allowed to hand a
 list over for a host that only ever sends visitors somewhere else.
@@ -67,7 +67,7 @@ reason in its tooltip; a panel three words wide is no place for a button
 that exists to explain itself. The file button takes the room it leaves
 and says **Download CSV** rather than **CSV**, which is both what it does
 and enough of a word to hold the row at the width it has in the other
-state — the panel is a fixed 15rem and must not resize between games.
+state - the panel is a fixed 15rem and must not resize between games.
 
 `sendable()` answers off the path, `buttons()` is the one place deciding
 which are live, and `arm()` declines to write READY on a button nobody can
@@ -80,8 +80,8 @@ game BAN has not got to yet.
 
 The gate that is left is the page, not the game: `label()` hides the panel
 where there are no offer rows to read. `tests/csv.test.js` pins that the
-manifest names no game — a second list to keep in step with `HOSTS` is a
-list that drifts — and `tests/panel.test.js` mounts an unpriced game and
+manifest names no game - a second list to keep in step with `HOSTS` is a
+list that drifts - and `tests/panel.test.js` mounts an unpriced game and
 clicks through it.
 
 ## 3. Cardmarket's markup
@@ -97,7 +97,7 @@ repository: a redesign invalidates the section.
 
 Selected with `[id^="stockRow"]`. The same string also appears as
 `data-ajax-loader="stockRow2058737078"` on a form inside the row, which is
-why the selector is on `id` and not a text match — a page of 20 offers
+why the selector is on `id` and not a text match - a page of 20 offers
 contains 40 occurrences of `stockRow`.
 
 The digits are the **article id**: the offer, not the product. Two sellers
@@ -114,8 +114,8 @@ sealed   /en/Magic/Products/Boosters/Adventures-in-the-Forgotten-Realms-Set-Boos
 
 A single is filed under its **set**; a sealed product is filed directly
 under its **category** and carries its set inside its own name. So the tail
-after the category is taken whole and split afterwards — two segments name a
-set and a card, one names a product — rather than a fixed depth being
+after the category is taken whole and split afterwards - two segments name a
+set and a card, one names a product - rather than a fixed depth being
 demanded of every category.
 
 Categories seen on a real page: `Singles`, `Sealed-Products`, `Boosters`,
@@ -137,7 +137,7 @@ differed between the two, all six losing something:
 the ligature outright, so a name read from the slug begins with the space
 that leading dash becomes.
 
-The `(V.n)` index rides along deliberately — it is how Cardmarket tells two
+The `(V.n)` index rides along deliberately - it is how Cardmarket tells two
 printings of one card apart, and `Match`'s prefilter splits parentheticals
 off the name anyway.
 
@@ -154,7 +154,7 @@ singles  product-images.s3.cardmarket.com/1/ULG/10601/10601.jpg
 sealed   product-images.s3.cardmarket.com/2/565902/565902.png
 ```
 
-Read as the last path element before the extension, not at a fixed depth —
+Read as the last path element before the extension, not at a fixed depth -
 the two shapes above differ in how much precedes it. The pattern requires
 the filename to be digits, which is what keeps it off the sprite sheets and
 expansion icons in the same row (`ssMain2.png`, `expicons.png`).
@@ -163,7 +163,7 @@ An older layout named the file after the card and the id a directory
 (`/items/9/265854/mirris-guile.jpg`). It appears **zero** times on current
 pages; the pattern is kept for saved pages from that era.
 
-**A row can carry no image at all** — 1 of 20 on one saved page. There is
+**A row can carry no image at all** - 1 of 20 on one saved page. There is
 then no product id, the CSV column is empty, and the upload falls back to
 name and edition. That is correct behaviour, not a gap.
 
@@ -191,14 +191,14 @@ flattened text. A real row's `textContent` is:
 "Thornwind FaeriesGD10,05 €0,05 €1"
 ```
 
-The price is `0,05 €`. The `10,05 €` is an illusion — a neighbouring `1`
+The price is `0,05 €`. The `10,05 €` is an illusion - a neighbouring `1`
 glued to the front of it by concatenation. The first run against a saved
 page priced a common at $11.53 because of exactly this.
 
 Cardmarket writes a decimal comma and groups thousands with a full stop
 (`1.250,00 £`). Currencies seen: `€`, `£`.
 
-A row may show two prices — the item and the item plus shipping. The unit
+A row may show two prices - the item and the item plus shipping. The unit
 price comes first in DOM order.
 
 ### 3.7 Language
@@ -211,7 +211,7 @@ Every listing is exported whatever its language, and the panel reports how
 many are not English. It is **reported rather than filtered on** because
 neither answer is good: the CSV names the language in `mkm_language`, but
 the upload reads nothing from it yet, so a German printing is valued as the
-English one at a price asked for a different card — but dropping those quietly hides
+English one at a price asked for a different card - but dropping those quietly hides
 cards the person owns from their own valuation.
 
 A listing whose link names no language is not counted; nothing says it is
@@ -264,7 +264,7 @@ filters to the one offer:
 ```
 
 Every part is read off the page. The **name** is the link's own text, so
-it keeps accents, commas and a version suffix — asked for
+it keeps accents, commas and a version suffix - asked for
 `Adéwalé, Breaker of Chains (V.1)` the live site answered with one row.
 **isSigned** and **isAltered** are always `N` because those rows are never
 exported (§4.4), so saying so narrows without any chance of hiding the row
@@ -272,7 +272,7 @@ being linked to. The **attribution** goes last, behind everything that
 decides which offer is there to visit.
 
 **The expansion id comes from the page's own filter.** A row carries no
-number — it links to `/Expansions/<slug>` and names the set in a tooltip —
+number - it links to `/Expansions/<slug>` and names the set in a tooltip -
 but the `select[name="idExpansions[]"]` beside the table lists every one
 of the seller's expansions with the id the offers page filters on. The
 name the row shows is looked up there, taken from the row's own expansion
@@ -286,7 +286,7 @@ it.
 
 **Each filter is added only when it is known.** One left off widens the
 list by a step; one guessed at hides the row the link exists to reach. The
-language is the case in point — see §4.5.
+language is the case in point - see §4.5.
 
 `base` is the offers page's own path, so a link returns to the list it
 came from: the same seller, the same category, singles or sealed.
@@ -294,7 +294,7 @@ came from: the same seller, the same category, singles or sealed.
 **The column is named for where it has to land.** The upload's header
 matcher reads a column whose name contains `notes` or `data` into
 `Entry.Notes`, which is the one field the results already carry through a
-round trip — and the site renders the loaded price as a link to it. A
+round trip - and the site renders the loaded price as a link to it. A
 column called `mkm_url` reaches nothing at all, which is what it did
 before this: verified by running the site's own `ParseHeader` over both
 names, where `mkm_url` produced no notes key and `mkm_notes` produced
@@ -335,11 +335,11 @@ https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.
 It serves `Access-Control-Allow-Origin: *`, so a content script can fetch it
 with no host permission. It quotes what one dollar buys, so a price going
 the other way is **divided**: `rates[c] = 1 / quoted[c]`. A currency quoted
-at zero is left out rather than kept as an infinity — it converts nothing,
+at zero is left out rather than kept as an infinity - it converts nothing,
 and a missing entry omits the price where an infinity would invent one.
 
-A row that cannot be converted honestly — no rate, an unfamiliar currency,
-an unreadable number — carries an **empty** price, and the panel says how
+A row that cannot be converted honestly - no rate, an unfamiliar currency,
+an unreadable number - carries an **empty** price, and the panel says how
 many.
 
 ### 4.4 What the CSV deliberately does not carry
@@ -385,7 +385,7 @@ the rest of it unaffected.
 
 The upload needs the session. mtgban's `MTGBAN` cookie is set with
 `global=true`, which leaves `SameSite` unset, so browsers default it to
-**Lax** — not sent on a cross-site POST. A request made from
+**Lax** - not sent on a cross-site POST. A request made from
 cardmarket.com arrives unauthenticated whatever CORS says, because CORS
 governs who may *read* a response, not whether credentials ride along.
 
@@ -394,7 +394,7 @@ scoped to one site: it sends the session on cross-site requests from any
 origin, and CORS only stops them reading the reply. With `CanPOST` on
 `/upload` and `/admin`, that is a CSRF hole needing tokens.
 
-A hidden iframe does not escape it either — an mtgban frame inside a
+A hidden iframe does not escape it either - an mtgban frame inside a
 cardmarket page is a third-party context, which Safari blocks outright,
 Firefox partitions, and Chrome is phasing out. An `about:blank` iframe
 inherits the Cardmarket origin, so a POST from it is cross-site again.
@@ -421,7 +421,7 @@ Both ends check who they are talking to:
 
 The **origin is checked for being one of ours rather than for being the one
 asked for**, because a deployment may redirect and land on a different
-origin — see 5.3. What pins the conversation to the right window is the
+origin - see 5.3. What pins the conversation to the right window is the
 source check beside it, which a redirect does not disturb.
 
 `rows` is passed because the page receives text, and text does not say
@@ -429,9 +429,9 @@ whether its first line is a header or a card.
 
 `source` is the page they were read from, filters and all. By the time a
 handed-over list reaches the upload handler it is a form post with a
-filled textarea, which is indistinguishable from somebody pasting one — so
+filled textarea, which is indistinguishable from somebody pasting one - so
 the results said *Results from pasted text* for a list read off a named
-seller on a named site. With it they say *Results from Cardmarket —
+seller on a named site. With it they say *Results from Cardmarket -
 Lemhast* and link back.
 
 What it is called is the site's to decide, not this end's: that heading is
@@ -441,7 +441,7 @@ sends a page, not a label.
 
 **The window is opened by a click, with nothing asynchronous in front of
 it.** `window.open` needs the click's transient activation, which Firefox
-keeps alive about five seconds and then calls the result a pop-up — blocks
+keeps alive about five seconds and then calls the result a pop-up - blocks
 it, and puts a bar across the top of the page saying so. How many clicks
 that costs depends on how long the reading takes, and nothing else:
 
@@ -451,14 +451,14 @@ that costs depends on how long the reading takes, and nothing else:
 | all offers | two | thirteen pages already outlives it, a hundred takes minutes |
 
 The second click is not ceremony. Opening the tab first and reading
-afterwards does work — the handoff page says *Waiting for the card list…*
-and has no timeout — but it hands you an empty page to look at while the
+afterwards does work - the handoff page says *Waiting for the card list…*
+and has no timeout - but it hands you an empty page to look at while the
 count ticks along in the tab behind it. Reading first and opening on a
 second click gives both halves a click of their own.
 
 So the panel is the state. Before a read the heading names the scope and
-the button says **Send to BAN**; after one the heading holds the count —
-`CM BANner - 251 rows` — and the button says **READY**. The count goes in
+the button says **Send to BAN**; after one the heading holds the count -
+`CM BANner - 251 rows` - and the button says **READY**. The count goes in
 the heading because the heading is otherwise repeating a scope that was
 chosen before the read and has not changed since, and because that leaves
 the line beneath the buttons for the things a count cannot say.
@@ -466,21 +466,21 @@ the line beneath the buttons for the things a count cannot say.
 A finished download adds a green **tick** beside the count and nothing
 else; a read that came to nothing puts a red **✗** there instead and keeps
 the line, because that one is asking for something.
-What the read had to say about itself — `saved, 3 skipped, 1 non-English,
-11 unpriced` — is on the hover, over the count and over the tick both, so
+What the read had to say about itself - `saved, 3 skipped, 1 non-English,
+11 unpriced` - is on the hover, over the count and over the tick both, so
 either answers, and **the heading carries no tooltip of its own while it
 is up**. The heading is one button with the count inside it: a title
 there as well is a second tooltip over the same few words, and which of
 the two a reader gets depends on where the cursor crossed in, since the
 one already on screen does not swap for the other until the pointer moves
-again. The heading's own hint — what clicking it does — comes back when
+again. The heading's own hint - what clicking it does - comes back when
 the rows are dropped. It used to be a line under the buttons, which is a row of
 a panel this size given over to a footnote that is read once and ignored
 after; the lines it keeps are the ones that ask for something.
 
 (The label constant is `ARMED`, not `READY`. That name belongs to the
 message the handoff page sends when it is listening, and the two are one
-keyword apart from silently swapping places — which they did, once, for
+keyword apart from silently swapping places - which they did, once, for
 as long as it took the suite to run.) Rows in hand are dropped when the table moves underneath them
 (Cardmarket refills it on every filter) and when the scope changes, since
 neither describes what is being asked for any more. Either button can fill
@@ -504,8 +504,8 @@ purpose, so a tab that never answers would otherwise leave its listener
 behind for the life of the page. A second handoff retires the first.
 
 `tests/content.test.js` holds all of this. It reads the source rather than
-running it — content.js installs a panel into a live Cardmarket page on
-sight — which is weak, but an ordering nobody would think to preserve is
+running it - content.js installs a panel into a live Cardmarket page on
+sight - which is weak, but an ordering nobody would think to preserve is
 worth pinning even loosely.
 
 ### 5.3 Hosts, and the Magic exception
@@ -525,7 +525,7 @@ worth pinning even loosely.
 All nine games BAN prices, each verified answering `/upload/handoff`:
 `curl` gets the same `Unauthorized` page from every one of them, which is
 what a request carrying no session is owed. **Palworld is in the table and
-unreachable** — Cardmarket does not sell it, so no path can name it. It
+unreachable** - Cardmarket does not sell it, so no path can name it. It
 is listed because the list that moves is Cardmarket's: Gundam arrived
 there after the first seven were wired up, and an entry costs less than a
 dead button on the day the next one does.
@@ -536,7 +536,7 @@ it still gets the panel and the file; see §2.
 **The rows reach a deployment that does not scrape Cardmarket.**
 go-mtgban's own Cardmarket scrapers price seven games (`mkmGames`), Gundam
 not among them, so nothing there holds a Cardmarket id to resolve
-`mcm_id` against and the upload matches on name, edition and number —
+`mcm_id` against and the upload matches on name, edition and number -
 which is the path an unrecognised id takes anyway.
 
 **Magic is the default deployment and answers at the bare domain.**
@@ -569,7 +569,7 @@ not.
 **The next page is `a[data-direction="next"]`.** On the last page
 Cardmarket draws the same anchor with **no `href` at all** and adds
 `disabled`, so "is there another page" and "does the link have an href"
-are the same question. That is what ends the walk — not arithmetic over a
+are the same question. That is what ends the walk - not arithmetic over a
 total that can move while the walk is running. Confirmed on both the live
 `?site=55` and a saved last page.
 
@@ -586,7 +586,7 @@ and 251 over 13 with `idLanguages=1`.
 **The count is `.total-count`, not "Page 5 of 13".** That sentence is
 written in whichever of Cardmarket's six languages the visitor reads; the
 number beside it is not. It is used only to say how far along the walk is
-and to label the button — nothing terminates on it.
+and to label the button - nothing terminates on it.
 
 **The walk starts at page one, wherever the seller's page was left.**
 Cardmarket numbers pages with a `site` parameter and omits it on the
@@ -596,8 +596,8 @@ would silently drop four pages.
 
 ### 6.2 The list stops at 100 pages
 
-Cardmarket pages a seller's offers to **100 pages of twenty — 2000 offers
-— and no further**. A seller with ten thousand cards has eight thousand
+Cardmarket pages a seller's offers to **100 pages of twenty - 2000 offers -
+and no further**. A seller with ten thousand cards has eight thousand
 of them that this listing will not reach at all.
 
 It says so with a plus on both numbers, and only with that:
@@ -613,7 +613,7 @@ in the rows, the row count or the terminator distinguishes "that was the
 whole list" from "that is as far as Cardmarket will go". The plus is the
 only signal, which is why it is carried rather than parsed away:
 
-- `totalSaid()` returns the text as printed — `"2000+"`, not `2000` — and
+- `totalSaid()` returns the text as printed - `"2000+"`, not `2000` - and
   the button prints it, because "Export 2000 offers" off a ten-thousand
   offer seller promises an exact figure that is not one.
 - `totalCount()` still returns 2000, for counting up to while the walk
@@ -631,7 +631,7 @@ Cardmarket is behind Cloudflare, and this is the binding constraint on the
 whole feature.
 
 - A plain `curl` for a public offers page is refused outright: **403**.
-- A `fetch` from the page itself is answered normally — same-origin, so it
+- A `fetch` from the page itself is answered normally - same-origin, so it
   carries the session and needs no permission.
 - **Three of those inside one second were answered with a challenge**: 429
   carrying `cf-mitigated: challenge` and a "Just a moment…" interstitial,
@@ -672,8 +672,8 @@ buttons beneath it will do.
 A checkbox beside the heading said the same thing twice, in two places
 that could disagree.
 
-The count moved to the heading's tooltip — `2000+ offers listed — click
-for this page only` — where it still carries the plus of §6.2 without
+The count moved to the heading's tooltip - `2000+ offers listed - click
+for this page only` - where it still carries the plus of §6.2 without
 putting a number in a line that now names a scope.
 
 The whole list is the default: a file holding one page of a seller's stock
@@ -682,7 +682,7 @@ the escape hatch, and it costs no requests at all.
 
 **Unless nobody is signed in.** Cardmarket serves a visitor it has not
 signed in page one and then, where page two should be, a page with no rows
-on it — so the whole list is not something it will give them, and offering
+on it - so the whole list is not something it will give them, and offering
 it would be offering a walk that can only fail (§6.5). The panel opens on
 the page in front of it instead, and the heading stops being a control
 and says why on its hover: `Sign in to Cardmarket to read the whole list`.
@@ -693,12 +693,12 @@ Signed-out is read off the login forms Cardmarket puts in the markup of
 every page it serves to one. They are markup rather than words, so this
 holds in every language the site serves. The signed-in side of it is not
 something this repository can check without somebody's session, so the
-check is written to be wrong in the safe direction — it says nothing
-unless the forms are there — and a walk that gets past it anyway is still
+check is written to be wrong in the safe direction - it says nothing
+unless the forms are there - and a walk that gets past it anyway is still
 caught by §6.5.
 
 Taking one page answers in the same shape a walk answers in, so everything
-downstream of it — the pricing, the counting, the CSV, the handoff — is the
+downstream of it - the pricing, the counting, the CSV, the handoff - is the
 same code either way.
 
 ### 6.5 What a partial walk does
@@ -715,8 +715,8 @@ the end. What comes out is page one wearing the shape of an inventory, and
 before this it was written to a file without comment.
 
 The difference is measured in **pages, not rows**, which is why the walk
-reports the size of the first page it read. A row missing is §6.6 — an
-offer sold between two fetches — and is a footnote. A whole page missing
+reports the size of the first page it read. A row missing is §6.6 - an
+offer sold between two fetches - and is a footnote. A whole page missing
 is not a sale. When one is, no file is written and nothing is armed: the
 panel shows a red **✗** beside the scope and says `Only 14 of 1093 offers
 came back, so nothing was saved`.
@@ -728,7 +728,7 @@ tell that the list is short, and neither could anyone reading it there.
 ### 6.6 The walk is not atomic
 
 Thirteen pages take some seconds, and the seller's stock moves underneath
-it — the same seller was measured at 262 offers over 14 pages one
+it - the same seller was measured at 262 offers over 14 pages one
 afternoon and 251 over 13 that evening.
 
 A sale between two fetches shifts every later offer up a place. That can
@@ -740,7 +740,7 @@ be seen to have lost it.
 ### 6.7 The panel does not move while it reads
 
 It is anchored to the bottom right corner of somebody else's page with the
-cursor on it, and it grows upwards and leftwards — so every pixel it gains
+cursor on it, and it grows upwards and leftwards - so every pixel it gains
 in either direction drags a button out from under that cursor, during the
 one stretch when nobody is watching it.
 
@@ -754,7 +754,7 @@ That takes three things, and each is a way the panel used to change size:
   scope word: `CM BANNER - 140 / 251` while reading, and `CM BANNER - 251
   rows` once read. The heading is a line the panel already has, and the
   scope word is the one thing not worth reading from the moment a read
-  starts until the rows have gone. The alternative — a line of its own — means
+  starts until the rows have gone. The alternative - a line of its own - means
   keeping that line empty the rest of the time, which is the same problem
   paid for in advance;
 - a **spinner that fits inside that line**, inline and sized inside its
@@ -762,7 +762,7 @@ That takes three things, and each is a way the panel used to change size:
   the moment a read starts.
 
 The heading also carries the BAN stroopwafel at 14px, which the line has
-room for: of the 240px available, the widest heading measured 183px —
+room for: of the 240px available, the widest heading measured 183px -
 `CM BANner - 2000 / 2000` with the tick beside it, which is the two
 longest states put together and wider than either alone (reading a capped
 seller is 181px, and the same count with a tick is 160px). Re-measured in
@@ -770,15 +770,15 @@ a browser after the wordmark went lowercase and the tick was added; the
 old figure was 186px. It is base64 in the
 stylesheet rather than a relative `url()`, because that url resolves to
 the extension's own origin and serving it to somebody else's page wants a
-`web_accessible_resources` entry — which is a file exposed to every page
+`web_accessible_resources` entry - which is a file exposed to every page
 this runs on, for the sake of three kilobytes.
 
 The line under the buttons is therefore only ever for **what asks for
 something**, and it is not there when there is nothing: a read Cloudflare
 refused, a pop-up the browser blocked, a list handed over that was short
-of what the seller advertised. What a finished read merely has to report
-— what was skipped, what will be valued as something it is not, what is
-missing from the list — is on the hover over the count, where it costs no
+of what the seller advertised. What a finished read merely has to report -
+what was skipped, what will be valued as something it is not, what is
+missing from the list - is on the hover over the count, where it costs no
 room at all.
 
 What follows from the fixed width is that the output has to be short, and
@@ -792,7 +792,7 @@ off, buttons back, line and tick cleared, rows dropped. The scope stays where it
 was set, since that was chosen rather than produced.
 
 The rows are dropped rather than offered. A read stopped part way is not
-a shorter export — keeping it would be offering a fraction of a
+a shorter export - keeping it would be offering a fraction of a
 collection as though it were the collection.
 
 A fetch already in flight cannot be recalled, so a read is not so much
@@ -801,7 +801,7 @@ walk asks between pages whether anyone still wants it, and everything
 that comes back late finds it is no longer the current read and says
 nothing. Two things follow:
 
-- **No page is asked for once nobody is waiting for it** — the check is
+- **No page is asked for once nobody is waiting for it** - the check is
   on the far side of `PACE`'s wait as well as before it, because a second
   is a long time to hold somebody who has said stop, and because it is a
   request to Cardmarket nobody wants the answer to (§6.3).
@@ -811,7 +811,7 @@ nothing. Two things follow:
   stranding the second read with no spinner.
 
 The key is taken on the document, because the panel holds no focus worth
-speaking of — it is a box in the corner of somebody else's page. It does
+speaking of - it is a box in the corner of somebody else's page. It does
 nothing unless there is something of ours to stop, and it does not
 `preventDefault` even then: closing a dialog of Cardmarket's and stopping
 a read of ours are not in conflict.
@@ -820,7 +820,7 @@ a read of ours are not in conflict.
 
 The read lives in this page. Following a link, pressing back or forward,
 or reloading takes the content script with it, and a hundred pages of
-reading goes too — silently, because by then there is nothing left on
+reading goes too - silently, because by then there is nothing left on
 screen to say anything.
 
 So while a read is running the page is held with a `beforeunload`
@@ -830,7 +830,7 @@ anything.
 
 **The wording is the browser's own.** Chrome, Firefox and Safari all
 stopped showing a page's own message years ago, so the prompt reads
-whatever that browser says — "Leave site?", or similar. Cancelling the
+whatever that browser says - "Leave site?", or similar. Cancelling the
 event is what asks for the prompt at all.
 
 It is attached in `busy()` and taken off there, because "a read is
@@ -863,10 +863,10 @@ Stated plainly so nobody takes them as tested:
   out, and answering it is the visitor's to do.
 - **A walk of any real length.** 100 pages at `PACE` is around two
   minutes, and that has not been sat through. The ceiling's *shape* is
-  verified — from a saved page 100, which is where the `2000+` and the
-  disabled terminator above were read — but no capped seller has been
+  verified - from a saved page 100, which is where the `2000+` and the
+  disabled terminator above were read - but no capped seller has been
   walked end to end.
 - **A complete walk.** The longest live run reached two pages and 40
   offers, all 40 with distinct article ids, 39 of 40 with a product id,
-  every one priced and graded — and it started from page five and
+  every one priced and graded - and it started from page five and
   correctly went back to page one first.

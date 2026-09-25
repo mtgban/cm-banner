@@ -10,15 +10,15 @@ you decide whether to submit it.
 
 ## What it does
 
-On a seller's offers page — `cardmarket.com/<lang>/<Game>/Users/<seller>/Offers/…`
-— a panel appears in the bottom right. It appears only for a game BAN prices; on any other there is nowhere to send the
+On a seller's offers page - `cardmarket.com/<lang>/<Game>/Users/<seller>/Offers/…` -
+a panel appears in the bottom right. It appears only for a game BAN prices; on any other there is nowhere to send the
 rows, so there is no panel either.
 
-**Escape** stops a read and puts the panel back — spinner off, buttons back,
+**Escape** stops a read and puts the panel back - spinner off, buttons back,
 nothing kept. A read that was stopped half way is not a shorter export, so its
 rows go with it. The key does nothing when there is nothing of ours running.
 
-While it is reading, the page asks before it goes anywhere — a link, the back
+While it is reading, the page asks before it goes anywhere - a link, the back
 button, a reload. The read lives in the page, so leaving throws it away, and
 after a minute of waiting that is worth a confirmation. The wording is your
 browser's own; pages have not been able to choose it for years.
@@ -26,7 +26,7 @@ browser's own; pages have not been able to choose it for years.
 It sees the seller's **whole list**, not the twenty rows on screen. Cardmarket
 paginates at twenty, and the export follows the pager from the first page to
 the last, whichever page you happened to be looking at. That is one request per
-page and deliberately unhurried, so the heading counts up while it works — a
+page and deliberately unhurried, so the heading counts up while it works - a
 spinner takes the place of the scope word and the line reads `CM BANNER -
 140 / 251`.
 
@@ -44,7 +44,7 @@ It offers two things:
 
 Both take whatever the panel's heading says. It reads **CM BANNER - *all offers***; click
 it and it reads **CM BANNER - *this page only***, which restricts both buttons to the twenty
-rows in front of you — instant, and what you want when the page in front of you
+rows in front of you - instant, and what you want when the page in front of you
 is what you meant. Hovering it says how many offers are listed.
 
 The button carries the count once the rows are read, so a line appears under it
@@ -70,28 +70,28 @@ mcm_id,card_name,edition,condition,foil,quantity,price_usd,mkm_language,article_
 
 `mcm_id` is the Cardmarket product id, taken from the product image's own file
 name, which the site resolves straight to a card. A row whose thumbnail has not
-loaded carries none — it happens — and the upload falls back to matching on
+loaded carries none - it happens - and the upload falls back to matching on
 `card_name` and `edition`, so the row still lands.
 
 `card_name` is the name the listing's own link displays, not the slug it points
 at. A slug is what survived being made URL-safe: Cardmarket writes
 `Adéwalé, Breaker of Chains` as `Adewale-Breaker-of-Chains`, and drops the
-ligature from `Æther Tide` outright, leaving `-ther-Tide` — a name that begins
+ligature from `Æther Tide` outright, leaving `-ther-Tide` - a name that begins
 with the space that dash becomes. The link's text keeps the accents, the
 commas and the colons.
 
 `edition` still comes from the slug, which loses punctuation the same way
 (`Urzas Legacy`); that one is harmless, because the matcher normalizes it.
 
-`mkm_language` is the listing's language by name — `English`, `Japanese`,
-`Simplified Chinese` — in English whatever locale the page is in, and empty
+`mkm_language` is the listing's language by name - `English`, `Japanese`,
+`Simplified Chinese` - in English whatever locale the page is in, and empty
 where the listing names none. The site does not read it yet; see Language.
 
 `article_id` is the offer's own id on Cardmarket. The site ignores it; it is
 carried so a row can be traced back to the listing it came from.
 
 `mkm_notes` is the way back to it: the seller's own list, narrowed by the offers
-page's own filters to that one card — by name, by expansion, by foil. The
+page's own filters to that one card - by name, by expansion, by foil. The
 expansion id is read off the filter beside the table, since the row
 itself only names the set in words. Each filter is added only when it is known,
 because one left off widens the list by a step while one guessed at hides the
@@ -99,12 +99,12 @@ offer the link exists to reach.
 
 `price_usd` is the seller's asking price, converted. The upload holds a price
 it is given against mtgban's own, and those are dollars, while Cardmarket
-quotes euros or pounds — so the column has to be in the currency it will be
+quotes euros or pounds - so the column has to be in the currency it will be
 read as. The rate comes from the same feed go-mtgban reads
 (`mtgban/utils.go`), fetched once per export.
 
-A row whose price could not be converted honestly — no rate, an unfamiliar
-currency, an unreadable number — carries an **empty** price rather than a
+A row whose price could not be converted honestly - no rate, an unfamiliar
+currency, an unreadable number - carries an **empty** price rather than a
 guess, and the panel says how many. The rest of the row still uploads.
 
 ### Conditions
@@ -130,7 +130,7 @@ printing the catalog knows, and no id names them.
 ### Language
 
 Every listing on the page is exported, whatever language it is in, and the
-panel says how many are not English — `20 rows, 3 non-English`.
+panel says how many are not English - `20 rows, 3 non-English`.
 
 It is reported rather than filtered on because neither answer is good. The CSV
 names it in `mkm_language`, but the upload reads nothing from that yet, so a
@@ -151,14 +151,14 @@ these names.
 
 The same unpacked folder works in all three browsers.
 
-**Chrome** — `chrome://extensions`, turn on Developer mode, *Load unpacked*,
+**Chrome** - `chrome://extensions`, turn on Developer mode, *Load unpacked*,
 pick this folder.
 
-**Firefox** — `about:debugging#/runtime/this-firefox`, *Load Temporary Add-on*,
+**Firefox** - `about:debugging#/runtime/this-firefox`, *Load Temporary Add-on*,
 pick `manifest.json`. Firefox drops a temporary add-on when it restarts, so
 this needs redoing each session.
 
-**Safari** — Safari runs the same extension but wants an app around it, which
+**Safari** - Safari runs the same extension but wants an app around it, which
 needs Xcode:
 
 ```
@@ -173,7 +173,7 @@ Extensions* turned on, which Safari resets when it quits.
 
 Each game is served by its own deployment, so the rows go to the upload that
 knows the cards: a Lorcana offers page opens `lorcana.mtgban.com`, a Pokemon
-one `pokemon.mtgban.com`, and so on. Magic is the exception — it is the default
+one `pokemon.mtgban.com`, and so on. Magic is the exception - it is the default
 deployment and answers at `mtgban.com`, with `magic.mtgban.com` redirecting
 there.
 
@@ -183,7 +183,7 @@ it and be refused.
 
 Instead the site has a page for being handed a list: `/upload/handoff`. Opening
 it is an ordinary navigation, so it carries your session, and it does its own
-uploading. This extension opens that page and passes it the rows — it reaches
+uploading. This extension opens that page and passes it the rows - it reaches
 into no form of the site's own, so a redesign there is not a break here.
 
 **CM BANNER - this page only** sends in one click. **CM BANNER - all offers**
@@ -193,8 +193,8 @@ heading, and leaves the heading reading *CM BANNER - 251 rows* and the button
 
 That is not ceremony. A browser only lets a click open a window for a few
 seconds afterwards, and reading a hundred pages takes minutes, so the tab has
-to be opened by a click that is still warm. Doing it the other way round — tab
-first, read after — means watching an empty page while the work happens in the
+to be opened by a click that is still warm. Doing it the other way round - tab
+first, read after - means watching an empty page while the work happens in the
 tab behind it.
 
 Rows already read are kept, so pressing **CSV** afterwards writes them out
@@ -208,7 +208,7 @@ from the window that opened it.
 ## Permissions
 
 None, and only one host. There is no background script, no storage, and no
-`tabs` permission — the handoff page is opened by your own click, and the rows
+`tabs` permission - the handoff page is opened by your own click, and the rows
 travel between the two windows directly.
 
 The extension runs on Cardmarket sellers' offers pages and nowhere else. It
@@ -221,7 +221,7 @@ and sends nothing with that request.
 55 pages, and the walk waits about a second between them on purpose: Cardmarket
 sits behind Cloudflare, and three requests inside a second are answered with a
 bot challenge instead of a page. If that happens anyway the export stops, keeps
-whatever it had read, and says so — reload the page, clear the check the way you
+whatever it had read, and says so - reload the page, clear the check the way you
 would any other, and run it again. Nothing here tries to answer that check for
 you.
 
@@ -229,8 +229,8 @@ you.
 seller's listing will page, however much they have; the site says so by writing
 `2000+ Hits` and `Page 100 of 100+`, and page 100 then ends exactly like a real
 last page. The panel passes that on rather than reporting 2000 as if it were
-the lot. To get at the rest, filter the seller's page — by set, by language, by
-whatever — and export each slice; the walk follows whatever filter is in force.
+the lot. To get at the rest, filter the seller's page - by set, by language, by
+whatever - and export each slice; the walk follows whatever filter is in force.
 A full hundred pages is also about two minutes of waiting.
 
 Because the walk takes seconds, it is **not a snapshot**. If something sells
@@ -238,7 +238,7 @@ while it is running, every later offer shifts up a place: a row can be listed
 twice, which is deduplicated, or missed, which cannot be. The count it reports
 is what it actually read, against what the first page said to expect.
 
-Whatever **filter** the seller's page is showing is what gets exported —
+Whatever **filter** the seller's page is showing is what gets exported -
 Cardmarket carries the query into its own next-page links, so a list filtered to
 English exports as the filtered list.
 
@@ -252,9 +252,9 @@ those means the markup moved.
 The panel wears a small one too, before its name, inlined into the stylesheet
 as base64. A relative `url()` in an injected stylesheet resolves against the
 extension's own origin, and handing that file to somebody else's page needs a
-manifest declaration — three kilobytes of base64 is the cheaper of the two.
+manifest declaration - three kilobytes of base64 is the cheaper of the two.
 
-`icons/` is the BAN logo from the website — `img/logo/ban-stroop.png`, the one
+`icons/` is the BAN logo from the website - `img/logo/ban-stroop.png`, the one
 the site's own home page shows. It is 128px square, which is the largest size
 the browsers ask for, so `icon-128.png` is that file unchanged and the smaller
 three are made from it:
@@ -277,5 +277,5 @@ the id falling back to empty, the currency conversion, and the CSV's own
 quoting. It runs in CI on every push and pull request.
 
 The fixture carries the shapes that have actually broken this parser, not just
-the happy ones — a quantity written immediately before a price, which flattening
+the happy ones - a quantity written immediately before a price, which flattening
 the row reads as part of the number.
