@@ -221,13 +221,48 @@ describe("clicking send", () => {
 
   test("a CSV read leaves the button ready, but quiet", async () => {
     // The file was what was asked for. The rows can still be sent without
-    // reading the pages again, so the button says READY and turns green,
-    // and pulses only when the cursor is on it.
+    // reading the pages again, so the button says READY and turns green.
     const it = mount();
     it.save().click();
     await it.settle();
     expect(it.send().textContent).toBe("READY");
     expect(it.armed()).toBe(true);
+    expect(it.calling()).toBe(false);
+  });
+
+  test("and the cursor starts its pulse, which only the page losing focus stops", async () => {
+    const it = mount();
+    it.save().click();
+    await it.settle();
+
+    it.hoverSend();
+    expect(it.calling()).toBe(true);
+    it.leaveSend();
+    expect(it.calling()).toBe(true);
+    it.blur();
+    expect(it.calling()).toBe(false);
+
+    it.hoverSend();
+    expect(it.calling()).toBe(true);
+    it.hide();
+    expect(it.calling()).toBe(false);
+  });
+
+  test("while a Send read's pulse outlasts the page losing focus", async () => {
+    // It was asked for, and the read it waits on can take minutes that the
+    // reader spends in another tab.
+    const it = mount();
+    it.send().click();
+    await it.settle();
+    expect(it.calling()).toBe(true);
+    it.blur();
+    it.hide();
+    expect(it.calling()).toBe(true);
+  });
+
+  test("and a hover does nothing to a button with nothing to send", () => {
+    const it = mount();
+    it.hoverSend();
     expect(it.calling()).toBe(false);
   });
 

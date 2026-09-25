@@ -702,6 +702,16 @@
   // walking a hundred pages twice because the file was wanted as well.
   var armed = null;
 
+  // Who started the pulse: "send" when a Send read armed the button, which
+  // keeps it going until the rows are spent, or "hover" when the cursor did,
+  // which a page losing focus stops. "" while the button is still.
+  var calledBy = "";
+
+  function call(panel, by) {
+    calledBy = by;
+    panel.classList.toggle("cm-banner-calling", by !== "");
+  }
+
   function arm(panel, done, calling) {
     armed = done;
     var send = panel.querySelector(".cm-banner-send");
@@ -714,9 +724,10 @@
       // them are the offer, and there is no offer where nothing can take
       // the rows.
       panel.classList.add("cm-banner-armed");
-      // Looping only when Send started the read. Rows a CSV read left in
-      // hand pulse under the cursor alone: the file was what was asked for.
-      panel.classList.toggle("cm-banner-calling", calling);
+      // Looping from the start only when Send started the read. Rows a CSV
+      // read left in hand wait for the cursor: the file was what was asked
+      // for.
+      call(panel, calling ? "send" : "");
     }
     counting(panel, done.count + (done.count === 1 ? " row" : " rows"));
     recap(panel, done.note);
@@ -728,7 +739,8 @@
   function disarm(panel) {
     armed = null;
     mark(panel, "");
-    panel.classList.remove("cm-banner-armed", "cm-banner-calling");
+    panel.classList.remove("cm-banner-armed");
+    call(panel, "");
     var send = panel.querySelector(".cm-banner-send");
     if (send) {
       send.textContent = SEND;
@@ -836,6 +848,13 @@
     panel.querySelector(".cm-banner-send").addEventListener("click", function () {
       sendToBan(panel);
     });
+    // Rows a CSV read left in hand start pulsing when the cursor reaches the
+    // button, and keep going after it leaves.
+    panel.querySelector(".cm-banner-send").addEventListener("mouseenter", function () {
+      if (panel.classList.contains("cm-banner-armed") && !calledBy) {
+        call(panel, "hover");
+      }
+    });
     panel.querySelector(".cm-banner-save").addEventListener("click", function () {
       exportOffers(panel);
     });
@@ -888,6 +907,20 @@
         return;
       }
       stopReading(panel);
+    });
+
+    // A pulse the cursor started stops when the page loses the reader's
+    // attention: another tab, another window.
+    function unfocused() {
+      if (calledBy === "hover") {
+        call(panel, "");
+      }
+    }
+    window.addEventListener("blur", unfocused);
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) {
+        unfocused();
+      }
     });
 
     // The page fills its table after load and refills it on every filter, so

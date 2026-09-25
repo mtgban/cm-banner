@@ -216,15 +216,15 @@
    as a heartbeat, which is the thing that can be left running until the
    rows are spent.
 
-   It loops only when Send started the read; rows a CSV read left in hand
-   pulse only under the cursor.
+   It loops from the start when Send started the read. After a CSV read it
+   starts when the cursor reaches the button, and stops when the page loses
+   focus.
 
    Unlike the spinner below, this one simply stops when less motion is
    asked for: the green underneath says the same thing standing still,
    and an animation with no end is the kind that request is about. */
 @media (prefers-reduced-motion: no-preference) {
-  #cm-banner.cm-banner-calling .cm-banner-send::before,
-  #cm-banner.cm-banner-armed .cm-banner-send:hover::before {
+  #cm-banner.cm-banner-calling .cm-banner-send::before {
     animation: cm-banner-pulse 2.4s ease-out infinite;
   }
 }

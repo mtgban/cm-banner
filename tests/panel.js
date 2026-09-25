@@ -98,6 +98,14 @@ export function mount({
     busy: () => panel.classList.contains("cm-banner-busy"),
     armed: () => panel.classList.contains("cm-banner-armed"),
     calling: () => panel.classList.contains("cm-banner-calling"),
+    hoverSend: () => at(".cm-banner-send").dispatchEvent(new window.Event("mouseenter")),
+    leaveSend: () => at(".cm-banner-send").dispatchEvent(new window.Event("mouseleave")),
+    blur: () => window.dispatchEvent(new window.Event("blur")),
+    // The tab going to the background, the way the browser says it.
+    hide: () => {
+      Object.defineProperty(window.document, "hidden", { value: true, configurable: true });
+      window.document.dispatchEvent(new window.Event("visibilitychange"));
+    },
     locked: () => panel.classList.contains("cm-banner-locked"),
     toggleScope: () => at(".cm-banner-label").click(),
     escape: () =>

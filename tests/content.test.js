@@ -229,17 +229,15 @@ describe("the armed pulse", () => {
     expect(css.slice(at, css.indexOf("}", at))).toContain("position: relative");
   });
 
-  test("it loops only for Send, and otherwise only under the cursor", () => {
+  test("it runs only while the panel is calling", () => {
     const rule = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].find((r) =>
       r[2].includes("animation: cm-banner-pulse")
     );
     expect(rule).toBeDefined();
     const selectors = rule[1].split(",").map((s) => s.trim());
-    for (const selector of selectors) {
-      expect(selector.includes("cm-banner-calling") || selector.includes(":hover")).toBe(true);
-    }
-    expect(selectors.some((s) => s.includes("cm-banner-calling"))).toBe(true);
-    expect(selectors.some((s) => s.includes(".cm-banner-send:hover"))).toBe(true);
+    // Not :hover. A hover starts it from the script and it keeps going
+    // after the cursor leaves, which CSS alone cannot do.
+    expect(selectors).toEqual(["#cm-banner.cm-banner-calling .cm-banner-send::before"]);
   });
 
   test("it stops where less motion is asked for", () => {
