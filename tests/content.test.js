@@ -229,6 +229,19 @@ describe("the armed pulse", () => {
     expect(css.slice(at, css.indexOf("}", at))).toContain("position: relative");
   });
 
+  test("it loops only for Send, and otherwise only under the cursor", () => {
+    const rule = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].find((r) =>
+      r[2].includes("animation: cm-banner-pulse")
+    );
+    expect(rule).toBeDefined();
+    const selectors = rule[1].split(",").map((s) => s.trim());
+    for (const selector of selectors) {
+      expect(selector.includes("cm-banner-calling") || selector.includes(":hover")).toBe(true);
+    }
+    expect(selectors.some((s) => s.includes("cm-banner-calling"))).toBe(true);
+    expect(selectors.some((s) => s.includes(".cm-banner-send:hover"))).toBe(true);
+  });
+
   test("it stops where less motion is asked for", () => {
     // The spinner keeps turning under that request, because a still
     // spinner says the opposite of what it is there to say. This one has

@@ -97,6 +97,7 @@ export function mount({
     noteShown: () => !at(".cm-banner-note").hidden,
     busy: () => panel.classList.contains("cm-banner-busy"),
     armed: () => panel.classList.contains("cm-banner-armed"),
+    calling: () => panel.classList.contains("cm-banner-calling"),
     locked: () => panel.classList.contains("cm-banner-locked"),
     toggleScope: () => at(".cm-banner-label").click(),
     escape: () =>

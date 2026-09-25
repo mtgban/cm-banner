@@ -543,7 +543,7 @@
       if (!done) {
         return;
       }
-      arm(panel, done);
+      arm(panel, done, false);
       write(done);
     });
   }
@@ -682,7 +682,8 @@
       if (!done) {
         return;
       }
-      arm(panel, done);
+      // Send asked, so the button keeps asking for its second click.
+      arm(panel, done, true);
     });
   }
 
@@ -701,7 +702,7 @@
   // walking a hundred pages twice because the file was wanted as well.
   var armed = null;
 
-  function arm(panel, done) {
+  function arm(panel, done, calling) {
     armed = done;
     var send = panel.querySelector(".cm-banner-send");
     // Not where there is nothing to send to. The rows are real and the
@@ -713,6 +714,9 @@
       // them are the offer, and there is no offer where nothing can take
       // the rows.
       panel.classList.add("cm-banner-armed");
+      // Looping only when Send started the read. Rows a CSV read left in
+      // hand pulse under the cursor alone: the file was what was asked for.
+      panel.classList.toggle("cm-banner-calling", calling);
     }
     counting(panel, done.count + (done.count === 1 ? " row" : " rows"));
     recap(panel, done.note);
@@ -724,7 +728,7 @@
   function disarm(panel) {
     armed = null;
     mark(panel, "");
-    panel.classList.remove("cm-banner-armed");
+    panel.classList.remove("cm-banner-armed", "cm-banner-calling");
     var send = panel.querySelector(".cm-banner-send");
     if (send) {
       send.textContent = SEND;

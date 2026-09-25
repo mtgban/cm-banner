@@ -97,6 +97,7 @@ describe("clicking send", () => {
     // And it says so in the one way a panel in the corner of a page can
     // say anything without being read: it pulses.
     expect(it.armed()).toBe(true);
+    expect(it.calling()).toBe(true);
     expect(it.scope()).toBe("11 rows");
     expect(it.busy()).toBe(false);
     expect(it.send().disabled).toBe(false);
@@ -218,6 +219,18 @@ describe("clicking send", () => {
     expect(it.tip()).not.toContain("saved");
   });
 
+  test("a CSV read leaves the button ready, but quiet", async () => {
+    // The file was what was asked for. The rows can still be sent without
+    // reading the pages again, so the button says READY and turns green,
+    // and pulses only when the cursor is on it.
+    const it = mount();
+    it.save().click();
+    await it.settle();
+    expect(it.send().textContent).toBe("READY");
+    expect(it.armed()).toBe(true);
+    expect(it.calling()).toBe(false);
+  });
+
   test("and the second click hands them over", async () => {
     const it = mount();
     it.send().click();
@@ -267,6 +280,7 @@ describe("clicking send", () => {
     it.toggleScope();
     expect(it.send().textContent).toBe("Send to BAN");
     expect(it.armed()).toBe(false);
+    expect(it.calling()).toBe(false);
     // And the heading stops claiming rows nobody is asking for now.
     expect(it.scope()).toBe("this page only");
   });
