@@ -208,24 +208,25 @@ price comes first in DOM order.
 
 Every listing is exported whatever its language, and the panel reports how
 many are not English. It is **reported rather than filtered on** because
-neither answer is good: the CSV has no language column and the upload has
-nothing to read one into, so a German printing is valued as the English one
-at a price asked for a different card — but dropping those quietly hides
+neither answer is good: the CSV names the language in `mkm_language`, but
+the upload reads nothing from it yet, so a German printing is valued as the
+English one at a price asked for a different card — but dropping those quietly hides
 cards the person owns from their own valuation.
 
 A listing whose link names no language is not counted; nothing says it is
 not English.
 
-Making this properly right means a language column on the upload side,
-mapping Cardmarket's ids onto `mtgmatcher.InputCard.Language`.
+Making this properly right means the upload reading `mkm_language` into
+`mtgmatcher.InputCard.Language`. The names are go-cardmarket's, so its
+`LanguageFromName` reads them back to Cardmarket's ids.
 
 ## 4. The CSV
 
 ```
-mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id,mkm_notes
-10601,Thornwind Faeries,Urzas Legacy,MP,,1,0.06,2058737078,https://www.cardmarket.com/...
-565902,Adventures in the Forgotten Realms Set Booster,,,,8,11.48,2036785656,https://www.cardmarket.com/...
-,Mirri's Guile,Zendikar,PO,,1,,2057222480,https://www.cardmarket.com/...
+mcm_id,card_name,edition,condition,foil,quantity,price_usd,mkm_language,article_id,mkm_notes
+10601,Thornwind Faeries,Urzas Legacy,MP,,1,0.06,English,2058737078,https://www.cardmarket.com/...
+565902,Adventures in the Forgotten Realms Set Booster,,,,8,11.48,English,2036785656,https://www.cardmarket.com/...
+,Mirri's Guile,Zendikar,PO,,1,,,2057222480,https://www.cardmarket.com/...
 ```
 
 Every column name is chosen for how mtgban's `docparse.ParseHeader` reads
@@ -233,13 +234,14 @@ it:
 
 | column | reaches | note |
 | --- | --- | --- |
-| `mcm_id` | `mkmID` | matched on `(mcm\|mkm\|cardmarket)` **and** `id` |
+| `mcm_id` | `mkmID` | matched by its whole name, separators aside |
 | `card_name` | `cardName` | contains "name", not edition/set/expansion |
 | `edition` | `edition` | |
 | `condition` | `conditions` | |
 | `foil` | `printing` | `"foil"` or empty |
 | `quantity` | `quantity` | |
 | `price_usd` | `price` | contains "price" |
+| `mkm_language` | *nothing* | falls through every case; for the reader |
 | `article_id` | *nothing* | falls through every case, deliberately |
 
 `article_id` is safe to carry precisely because nothing reads it. `id`
@@ -341,7 +343,6 @@ many.
 
 ### 4.4 What the CSV deliberately does not carry
 
-- **No language column.** The upload has nothing to read one into. See 3.7.
 - **No uuid.** Resolving an id to a card is the site's job and needs its
   datastore.
 

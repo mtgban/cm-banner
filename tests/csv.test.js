@@ -7,10 +7,11 @@ describe("the columns", () => {
   // way it should: card_name reaches the name rather than the edition, foil
   // reaches the printing column, mcm_id reaches the Cardmarket id, and
   // mkm_notes reaches the notes field the results render the loaded price's
-  // link from. article_id reaches nothing, which is why it is safe to carry.
+  // link from. article_id and mkm_language reach nothing, which is why they
+  // are safe to carry.
   test("the header is the contract", () => {
     expect(MKM.csvColumns().join(",")).toBe(
-      "mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id,mkm_notes"
+      "mcm_id,card_name,edition,condition,foil,quantity,price_usd,mkm_language,article_id,mkm_notes"
     );
   });
 
@@ -36,12 +37,13 @@ describe("the writing", () => {
         foil: "",
         quantity: "2",
         priceUSD: "1.50",
+        languageName: "German",
         articleID: "9",
         url: "https://www.cardmarket.com/en/Magic/Users/S/Offers/Singles?name=Bob",
       },
     ]);
     expect(csv.split("\r\n")[1]).toBe(
-      '1,"Bob, the ""Builder""","Set\nTwo",NM,,2,1.50,9,' +
+      '1,"Bob, the ""Builder""","Set\nTwo",NM,,2,1.50,German,9,' +
         "https://www.cardmarket.com/en/Magic/Users/S/Offers/Singles?name=Bob"
     );
   });
@@ -50,7 +52,7 @@ describe("the writing", () => {
     const csv = MKM.toCSV([
       { mcmID: "1", cardName: "X", quantity: "1", articleID: "9" },
     ]);
-    expect(csv.split("\r\n")[1]).toBe("1,X,,,,1,,9,");
+    expect(csv.split("\r\n")[1]).toBe("1,X,,,,1,,,9,");
   });
 
   test("the last row ends like every other one", () => {
@@ -72,8 +74,16 @@ describe("end to end", () => {
     // No base was given to offerURL here, so the way back is empty - the
     // same shape a row takes when the page cannot be named.
     expect(lines[1]).toBe(
-      "10601,Thornwind Faeries,Urzas Legacy,NM,,3,,2058737078,"
+      "10601,Thornwind Faeries,Urzas Legacy,NM,,3,,English,2058737078,"
     );
+  });
+
+  test("a listing's language is written by name", () => {
+    const offers = parse(load("offers.html"));
+    const lines = MKM.toCSV(offers).trimEnd().split("\r\n");
+    const column = MKM.csvColumns().indexOf("mkm_language");
+    const japanese = lines.find((line) => line.includes(",2058744495,"));
+    expect(japanese.split(",")[column]).toBe("Japanese");
   });
 });
 

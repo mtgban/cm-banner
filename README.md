@@ -62,10 +62,10 @@ One Piece, Flesh and Blood and Riftbound.
 ## The CSV
 
 ```
-mcm_id,card_name,edition,condition,foil,quantity,price_usd,article_id,mkm_notes
-10601,Thornwind Faeries,Urzas Legacy,MP,,1,0.06,2058737078,https://...
-765432,Bloomburrow Play Booster Box,Bloomburrow,,,1,263.87,2060000001,https://...
-,Mirri's Guile,Zendikar,PO,,1,,2057222480,https://...
+mcm_id,card_name,edition,condition,foil,quantity,price_usd,mkm_language,article_id,mkm_notes
+10601,Thornwind Faeries,Urzas Legacy,MP,,1,0.06,English,2058737078,https://...
+765432,Bloomburrow Play Booster Box,Bloomburrow,,,1,263.87,English,2060000001,https://...
+,Mirri's Guile,Zendikar,PO,,1,,,2057222480,https://...
 ```
 
 `mcm_id` is the Cardmarket product id, taken from the product image's own file
@@ -82,6 +82,10 @@ commas and the colons.
 
 `edition` still comes from the slug, which loses punctuation the same way
 (`Urzas Legacy`); that one is harmless, because the matcher normalizes it.
+
+`mkm_language` is the listing's language by name — `English`, `Japanese`,
+`Simplified Chinese` — in English whatever locale the page is in, and empty
+where the listing names none. The site does not read it yet; see Language.
 
 `article_id` is the offer's own id on Cardmarket. The site ignores it; it is
 carried so a row can be traced back to the listing it came from.
@@ -129,8 +133,9 @@ Every listing on the page is exported, whatever language it is in, and the
 panel says how many are not English — `20 rows, 3 non-English`.
 
 It is reported rather than filtered on because neither answer is good. The CSV
-has no language column and the upload has nothing to read one into, so a German
-printing is valued as the English one, at a price asked for a different card.
+names it in `mkm_language`, but the upload reads nothing from that yet, so a
+German printing is valued as the English one, at a price asked for a different
+card.
 Dropping those quietly would hide cards you own from your own valuation, so
 they are exported and counted instead, and what to do about them is yours to
 decide.
@@ -138,8 +143,9 @@ decide.
 A listing whose link names no language is not counted: there is nothing saying
 it is not English.
 
-Making this properly correct means a language column on the upload side,
-mapping Cardmarket's language ids onto the matcher's own `Language` field.
+Making this properly correct means the upload reading `mkm_language` into the
+matcher's own `Language` field; go-cardmarket's `LanguageFromName` already reads
+these names.
 
 ## Installing it
 

@@ -434,9 +434,9 @@
     }
     var foreign = MKM.foreignCount(offers);
     if (foreign > 0) {
-      // Worth saying: the CSV has no language column and the upload has
-      // nothing to read one into, so these are valued as the English
-      // printing, at a price asked for a different card.
+      // Worth saying: the upload reads nothing from the language column
+      // yet, so these are valued as the English printing, at a price asked
+      // for a different card.
       said.push(foreign + " non-English");
     }
     if (unpriced > 0) {

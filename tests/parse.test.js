@@ -108,16 +108,24 @@ describe("the condition fold", () => {
 
 describe("the language a listing is in", () => {
   test("it is reported, not filtered on", () => {
-    // The CSV has no language column and the upload has nothing to read one
-    // into, so a foreign printing is valued as the English one. Dropping
-    // those quietly would hide cards the person owns; the count is said
-    // instead, and the row is theirs to keep or discard.
+    // The upload reads nothing from the language column yet, so a foreign
+    // printing is valued as the English one. Dropping those quietly would
+    // hide cards the person owns; the count is said instead, and the row is
+    // theirs to keep or discard.
     expect(byArticle["2058744495"].language).toBe("7");
     expect(byArticle["2058737078"].language).toBe("1");
+    expect(byArticle["2058744495"].languageName).toBe("Japanese");
+    expect(byArticle["2058737078"].languageName).toBe("English");
   });
 
   test("a listing naming no language reports none", () => {
     expect(byArticle["2057222480"].language).toBe("");
+    expect(byArticle["2057222480"].languageName).toBe("");
+  });
+
+  test("an id the table has not met takes the page's own word for it", () => {
+    expect(MKM.languageName("12", { English: "1", Polish: "12" })).toBe("Polish");
+    expect(MKM.languageName("12", { English: "1" })).toBe("");
   });
 
   test("foreignCount counts what the upload would misread", () => {
@@ -283,6 +291,7 @@ describe("the language a listing is in", () => {
 
     const [offer] = MKM.parseOffers(doc, MKM.languageIDs(doc));
     expect(offer.language).toBe("5");
+    expect(offer.languageName).toBe("Italian");
     expect(MKM.foreignCount([offer])).toBe(1);
   });
 

@@ -5,7 +5,8 @@
 // cardName rather than edition, "foil" reaches the printing column, and
 // "mcm_id" reaches the Cardmarket id, and "article_id" reaches nothing and is
 // meant to - it is carried so a row can be traced back to the offer it came
-// from.
+// from. "mkm_language" reaches nothing either, and is there for whoever reads
+// the file.
 //
 // "mkm_notes" is the way back to that offer, and is named for where it has to
 // land rather than for what it holds: the upload's matcher reads a column
@@ -34,6 +35,7 @@ globalThis.MKM = globalThis.MKM || {};
     ["foil", "foil"],
     ["quantity", "quantity"],
     ["price_usd", "priceUSD"],
+    ["mkm_language", "languageName"],
     ["article_id", "articleID"],
     ["mkm_notes", "url"],
   ];

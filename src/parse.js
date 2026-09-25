@@ -42,6 +42,21 @@ globalThis.MKM = globalThis.MKM || {};
   // a fixed number of segments being demanded of every category.
   var PRODUCT_RE = /\/Products\/([^/?"<& ]+)\/([^?"<& ]+)/;
   var LANGUAGE_RE = /[?&]language=(\d+)/;
+  // Cardmarket's language ids as go-cardmarket pins them, under the names
+  // its LanguageFromName reads back.
+  var LANGUAGES = {
+    1: "English",
+    2: "French",
+    3: "German",
+    4: "Spanish",
+    5: "Italian",
+    6: "Simplified Chinese",
+    7: "Japanese",
+    8: "Portuguese",
+    9: "Russian",
+    10: "Korean",
+    11: "Traditional Chinese",
+  };
   var QTY_RE = /^\s*(\d+)/;
   // Cardmarket writes a decimal comma, and the symbol says which currency
   // the shelf quotes in. The price has to be the whole of what its element
@@ -161,6 +176,24 @@ globalThis.MKM = globalThis.MKM || {};
     return "";
   }
 
+  // languageName is a listing's language for a person to read: English
+  // whatever locale the page is in, and the page's own word only for an id
+  // the table has not met.
+  MKM.languageName = function (id, languages) {
+    if (!id) {
+      return "";
+    }
+    if (LANGUAGES[id]) {
+      return LANGUAGES[id];
+    }
+    for (var label in languages) {
+      if (languages[label] === id) {
+        return label;
+      }
+    }
+    return "";
+  };
+
   // parseRow reads one offer, or returns null for a row naming no product and
   // for one the catalog cannot be asked about.
   function parseRow(row, languages) {
@@ -186,6 +219,7 @@ globalThis.MKM = globalThis.MKM || {};
     var editionSlug = tail.length > 1 ? tail[0] : "";
 
     var titles = titlesOf(row);
+    var language = languageOf(row, href, titles, languages);
     for (var i = 0; i < SKIPPED.length; i++) {
       if (titles.indexOf(SKIPPED[i]) !== -1) {
         return null;
@@ -241,10 +275,11 @@ globalThis.MKM = globalThis.MKM || {};
       // Kept as the page wrote them; the conversion needs a rate the parse
       // has no business fetching.
       // Cardmarket's own id for the language the listing is in, or "" where
-      // the link names none. Reported rather than filtered on: the CSV has
-      // no language column and the upload has nothing to read one into, so
-      // the caller is told what it is taking rather than quietly given less.
-      language: languageOf(row, href, titles, languages),
+      // the link names none. Reported rather than filtered on: the upload
+      // reads nothing from the language column yet, so the caller is told
+      // what it is taking rather than quietly given less.
+      language: language,
+      languageName: MKM.languageName(language, languages),
       price: priced ? normalizeAmount(priced[1]) : "",
       currency: priced ? MKM.currencyOf(priced[2]) : "",
     };
