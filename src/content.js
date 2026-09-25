@@ -591,31 +591,10 @@
   // enough to bound that: a second handoff retires the first.
   var awaiting = null;
 
-  // ANSWER is how long the tab gets to say it is listening before the
-  // panel stops assuming it is only slow.
-  //
-  // The page answers as it loads and is given no deadline to do it in -
-  // how long a load takes is the network's business, and cutting a slow
-  // one off would throw away a walk that took minutes. What this is for
-  // is the other silence: a page that has decided it cannot take the
-  // list says nothing at all, deliberately, because saying nothing is
-  // what stops it being handed rows it cannot price. From here the two
-  // look identical, and the second one never ends.
-  //
-  // So the rows stay in hand and the button stays on READY - both still
-  // good, and a second click retries without walking the seller again -
-  // and the line says what happened.
-  var ANSWER = 15000;
-  var answering = null;
-
   function handOff(panel, rows) {
     if (awaiting) {
       window.removeEventListener("message", awaiting);
       awaiting = null;
-    }
-    if (answering) {
-      clearTimeout(answering);
-      answering = null;
     }
 
     var opened = window.open(uploadURL(gameFromPath(location.pathname)), "_blank");
@@ -676,22 +655,12 @@
       }
       window.removeEventListener("message", onMessage);
       awaiting = null;
-      if (answering) {
-        clearTimeout(answering);
-        answering = null;
-      }
       listening = event.origin;
       give();
     }
 
     awaiting = onMessage;
     window.addEventListener("message", onMessage);
-    answering = setTimeout(function () {
-      // Only ever reached by a tab that has not spoken: onMessage clears
-      // this the moment one does, and a cleared timeout does not fire.
-      answering = null;
-      say(panel, "The upload page did not answer; is it signed in?");
-    }, ANSWER);
 
     rows.then(function (done) {
       if (!done) {
@@ -700,10 +669,6 @@
         // "Waiting for the card list..." for good.
         window.removeEventListener("message", onMessage);
         awaiting = null;
-        if (answering) {
-          clearTimeout(answering);
-          answering = null;
-        }
         opened.close();
         return;
       }

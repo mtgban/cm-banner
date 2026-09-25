@@ -502,22 +502,6 @@ Only one handoff listens at a time: the page it opens has no deadline on
 purpose, so a tab that never answers would otherwise leave its listener
 behind for the life of the page. A second handoff retires the first.
 
-**A tab that has not spoken in 15 seconds is said so of.** The page
-announces itself as it loads and is given no deadline to finish loading
-in — cutting a slow one off would throw away a walk that took minutes.
-What the wait is for is the other silence: a page that has decided it
-cannot take the list says nothing at all, deliberately, because saying
-nothing is what stops it being handed rows it cannot price. From the
-panel's side those two are identical, except that the second never ends,
-and it ended with the panel sitting on **READY** for ever with no
-explanation.
-
-So the line says `The upload page did not answer; is it signed in?` and
-the rows stay in hand — nothing about them went wrong, the button is
-still the retry, and walking the seller again would cost minutes. The
-timer is cleared the moment a tab answers, so an answering one is never
-accused; both halves of that are pinned in `tests/panel.test.js`.
-
 `tests/content.test.js` holds all of this. It reads the source rather than
 running it — content.js installs a panel into a live Cardmarket page on
 sight — which is weak, but an ordering nobody would think to preserve is
