@@ -225,14 +225,6 @@
   font-size: 12px;
 }
 
-/* The one line that is a standing condition rather than something that
-   went wrong. It is asking for something - go and sign in - so it is
-   worth more than the grey the rest of the line wears. */
-#cm-banner .cm-banner-note.cm-banner-signin {
-  opacity: 1;
-  color: #ffcb6b;
-}
-
 /* The mark beside the count: a tick for a file written, a cross for a
    read that came to nothing. Same rule as the line above: no display of
    its own, so hiding it is the browser's job and not a rule of ours to

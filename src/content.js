@@ -23,10 +23,7 @@
   // are two, and says the whole thing when it is alone - the panel is a
   // fixed width, so the longer word is what keeps the row from shrinking
   // to the size of one small button.
-  // What the line says to a visitor Cardmarket has not signed in. It is
-  // the one message that is a standing condition rather than something
-  // that just happened, so it is on screen from the moment the panel is
-  // and stays there until the page is reloaded signed in.
+  // What the heading's hover says to a visitor Cardmarket has not signed in.
   var SIGN_IN = "Sign in to Cardmarket to read the whole list";
   var SAVE = "CSV";
   var SAVE_ALONE = "Download CSV";
@@ -138,18 +135,7 @@
     if (note) {
       note.textContent = message;
       note.hidden = !message;
-      // The standing one is not a thing that went wrong, and reads as a
-      // different kind of sentence.
-      note.classList.toggle("cm-banner-signin", message === SIGN_IN);
     }
-  }
-
-  // resting is what the line says when there is nothing else to say.
-  // Empty, as a rule - and not for a visitor who is not signed in, since
-  // for them the missing scope is not an event that passed but the state
-  // the panel is in, and a hover is a poor place to keep it.
-  function resting() {
-    return locked ? SIGN_IN : "";
   }
 
   // recap is what a finished read had to say about itself - what it
@@ -355,7 +341,7 @@
 
     busy(panel, true);
     // Whatever the last read said of a different list, it no longer holds.
-    say(panel, resting());
+    say(panel, "");
 
     var reading;
     if (hereOnly()) {
@@ -641,7 +627,7 @@
       // answer and says more than this could. A short one keeps its
       // warning on screen, because that tab cannot tell that it is short
       // and neither could anyone reading it there.
-      say(panel, collected.partial ? collected.note : resting());
+      say(panel, collected.partial ? collected.note : "");
     }
 
     function onMessage(event) {
@@ -762,7 +748,7 @@
     generation++;
     busy(panel, false);
     disarm(panel);
-    say(panel, resting());
+    say(panel, "");
     label(panel);
   }
 
@@ -843,7 +829,7 @@
       // Rows read for the other scope are not the rows now being asked
       // for, and the note about them is stale too.
       disarm(panel);
-      say(panel, resting());
+      say(panel, "");
       label(panel);
     });
     panel.querySelector(".cm-banner-send").addEventListener("click", function () {
@@ -882,7 +868,6 @@
     panel.classList.toggle("cm-banner-locked", locked);
     document.body.appendChild(panel);
     label(panel);
-    say(panel, resting());
 
     // Escape stops a read and puts the panel back.
     //
@@ -932,7 +917,7 @@
         // what is on offer, and what the last export said of it no longer
         // holds either.
         disarm(panel);
-        say(panel, resting());
+        say(panel, "");
         label(panel);
       }, 300);
     });
