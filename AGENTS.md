@@ -27,8 +27,13 @@ None of these were subtle once a real page was in hand, and none were
 visible without one. When you change the parser, ask for a saved page
 (`Cmd-S`, complete) and run against it.
 
-**Saved pages are not committable.** They carry the seller's session tokens
-(`__cmtkn`). Work on them outside the repository and delete them after.
+**Saved pages are not committable as they are.** They carry the visitor's
+session: a `__cmtkn` cart token on every row, and a `csrftoken` and `idUser`
+in the filter component's `data-props`. Work on them outside the repository
+and delete them after. To make a fixture from one, keep only the rows and
+the component, drop every `__cmtkn` input, keep only the `options` of the
+props, and call the seller `Seller`, as `tests/fixtures/offers-props.html`
+does.
 
 ## Layout
 
@@ -103,6 +108,12 @@ would be the worst thing in this repository. `PACE` in `src/pages.js` is a
 guess at politeness, not a measured limit; if you change it, say in the commit
 what you actually observed.
 
+That budget includes a saved page loaded into happy-dom. Given a
+`www.cardmarket.com` URL, the window resolves the page's own stylesheet and
+script paths against it and fetches them, which happened once and left the
+process hanging on the requests. Strip `<script>`, `<link>`, `<img>` and
+`url()` first, give the window no URL, and turn its file loading off.
+
 ## Things not to do
 
 **Do not drive mtgban's upload form.** An earlier version synthesised a
@@ -131,6 +142,10 @@ in each case.
 **Do not fan out the page walk.** Parallel fetches are the obvious speedup and
 the fastest way to get the visitor challenged. One page at a time, with a wait
 before each.
+
+**Do not write an em dash**, in a string the panel shows, a doc, a comment
+or a commit. Use a plain dash, a comma or a new sentence. `tests/content.test.js`
+fails on one anywhere in `src/` or the docs.
 
 **Do not let the panel resize as it speaks.** It sits under the cursor; a
 box that grows and shrinks moves the button being aimed at. If you add
