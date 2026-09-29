@@ -47,10 +47,10 @@ it and it reads **CM BANNER - *this page only***, which restricts both buttons t
 rows in front of you - instant, and what you want when the page in front of you
 is what you meant. Hovering it says how many offers are listed.
 
-The button carries the count once the rows are read, so a line appears under it
-only for what the count does not say: what was skipped, what will be valued as
-something it is not, what is missing from the list. Usually nothing does, and
-then there is no line.
+The heading carries the count once the rows are read, with a tick beside it for
+a file written and a red cross for anything that went wrong. Hovering it says the
+rest: what was skipped, what will be valued as something it is not, what is
+missing from the list, or what went wrong. Nothing is written under the buttons.
 
 It reads singles and sealed alike: Cardmarket files boxes and bundles under
 their own product categories, and the upload tells one from the other by what

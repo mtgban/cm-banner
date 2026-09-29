@@ -83,7 +83,6 @@ export function mount({
     label: () => at(".cm-banner-label"),
     send: () => at(".cm-banner-send"),
     save: () => at(".cm-banner-save"),
-    note: () => at(".cm-banner-note").textContent,
     markShown: () => !at(".cm-banner-mark").hidden,
     mark: () => at(".cm-banner-mark").textContent,
     markFailed: () =>
@@ -94,7 +93,11 @@ export function mount({
     // Anything still wearing a title, which the browser would draw a second
     // later on top of the panel's own.
     titled: () => panel.querySelectorAll("[title]").length,
-    noteShown: () => !at(".cm-banner-note").hidden,
+    // Whether anything sits under the buttons, which nothing should.
+    below: () => {
+      const rows = [...panel.children];
+      return rows.slice(rows.indexOf(at(".cm-banner-actions")) + 1).length;
+    },
     busy: () => panel.classList.contains("cm-banner-busy"),
     armed: () => panel.classList.contains("cm-banner-armed"),
     calling: () => panel.classList.contains("cm-banner-calling"),

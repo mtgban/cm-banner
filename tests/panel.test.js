@@ -85,10 +85,10 @@ describe("clicking send", () => {
     it.send().click();
     expect(it.busy()).toBe(true);
     expect(it.send().disabled).toBe(true);
-    // The count takes the heading's word while it reads, and no line is
-    // opened underneath for it.
+    // The count takes the heading's word while it reads, and its hint goes
+    // quiet: the heading takes no click until the read is over.
     expect(it.scope()).toBe("11 / 14");
-    expect(it.noteShown()).toBe(false);
+    expect(it.tip()).toBe("");
     await it.settle();
     expect(it.opened).toEqual([]);
     // The button becomes the second click, and the heading keeps the
@@ -147,10 +147,10 @@ describe("clicking send", () => {
 
     it.send().click();
     await it.settle(120);
-    expect(it.note()).toBe(
+    expect(it.tip()).toBe(
       "Cardmarket is checking the browser; reload and try again"
     );
-    expect(it.noteShown()).toBe(true);
+    expect(it.markFailed()).toBe(true);
   });
 
   test("what a read has to say about itself goes on the hover", async () => {
@@ -159,14 +159,10 @@ describe("clicking send", () => {
     // footnote to the count rather than a thing to act on, and the panel
     // is too small to carry a line that is read once and ignored after.
     const it = mount();
-    expect(it.noteShown()).toBe(false);
     it.send().click();
     await it.settle();
     expect(it.scope()).toBe("11 rows");
     expect(it.tip()).toBe("3 skipped, 1 non-English, 11 unpriced");
-    // The line under the buttons stays shut. It is for the things that
-    // ask for something - a refused read, a blocked pop-up.
-    expect(it.noteShown()).toBe(false);
   });
 
   test("and saving marks the count rather than announcing it", async () => {
@@ -178,7 +174,6 @@ describe("clicking send", () => {
     expect(it.markShown()).toBe(true);
     expect(it.scope()).toBe("11 rows");
     expect(it.tip()).toBe("saved, 3 skipped, 1 non-English, 11 unpriced");
-    expect(it.noteShown()).toBe(false);
     expect(it.heading()).toBe("CM BANner - 11 rows\u2713");
   });
 
@@ -329,7 +324,7 @@ describe("Escape", () => {
     it.escape();
     expect(it.busy()).toBe(false);
     expect(it.send().disabled).toBe(false);
-    expect(it.note()).toBe("");
+    expect(it.markShown()).toBe(false);
     await it.settle();
     // The read that was abandoned comes back later and says nothing.
     expect(it.send().textContent).toBe("Send to BAN");
@@ -357,17 +352,6 @@ describe("signed out", () => {
     expect(it.tip()).toBe(
       "Sign in to Cardmarket to read the whole list - it shows a visitor this page and no more"
     );
-  });
-
-  test("and says so on the hover alone", async () => {
-    // The line under the buttons is for what just happened; this is the
-    // state the panel is in, and the heading's hover already says it.
-    const it = mount({ loggedOut: true });
-    expect(it.noteShown()).toBe(false);
-
-    it.save().click();
-    await it.settle();
-    expect(it.note()).not.toContain("Sign in");
   });
 
   test("and the heading stops being a control", () => {
@@ -408,10 +392,9 @@ describe("a walk that ended before the pages did", () => {
     await it.settle(1500);
 
     // One page of fourteen against the 1093 the page itself advertises.
-    expect(it.note()).toBe(
+    expect(it.tip()).toBe(
       "Only 14 of 1093 offers came back, so nothing was saved"
     );
-    expect(it.noteShown()).toBe(true);
     expect(it.markShown()).toBe(true);
     expect(it.mark()).toBe("✗");
     expect(it.markFailed()).toBe(true);
@@ -461,5 +444,59 @@ describe("a handoff the tab has not answered", () => {
 
     expect(it.send().textContent).toBe("Send to BAN");
     expect(it.armed()).toBe(false);
+  });
+});
+
+describe("nothing under the buttons", () => {
+  // Every message is the mark beside the count and the reason on the
+  // heading's tooltip: a cross for what went wrong, a tick for what went
+  // through.
+  test("in any state the panel can be in", async () => {
+    const it = mount();
+    expect(it.below()).toBe(0);
+    it.save().click();
+    await it.settle();
+    expect(it.below()).toBe(0);
+    expect(mount({ loggedOut: true }).below()).toBe(0);
+  });
+
+  test("a blocked pop-up is a cross, with the rows still in hand", async () => {
+    const it = mount();
+    it.send().click();
+    await it.settle();
+    it.window.open = () => null;
+    it.send().click();
+    expect(it.markFailed()).toBe(true);
+    expect(it.tip()).toBe("The upload page was blocked; use the CSV");
+    expect(it.send().textContent).toBe("READY");
+    expect(it.below()).toBe(0);
+  });
+
+  test("so is an upload tab closed before the rows reached it", async () => {
+    const it = mount();
+    it.send().click();
+    await it.settle();
+    it.send().click();
+    it.opened.source.closed = true;
+    it.ready();
+    await it.settle();
+    expect(it.markFailed()).toBe(true);
+    expect(it.tip()).toBe("The upload page was closed; use the CSV");
+    expect(it.below()).toBe(0);
+  });
+
+  test("and a list handed over part-read is a tick that says so", async () => {
+    // Page two never comes back, so the walk stops with page one in hand.
+    // That still goes over, and the heading says why it is not the lot.
+    const it = mount({ pager: "pager-next.html", total: 1093 });
+    it.send().click();
+    await it.settle(1500);
+    it.send().click();
+    it.ready();
+    await it.settle();
+    expect(it.markShown()).toBe(true);
+    expect(it.markFailed()).toBe(false);
+    expect(it.tip()).toContain("1093 were listed");
+    expect(it.below()).toBe(0);
   });
 });

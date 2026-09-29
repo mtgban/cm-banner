@@ -126,16 +126,12 @@
     }, 30000);
   }
 
-  // say writes the line under the buttons, and takes the line away when
-  // there is nothing to put on it. Most reads have nothing: the count goes
-  // in the heading and the total goes on the button, so this is left with
-  // the exceptions.
-  function say(panel, message) {
-    var note = panel.querySelector(".cm-banner-note");
-    if (note) {
-      note.textContent = message;
-      note.hidden = !message;
-    }
+  // say reports what went wrong as a red cross beside the heading's count,
+  // with the reason on its tooltip; nothing is written under the buttons.
+  // A list handed over short says so with a tick instead. "" clears both.
+  function say(panel, message, how) {
+    mark(panel, message ? how || "failed" : "");
+    recap(panel, message);
   }
 
   // recap is what a finished read had to say about itself - what it
@@ -162,10 +158,13 @@
   var hinted = "";
   var recapped = "";
 
+  // No hint while a read runs: the heading holds the count then, and a
+  // click on it does nothing.
   function tip(panel) {
     var box = panel.querySelector(".cm-banner-tip");
     if (box) {
-      box.textContent = recapped || hinted;
+      var reading = panel.classList.contains("cm-banner-busy");
+      box.textContent = recapped || (reading ? "" : hinted);
     }
   }
 
@@ -386,10 +385,9 @@
   // priced puts a dollar price on every row and says what is worth
   // saying about them, which is usually nothing at all.
   //
-  // The button already says how many rows there are, so the line below it
-  // carries only what the count does not: what was dropped, what will be
-  // valued as something it is not, and what is missing from the list
-  // altogether.
+  // The heading already says how many rows there are, so the note carries
+  // only what the count does not: what was dropped, what will be valued as
+  // something it is not, and what is missing from the list altogether.
   function priced(walked, rates) {
     var offers = walked.offers;
     // The page every row came from, which every row also links back to.
@@ -503,7 +501,6 @@
         busy(panel, false);
         if (!done.csv) {
           say(panel, done.note);
-          mark(panel, "failed");
           return null;
         }
         return done;
@@ -623,7 +620,7 @@
       // answer and says more than this could. A short one keeps its
       // warning on screen, because that tab cannot tell that it is short
       // and neither could anyone reading it there.
-      say(panel, collected.partial ? collected.note : "");
+      say(panel, collected.partial ? collected.note : "", "done");
     }
 
     function onMessage(event) {
@@ -822,8 +819,7 @@
       '<div class="cm-banner-actions">' +
       '<button type="button" class="cm-banner-send">' + SEND + "</button>" +
       '<button type="button" class="cm-banner-save">' + SAVE + "</button>" +
-      "</div>" +
-      '<div class="cm-banner-note" hidden></div>';
+      "</div>";
 
     // Changing what will be taken makes whatever the last export said
     // about the other scope stale, so the note goes with it.
@@ -928,8 +924,8 @@
     //
     // Only a changed count counts as a change. Exporting appends an anchor to
     // the document and takes it away again, which is a mutation like any
-    // other: reacting to every one of those cleared the line saying what the
-    // export had just done, about a third of a second after it said it.
+    // other, and reacting to every one would clear the mark saying what the
+    // export had just done a third of a second after it appeared.
     var pending = null;
     var observer = new MutationObserver(function () {
       if (pending !== null) {
@@ -940,7 +936,7 @@
         // Not while the walk is running. The pages being read are parsed
         // documents of their own and never touch this one, but Cardmarket
         // keeps working on its own table, and reacting to that would wipe
-        // the line saying how far along the export is.
+        // the count saying how far along the export is.
         if (panel.classList.contains("cm-banner-busy")) {
           return;
         }

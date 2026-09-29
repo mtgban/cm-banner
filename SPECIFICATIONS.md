@@ -460,8 +460,7 @@ So the panel is the state. Before a read the heading names the scope and
 the button says **Send to BAN**; after one the heading holds the count -
 `CM BANner - 251 rows` - and the button says **READY**. The count goes in
 the heading because the heading is otherwise repeating a scope that was
-chosen before the read and has not changed since, and because that leaves
-the line beneath the buttons for the things a count cannot say.
+chosen before the read and has not changed since.
 
 **READY** is green, a darker shade of the tick's, and it pulses: a ring out of the
 button once every 2.4 seconds, still for the rest of the cycle. A read Send
@@ -472,20 +471,18 @@ file was what was asked for: the cursor reaching the button starts its
 pulse, which outlasts the cursor and stops only when the page or tab loses
 focus. Under a reduced-motion request there is no pulse, only the green.
 
-A finished download adds a green **tick** beside the count and nothing
-else; a read that came to nothing puts a red **✗** there instead and keeps
-the line, because that one is asking for something.
-What the read had to say about itself - `saved, 3 skipped, 1 non-English,
-11 unpriced` - is on the heading's tooltip, in place of the heading's own
-hint (what clicking it does), which comes back when the rows are dropped.
-There is **one tooltip, drawn by the panel** above itself rather than left
-to a `title`: a browser shows a title only after a second or so, and titles
-on both the heading and the count were two tooltips over the same few
-words. It appears 80ms after the cursor or keyboard focus reaches the
-heading, and nothing in the panel carries a `title`. It used to be a line
-under the buttons, which is a row of
-a panel this size given over to a footnote that is read once and ignored
-after; the lines it keeps are the ones that ask for something.
+A finished download adds a green **tick** beside the count; anything that
+went wrong puts a red **✗** there instead. What either stands for is on the
+heading's tooltip, and **nothing is written under the buttons**. What the
+read had to say about itself - `saved, 3 skipped, 1 non-English, 11
+unpriced` - takes the place of the heading's own hint (what clicking it
+does), which comes back when the rows are dropped. There is **one tooltip,
+drawn by the panel** above itself rather than left to a `title`: a browser
+shows a title only after a second or so, and a title on the count as well
+as the heading would be two tooltips over the same few words. It appears
+80ms after the cursor or keyboard focus reaches the heading, and nothing in
+the panel carries a `title`. While a read runs it shows nothing, since the
+heading holds the count then and takes no click.
 
 (The label constant is `ARMED`, not `READY`. That name belongs to the
 message the handoff page sends when it is listening, and the two are one
@@ -695,8 +692,6 @@ on it - so the whole list is not something it will give them, and offering
 it would be offering a walk that can only fail (§6.5). The panel opens on
 the page in front of it instead, and the heading stops being a control
 and says why on its hover: `Sign in to Cardmarket to read the whole list`.
-The line under the buttons stays clear, since this is the state the panel
-is in rather than something that just happened.
 
 Signed-out is read off the login forms Cardmarket puts in the markup of
 every page it serves to one. They are markup rather than words, so this
@@ -782,13 +777,13 @@ the extension's own origin and serving it to somebody else's page wants a
 `web_accessible_resources` entry - which is a file exposed to every page
 this runs on, for the sake of three kilobytes.
 
-The line under the buttons is therefore only ever for **what asks for
-something**, and it is not there when there is nothing: a read Cloudflare
-refused, a pop-up the browser blocked, a list handed over that was short
-of what the seller advertised. What a finished read merely has to report -
-what was skipped, what will be valued as something it is not, what is
-missing from the list - is on the heading's tooltip, where it costs no
-room at all.
+Nothing is written under the buttons. What went wrong - a read Cloudflare
+refused, a walk that came back short, a pop-up the browser blocked, an
+upload tab closed before the rows reached it - is a red ✗ beside the count
+with the reason on the heading's tooltip. A list handed over part-read is a
+tick with the same. What a finished read merely has to report - what was
+skipped, what will be valued as something it is not, what is missing from
+the list - is on the tooltip too, where it costs no room at all.
 
 What follows from the fixed width is that the output has to be short, and
 that a line which comes and goes moves the buttons under the cursor. The

@@ -170,7 +170,7 @@ describe("the panel does not move", () => {
     // of the time, since one that came and went would move the buttons.
     // The heading is free at exactly the moment the count needs it.
     expect(body("counting")).toContain("cm-banner-scope");
-    expect(body("say")).toContain("hidden");
+    expect(body("say")).toContain("recap(panel, message)");
   });
 
   test("the spinner sits on the heading's line without growing it", () => {

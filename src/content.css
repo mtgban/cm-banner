@@ -268,24 +268,11 @@
   outline-offset: 2px;
 }
 
-/* Deliberately without a display of its own, so [hidden] means what the
-   browser's own sheet says it means. The line is there only when there is
-   something on it - the read's count lives in the heading instead, which
-   is a line the panel already has. */
-#cm-banner .cm-banner-note {
-  opacity: 0.85;
-  font-size: 12px;
-}
-
-/* The mark beside the count: a tick for a file written, a cross for a
-   read that came to nothing. Same rule as the line above: no display of
-   its own, so hiding it is the browser's job and not a rule of ours to
-   get wrong.
-
-   What a tick stood for is on its title, and on the count's, rather than
-   on a line underneath - a footnote nobody has to act on should not take
-   up a row of a panel this size. A cross keeps the line, because a read
-   that came to nothing is asking for something. */
+/* The mark beside the count: a tick for a file written or a list handed
+   over, a cross for something that went wrong. No display of its own, so
+   hiding it is the browser's job and not a rule of ours to get wrong. What
+   either one stands for is on the heading's tooltip; nothing is written
+   under the buttons. */
 #cm-banner .cm-banner-mark {
   margin-left: 5px;
   color: #7bd88f;
