@@ -165,6 +165,20 @@ describe("clicking send", () => {
     expect(it.tip()).toBe("3 skipped, 1 non-English, 11 unpriced");
   });
 
+  test("and sending takes a saved file's tick away", async () => {
+    // The tick says a file was written. A send is not one, even when it
+    // sends the rows the file was written from.
+    const it = mount();
+    it.save().click();
+    await it.settle();
+    expect(it.markShown()).toBe(true);
+    it.send().click();
+    expect(it.markShown()).toBe(false);
+    it.ready();
+    await it.settle();
+    expect(it.markShown()).toBe(false);
+  });
+
   test("and saving marks the count rather than announcing it", async () => {
     const it = mount();
     expect(it.markShown()).toBe(false);
@@ -485,7 +499,7 @@ describe("nothing under the buttons", () => {
     expect(it.below()).toBe(0);
   });
 
-  test("and a list handed over part-read is a tick that says so", async () => {
+  test("and a list handed over part-read says so, without a tick", async () => {
     // Page two never comes back, so the walk stops with page one in hand.
     // That still goes over, and the heading says why it is not the lot.
     const it = mount({ pager: "pager-next.html", total: 1093 });
@@ -494,8 +508,7 @@ describe("nothing under the buttons", () => {
     it.send().click();
     it.ready();
     await it.settle();
-    expect(it.markShown()).toBe(true);
-    expect(it.markFailed()).toBe(false);
+    expect(it.markShown()).toBe(false);
     expect(it.tip()).toContain("1093 were listed");
     expect(it.below()).toBe(0);
   });

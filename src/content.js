@@ -128,9 +128,9 @@
 
   // say reports what went wrong as a red cross beside the heading's count,
   // with the reason on its tooltip; nothing is written under the buttons.
-  // A list handed over short says so with a tick instead. "" clears both.
-  function say(panel, message, how) {
-    mark(panel, message ? how || "failed" : "");
+  // "" clears both.
+  function say(panel, message) {
+    mark(panel, message ? "failed" : "");
     recap(panel, message);
   }
 
@@ -591,6 +591,8 @@
       window.removeEventListener("message", awaiting);
       awaiting = null;
     }
+    // The tick is for a file written, and a send is not one.
+    mark(panel, "");
 
     var opened = window.open(uploadURL(gameFromPath(location.pathname)), "_blank");
     if (!opened) {
@@ -633,10 +635,11 @@
       // answered can be tried again without reading the pages afresh.
       disarm(panel);
       // Nothing is said of a whole list: the tab that just took it is the
-      // answer and says more than this could. A short one keeps its
-      // warning on screen, because that tab cannot tell that it is short
-      // and neither could anyone reading it there.
-      say(panel, collected.partial ? collected.note : "", "done");
+      // answer. A short one keeps its warning on the tooltip, because that
+      // tab cannot tell that it is short.
+      if (collected.partial) {
+        recap(panel, collected.note);
+      }
     }
 
     function onMessage(event) {

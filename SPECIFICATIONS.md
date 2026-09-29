@@ -471,8 +471,9 @@ file was what was asked for: the cursor reaching the button starts its
 pulse, which outlasts the cursor and stops only when the page or tab loses
 focus. Under a reduced-motion request there is no pulse, only the green.
 
-A finished download adds a green **tick** beside the count; anything that
-went wrong puts a red **✗** there instead. What either stands for is on the
+A finished download adds a green **tick** beside the count, and a send
+takes it away again; anything that went wrong puts a red **✗** there
+instead. What either stands for is on the
 heading's tooltip, and **nothing is written under the buttons**. What the
 read had to say about itself - `saved, 3 skipped, 1 non-English, 11
 unpriced` - takes the place of the heading's own hint (what clicking it
@@ -780,8 +781,8 @@ this runs on, for the sake of three kilobytes.
 Nothing is written under the buttons. What went wrong - a read Cloudflare
 refused, a walk that came back short, a pop-up the browser blocked, an
 upload tab closed before the rows reached it - is a red ✗ beside the count
-with the reason on the heading's tooltip. A list handed over part-read is a
-tick with the same. What a finished read merely has to report - what was
+with the reason on the heading's tooltip. A list handed over part-read
+says so on the tooltip alone, since the tick is for a file written. What a finished read merely has to report - what was
 skipped, what will be valued as something it is not, what is missing from
 the list - is on the tooltip too, where it costs no room at all.
 

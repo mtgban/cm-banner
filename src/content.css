@@ -268,8 +268,8 @@
   outline-offset: 2px;
 }
 
-/* The mark beside the count: a tick for a file written or a list handed
-   over, a cross for something that went wrong. No display of its own, so
+/* The mark beside the count: a tick for a file written, a cross for
+   something that went wrong. No display of its own, so
    hiding it is the browser's job and not a rule of ours to get wrong. What
    either one stands for is on the heading's tooltip; nothing is written
    under the buttons. */
