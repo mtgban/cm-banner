@@ -217,6 +217,27 @@
     return "";
   }
 
+  // unused is rows a Send read left in hand that neither button has used
+  // yet. Leaving would throw away a read that can take minutes.
+  var unused = false;
+
+  // guard holds the page exactly while leaving would lose something: a read
+  // running, or its rows unused. The listener comes off the moment neither
+  // is true, since a page carrying one is a page the browser will not keep
+  // in its back/forward cache.
+  function guard(panel) {
+    if (unused || panel.classList.contains("cm-banner-busy")) {
+      window.addEventListener("beforeunload", hold);
+    } else {
+      window.removeEventListener("beforeunload", hold);
+    }
+  }
+
+  function use(panel) {
+    unused = false;
+    guard(panel);
+  }
+
   // buttons puts the pair into the state the panel is in. Send has two
   // reasons to be out of reach and one outlives the other, so they are
   // decided together: a read ending must not hand back a button that was
@@ -236,21 +257,15 @@
   // walk runs. A second click would start a second walk over the same
   // pages, and the export is slow enough to invite one.
   //
-  // It is also where the page is held, because "a read is running" and
-  // "leaving would throw it away" are the same condition. The listener
-  // comes off the moment it is not: a page carrying one of these is a
-  // page the browser will not keep in its back/forward cache, and that
-  // would be this extension slowing down every Cardmarket page it sat on.
+  // It is also where the page is held while the read runs; see guard.
   function busy(panel, working) {
     panel.classList.toggle("cm-banner-busy", working);
     // The two that do something. The heading is left alone: it is holding
     // the count, and a disabled button is a dimmed one in every browser's
     // own stylesheet, so disabling it would dim the progress.
     buttons(panel, working);
-    if (working) {
-      window.addEventListener("beforeunload", hold);
-    } else {
-      window.removeEventListener("beforeunload", hold);
+    guard(panel);
+    if (!working) {
       // The heading was carrying the count. Give it its word back.
       label(panel);
     }
@@ -533,6 +548,7 @@
     if (armed) {
       // Already read. Walking a hundred pages again to write out rows
       // that are sitting here would be a minute spent on nothing.
+      use(panel);
       write(armed);
       return;
     }
@@ -661,6 +677,7 @@
   // reading is, which is the only thing that decides it.
   function sendToBan(panel) {
     if (armed) {
+      use(panel);
       handOff(panel, Promise.resolve(armed));
       return;
     }
@@ -725,6 +742,10 @@
       // read left in hand wait for the cursor: the file was what was asked
       // for.
       call(panel, calling ? "send" : "");
+      // A CSV read used its rows as it wrote them; a Send read's wait for
+      // the second click.
+      unused = calling;
+      guard(panel);
     }
     counting(panel, done.count + (done.count === 1 ? " row" : " rows"));
     recap(panel, done.note);
@@ -738,6 +759,7 @@
     mark(panel, "");
     panel.classList.remove("cm-banner-armed");
     call(panel, "");
+    use(panel);
     var send = panel.querySelector(".cm-banner-send");
     if (send) {
       send.textContent = SEND;

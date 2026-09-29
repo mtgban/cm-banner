@@ -18,7 +18,8 @@ rows, so there is no panel either.
 nothing kept. A read that was stopped half way is not a shorter export, so its
 rows go with it. The key does nothing when there is nothing of ours running.
 
-While it is reading, the page asks before it goes anywhere - a link, the back
+While it is reading, and afterwards while the rows a Send read left have not
+been sent or saved, the page asks before it goes anywhere - a link, the back
 button, a reload. The read lives in the page, so leaving throws it away, and
 after a minute of waiting that is worth a confirmation. The wording is your
 browser's own; pages have not been able to choose it for years.

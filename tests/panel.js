@@ -104,6 +104,12 @@ export function mount({
     hoverSend: () => at(".cm-banner-send").dispatchEvent(new window.Event("mouseenter")),
     leaveSend: () => at(".cm-banner-send").dispatchEvent(new window.Event("mouseleave")),
     blur: () => window.dispatchEvent(new window.Event("blur")),
+    // Whether leaving now would ask first.
+    leaving: () => {
+      const event = new window.Event("beforeunload", { cancelable: true });
+      window.dispatchEvent(event);
+      return event.defaultPrevented;
+    },
     // The tab going to the background, the way the browser says it.
     hide: () => {
       Object.defineProperty(window.document, "hidden", { value: true, configurable: true });

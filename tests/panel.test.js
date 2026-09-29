@@ -500,3 +500,50 @@ describe("nothing under the buttons", () => {
     expect(it.below()).toBe(0);
   });
 });
+
+describe("leaving the page", () => {
+  test("asks first while a read runs", () => {
+    const it = mount();
+    it.send().click();
+    expect(it.leaving()).toBe(true);
+  });
+
+  test("and while a Send read's rows wait for their second click", async () => {
+    const it = mount();
+    it.send().click();
+    await it.settle();
+    expect(it.send().textContent).toBe("READY");
+    expect(it.leaving()).toBe(true);
+  });
+
+  test("but not once READY has used them", async () => {
+    const it = mount();
+    it.send().click();
+    await it.settle();
+    it.send().click();
+    expect(it.leaving()).toBe(false);
+  });
+
+  test("or CSV has", async () => {
+    const it = mount();
+    it.send().click();
+    await it.settle();
+    it.save().click();
+    expect(it.leaving()).toBe(false);
+  });
+
+  test("and never after a CSV read, which used its rows as it wrote them", async () => {
+    const it = mount();
+    it.save().click();
+    await it.settle();
+    expect(it.leaving()).toBe(false);
+  });
+
+  test("nor once the rows are dropped", async () => {
+    const it = mount();
+    it.send().click();
+    await it.settle();
+    it.toggleScope();
+    expect(it.leaving()).toBe(false);
+  });
+});

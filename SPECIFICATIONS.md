@@ -820,32 +820,35 @@ nothing unless there is something of ours to stop, and it does not
 `preventDefault` even then: closing a dialog of Cardmarket's and stopping
 a read of ours are not in conflict.
 
-### 6.9 Leaving while it reads
+### 6.9 Leaving with a read at stake
 
 The read lives in this page. Following a link, pressing back or forward,
 or reloading takes the content script with it, and a hundred pages of
 reading goes too - silently, because by then there is nothing left on
 screen to say anything.
 
-So while a read is running the page is held with a `beforeunload`
-listener, which covers all three at once. That is why it is this rather
-than watching for clicks on links: the back button is not a click on
-anything.
+So the page is held with a `beforeunload` listener while a read is
+running, and afterwards while the rows a Send read left wait for their
+second click: neither button has used them, and leaving throws the read
+away. Pressing READY or CSV uses them, and so does anything that drops
+them. A CSV read used its rows as it wrote them and never holds the page.
+The listener covers following a link, going back and reloading at once,
+which is why it is this rather than watching for clicks on links: the back
+button is not a click on anything.
 
 **The wording is the browser's own.** Chrome, Firefox and Safari all
 stopped showing a page's own message years ago, so the prompt reads
 whatever that browser says - "Leave site?", or similar. Cancelling the
 event is what asks for the prompt at all.
 
-It is attached in `busy()` and taken off there, because "a read is
-running", "the buttons are away" and "leaving would throw it away" are
-one condition. It must not outlive the read: a page carrying a
-`beforeunload` listener is one the browser will not keep in its
-back/forward cache, and left attached this extension would slow down
-every Cardmarket page it sat on.
+`guard()` attaches it and takes it off, and it must not outlive what it
+protects: a page carrying a `beforeunload` listener is one the browser will
+not keep in its back/forward cache, and left attached this extension would
+slow down every Cardmarket page it sat on.
 
 Verified by dispatching the event: not cancelled before a read, cancelled
-during one, not cancelled after. Whether the browser then draws its
+during one and while a Send read's rows are unused, not cancelled once READY
+or CSV has used them, after a CSV read, or once the rows are dropped. Whether the browser then draws its
 dialog is the browser's half and is not covered.
 
 ## 7. Not verified
