@@ -1,10 +1,10 @@
 {
-  "name": "cm-banner",
+  "name": "browser-banner",
   "private": true,
   "version": "0.1.0",
-  "description": "Export a Cardmarket offers page as a CSV for upload to BAN",
+  "description": "Browser extensions that get a card store's lists to mtgban",
   "scripts": {
-    "test": "bun test tests/"
+    "test": "bun test sites/ tests/"
   },
   "devDependencies": {
     "happy-dom": "^15.11.7"

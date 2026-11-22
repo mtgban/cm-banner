@@ -20,21 +20,26 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: bun test
-        run: bun test tests/
+        run: bun run test
 
-      # The manifest is what the browsers read; a typo in it is a broken
-      # install rather than a failing test, so it is checked here - both that
-      # it parses and that every file it names is actually present.
-      - name: manifest names only files that exist
+      # A manifest is what the browsers read; a typo in it is a broken
+      # install rather than a failing test, so each site's is checked here -
+      # both that it parses and that every file it names is actually present.
+      - name: manifests name only files that exist
         run: |
           python3 - <<'EOF'
-          import json, sys, os
-          m = json.load(open("manifest.json"))
-          named = list(m.get("icons", {}).values())
-          for cs in m.get("content_scripts", []):
-              named += cs.get("js", []) + cs.get("css", [])
-          missing = [f for f in named if not os.path.exists(f)]
-          if missing:
-              sys.exit("manifest names missing files: " + ", ".join(missing))
-          print(f"manifest names {len(named)} files, all present")
+          import glob, json, os, sys
+          paths = sorted(glob.glob("sites/*/manifest.json"))
+          if not paths:
+              sys.exit("no sites/*/manifest.json")
+          for path in paths:
+              site = os.path.dirname(path)
+              m = json.load(open(path))
+              named = list(m.get("icons", {}).values())
+              for cs in m.get("content_scripts", []):
+                  named += cs.get("js", []) + cs.get("css", [])
+              missing = [f for f in named if not os.path.exists(os.path.join(site, f))]
+              if missing:
+                  sys.exit(path + " names missing files: " + ", ".join(missing))
+              print(f"{path} names {len(named)} files, all present")
           EOF
